@@ -1,0 +1,102 @@
+
+<!--
+  %\VignetteIndexEntry{SIDAP: run with an example}
+  %\VignetteEngine{knitr::knitr}
+-->
+
+
+SIDAP: run with an example
+====================================================
+
+Load the Package
+--------------------
+
+```{r, message=FALSE}
+require("sidap") 
+```
+
+Open the package help page to take a first look of the pakcage:
+```{r, results='hide'}
+?sidap
+```
+
+Options for using the package
+------------------------------
+
+**sidap** package provides three ways to employ the workforce of this package:
+
++ GUI with function `cytof_tsne_densvm_GUI`
++ The core function `cytof_tsne_densvm`
++ Step-by-step 
+
+The most simple way to use the **sidap** package is to either use the GUI or the core function. Both provide almost all the options for this CyToF analysis pipeline. Start the GUI with a simple command `cytof_tsne_densvm_GUI()`, you will find all the options there on the control pannel, click the `?` buttion to get the explanation of each parameter. Launching one analysis simply like this: Choose the input fcs files from the directory where you store the data; select the markers from the auto-generated marker list; choose the directory to save the output; give a base name as a prefix of the names of result files; select a merging method if you have multiple files then you can submit you analysis. Depends on the size of your data, it will take some time to run the analysis. Once it's done, all the results will be generated under you result directory. The core function has these parameters in a command way, you can define these inputs as in the GUI in the arguments of the function `cytof_tsne_densvm`, check the help page `?cytof_tsne_densvm` to check the arguments you need to change.
+
+The GUI and the core function is all you need if you want to make use of the **sidap** package easily. For deep customizing the analysis, the **sidap** package also provides a step-by-step guide for the analysis pipeline.
+
+Step-by-step guide
+-----------------------
+
+Due to the usually big size of the fcs data, we just use one small size file here as a demo, you can easily expand the analysis to multiple fcs files.
+
+### Load the data
+
+This step is done using function `fcs_lgcl_merge`. The expression data of one or multiple fcs files is extracted, and be merged into one data matrix. Then a transformation method(usually is logicle transformation) is applied to the combined expression matrix. Row names with sample name and sample id are added to the matrix to label the cells.
+
+```{r}
+dir <- system.file('extdata',package='sidap')
+files <- list.files(dir, pattern='.fcs$', full=TRUE)
+paraFile <- list.files(dir, pattern='.txt$', full=TRUE)
+parameters <- as.character(read.table(paraFile, sep = "\t", header = TRUE)[, 1])
+#exprs <- fcs_lgcl_merge(fcsFile = files, markers = parameters, lgclMethod = "fixed", mergeMethod = "all")
+```
+
+### Dimension reduction
+
+Dimension reduction is implemented in function `cytof_dimReduction`, methods like `isomap`, `pca`, `lle`, and `tsne` are provided as options. `tsne` is the recommended and default method.
+
+```{r, results='hide'}
+?cytof_dimReduction   ## check the help page
+#transformed <- cytof_dimReduction(exprs, method = "tsne")
+```
+
+### Clustering
+
+A Density-based clustering aided by support Vector Machine (function `DensVM_cluster`) is provided to automate subset detection from the transformend map. Of course other clustering methods can be applied instead. 
+
+```{r, results='hide'}
+?DensVM_cluster   ## check the help page
+#clusterRes <- DensVM_cluster(transformed, exprs)
+```
+
+### Cluster annotation using scatter plot and heat map 
+
+```{r, echo=FALSE}
+data <- list.files(dir, pattern='.RData$', full=TRUE)
+load(data)
+```
+
+#### Take a look at the cluster reuslts:
+```{r}
+clusters <- clusterRes[[2]]
+head(clusters)
+```
+
+#### Scatter plot 
+Scatter plot visualize the cell points with colour indicating their assigned clusters and point shape representing their belonging samples. Use `cluster_plot` to visulalize the cluster results:
+```{r}
+cluster_plot(clusters, title = "Demo cluster", point_size = 2)
+```
+
+If the input contains multiple fcs files, can use the `cluster_gridPlot` to visualize the cluster of different samples.
+
+#### Heatmap plot
+Heat map visualizing the mean expression of every marker in every cluster is generated with no scaling on the row or column direction with function `clust_mean_heatmap`. Hierarchical clustering is added using Euclidean distance and complete agglomeration method.
+
+```{r}
+exprs_cluster <- data.frame(exprs, cluster = clusters[, 3])
+clust_statData <- clust_state(exprs_cluster, stat = "mean")
+clust_mean_heatmap(clust_statData[[1]], baseName = "Demo")
+```
+
+If the input contains multiple fcs files, can use the `clust_percentage_heatmap` to visualize the percentage of cells of each cluster in each sample.
+
