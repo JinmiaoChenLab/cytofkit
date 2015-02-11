@@ -1,12 +1,13 @@
-#' Save the sidap analysis results
+#' Save the cytofkit analysis results
 #' 
 #' Scatter dot plot and heatmap of the cluster results, and all intermediated files will be 
 #' generated and saved in the \code{resDir}
-#' 
+#'
+#' @param analysis_results result data from output of \code{\link{DensVM_cluster}}
+#' @param vizMethods visualization methods for clustering results, including \code{tsne}, \code{pca} and \code{isomap}.
 #' @param baseName a prefix that will be added to the names of result files.
 #' @param rawFCSdir the directory that contains fcs files to be analysed.
 #' @param resDir the directory where result files will be generated.
-#' @param analysis_resluts result data from output of \code{\link{DensVM_cluster}}
 #' @return save all results in the \code{resDir}
 #' @importFrom gplots heatmap.2 bluered    
 #' @importFrom ggplot2 ggplot ggsave aes_string facet_wrap geom_point geom_rug theme_bw theme xlab ylab ggtitle coord_fixed guides guide_legend scale_shape_manual scale_colour_manual
@@ -14,67 +15,43 @@
 #' @importFrom ggplot2 ggplot ggsave aes_string geom_line geom_point xlab ylab ggtitle theme_bw
 #' @importFrom flowCore write.FCS flowFrame inverseLogicleTransform
 #' @export
-#' @seealso \code{\link{cytof_tsne_densvm}}, \code{\link{sidap}}
+#' @seealso \code{\link{cytof_tsne_densvm}}, \code{\link{cytofkit}}
 #' @examples
-#' dir <- system.file('extdata',package='sidap')
+#' dir <- system.file('extdata',package='cytofkit')
 #' f <- list.files(dir, pattern='.fcs$', full=TRUE)
 #' p <- list.files(dir, pattern='.txt$', full=TRUE)
-#' #tr <- cytof_tsne_densvm(fcsFile=f,paraFile=p,baseName='t',writeResluts=FALSE)
-#' #cytof_write_resluts(tr, baseName = 'test',rawFCSdir=dir)
+#' #tr <- cytof_tsne_densvm(fcsFile=f,paraFile=p,baseName='t',writeResults=FALSE)
+#' #cytof_write_results(tr,baseName = 'test',rawFCSdir=dir)
 
-cytof_write_resluts <- function(analysis_resluts, baseName = "sidap_analysis", 
+cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofkit_analysis", 
     rawFCSdir = getwd(), resDir = getwd()) {
     setwd(resDir)
     ## exprs
-    exprs <- analysis_resluts$lgclMergedExprs
+    exprs <- analysis_results$lgclMergedExprs
     write.table(exprs, paste(baseName, "_lgcl_merged_markerFiltered_exprsData.txt", 
         sep = ""), sep = "\t", col.names = NA)
     ## transformed
-    transformed <- analysis_resluts$transData
+    transformed <- analysis_results$transData
     write.table(transformed, paste(baseName, "_dimension_transformed.txt", 
         sep = ""), sep = "\t", col.names = NA)
-    trans_col_names <- colnames(transformed)
     
     ## clusters
-    if (!(is.null(analysis_resluts$clustersRes))) {
-        peakData <- analysis_resluts$clustersRes[[1]]
+    if (!(is.null(analysis_results$clustersRes))) {
+        peakData <- analysis_results$clustersRes[[1]]
         peaksGamma_graph <- peaksGamma_plot(peakData)
         ggsave(filename = paste(baseName, "NumOfpeaks_Vs_kernalBandwith.pdf", 
             sep = "_"), plot = peaksGamma_graph)
         
-        clusters <- analysis_resluts$clustersRes[[2]]
+        clusters <- analysis_results$clustersRes[[2]]
         ifMultiFCS <- length(unique(sub("_[0-9]*$", "", row.names(clusters))))>1
-        write.table(clusters, paste(baseName, "tsne_cluster.txt", 
-            sep = "_"), sep = "\t", col.names = NA)
         
-        cluster_plot <- cluster_plot(clusters)
-        ggsave(filename = paste(baseName, "clusterData_plot.pdf", 
-            sep = "_"), cluster_plot, width = 13, height = 13)
-        if (ifMultiFCS) {
-            samples <- sub("_[0-9]*$", "", row.names(clusters))
-            sample_num <- length(unique(samples))
-            grid_row_num <- ceiling(sample_num/4)
-            if (sample_num >= 4) {
-                grid_col_num <- 4
-            } else {
-                grid_col_num <- sample_num
-            }
-            grid_size <- sqrt(225/(grid_row_num * grid_col_num))
-            grid_width <- grid_size * grid_col_num
-            grid_height <- grid_size * grid_row_num
-            cluster_grid_plot <- cluster_gridPlot(clusters)
-            ggsave(filename = paste(baseName, "clusterData_grid_plot.pdf", 
-                sep = "_"), cluster_grid_plot, width = grid_width, 
-                height = grid_height)
-        }
-        
-        exprs_cluster <- data.frame(exprs, cluster = clusters[, 
-            3])
+        ## cluster heatmap
+        exprs_cluster <- data.frame(exprs, cluster = clusters[, 3][match(rownames(clusters), rownames(exprs))])
         clust_statData <- clust_state(exprs_cluster, stat = "mean")
         write.table(clust_statData[[1]], paste(baseName, "clusterMean.txt", 
-            sep = "_"), sep = "\t", col.names = NA)
+                                               sep = "_"), sep = "\t", col.names = NA)
         write.table(clust_statData[[2]], paste(baseName, "_clusterCellCount.txt", 
-            sep = ""), sep = "\t", row.names = FALSE)
+                                               sep = ""), sep = "\t", row.names = FALSE)
         
         pdf(paste(baseName, "clusterMeanHeatmap.pdf", sep = "_"))
         par(cex.main = 0.8)
@@ -82,15 +59,55 @@ cytof_write_resluts <- function(analysis_resluts, baseName = "sidap_analysis",
         dev.off()
         
         if (ifMultiFCS) {
-        pdf(paste(baseName, "clusterPercHeatmap.pdf", sep = "_"))
-        par(mar = rep(2, 4), cex.main = 0.7)
-        clust_percentage_heatmap(clust_statData[[2]], baseName)
-        dev.off()
+                pdf(paste(baseName, "clusterPercHeatmap.pdf", sep = "_"))
+                par(mar = rep(2, 4), cex.main = 0.7)
+                clust_percentage_heatmap(clust_statData[[2]], baseName)
+                dev.off()
         }
         
-        suppressWarnings(add_col_to_fcs(data = clusters, rawFCSdir = rawFCSdir, 
-            analyzedFCSdir = paste(baseName, "analyzedFCS", sep = "_"), 
-            transformed_col = trans_col_names, cluster_col = c("cluster")))
+        ## cluster scatter plot
+        for(x in sort(vizMethods, decreasing = TRUE)){
+                if (x == "tsne"){
+                        clusters <- analysis_results$clustersRes[[2]]
+                } else{
+                        transformed <- cytof_dimReduction(exprs, method = x)
+                        clusters <- merge(transformed, subset(clusters, select = get("cluster")), by = "row.names")
+                        rownames(clusters) <- clusters[ ,1]
+                        clusters <- clusters[ ,-1]     
+                }
+                
+                ## visualize clusters and save resutls
+                trans_col_names <- colnames(transformed)
+                write.table(clusters, paste(baseName, x, "cluster.txt", 
+                                            sep = "_"), sep = "\t", col.names = NA)
+                
+                cluster_plot <- cluster_plot(clusters)
+                ggsave(filename = paste(baseName, x, "clusterData_plot.pdf", 
+                                        sep = "_"), cluster_plot, width = 13, height = 13)
+                if (ifMultiFCS) {
+                        samples <- sub("_[0-9]*$", "", row.names(clusters))
+                        sample_num <- length(unique(samples))
+                        grid_row_num <- ceiling(sample_num/4)
+                        if (sample_num >= 4) {
+                                grid_col_num <- 4
+                        } else {
+                                grid_col_num <- sample_num
+                        }
+                        grid_size <- sqrt(225/(grid_row_num * grid_col_num))
+                        grid_width <- grid_size * grid_col_num
+                        grid_height <- grid_size * grid_row_num
+                        cluster_grid_plot <- cluster_gridPlot(clusters)
+                        ggsave(filename = paste(baseName, x, "clusterData_grid_plot.pdf", 
+                                                sep = "_"), cluster_grid_plot, width = grid_width, 
+                               height = grid_height)
+                }
+                
+                suppressWarnings(add_col_to_fcs(data = clusters, rawFCSdir = rawFCSdir, 
+                                                analyzedFCSdir = paste(baseName, x, "analyzedFCS", sep = "_"), 
+                                                transformed_col = trans_col_names, cluster_col = c("cluster")))    
+        }
+        
+        
     } else {
         suppressWarnings(add_col_to_fcs(data = transformed, rawFCSdir = rawFCSdir, 
             analyzedFCSdir = "analyzedFCS", transformed_col = trans_col_names, 

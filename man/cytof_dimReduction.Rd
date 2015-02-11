@@ -4,18 +4,13 @@
 \alias{cytof_dimReduction}
 \title{Dimension reduction of CyTof expression data}
 \usage{
-cytof_dimReduction(data, method = "tsne", lle_k = 12, lle_m = 2,
-  distMethod = "euclidean", isomap_k = 5, isomap_ndim = NULL,
-  isomapFragmentOK = TRUE)
+cytof_dimReduction(data, method = "tsne", distMethod = "euclidean",
+  isomap_k = 5, isomap_ndim = NULL, isomapFragmentOK = TRUE)
 }
 \arguments{
 \item{data}{An expression data matrix}
 
-\item{method}{Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca}, \code{lle} or \code{tsne}}
-
-\item{lle_k}{Number of neighbours, parameter for \code{lle} method}
-
-\item{lle_m}{Intrinsic dimension of the data, parameter for \code{lle} method}
+\item{method}{Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca} or \code{tsne}}
 
 \item{distMethod}{Method for distance calcualtion}
 
@@ -30,7 +25,7 @@ a matrix of the dimension reducted data, with colnames and rownames(if have, sam
 }
 \description{
 Apply dimension reduction on the CyTof expression data,
-with method \code{isomap}, \code{pca}, \code{lle}, or \code{tsne}.
+with method \code{isomap}, \code{pca}, or \code{tsne}.
 }
 \examples{
 data(iris)

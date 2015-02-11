@@ -7,7 +7,7 @@
 #' @return a list contains a matrix \code{peakdata} of the peak numbers with different kernel bandwidth, and a matrix \code{clusters} of the cluster results 
 #' @export
 #' @examples
-#' d<-system.file('extdata',package='sidap')
+#' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' xdata <- fcs_lgcl_merge(fcsFile, mergeMethod = 'fixed', fixedNum = 100)
 #' ydata <- cytof_dimReduction(xdata)

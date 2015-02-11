@@ -1,8 +1,8 @@
 Package: cytofkit
 Type: Package
 Title: cytofkit: an integrated analysis pipeline for mass cytometry data
-Version: 0.99.10
-Date: 2014-12-22
+Version: 0.99.11
+Date: 2015-2-11
 Authors@R: c( person("Jinmiao", "Chen", email =
     "chen_jinmiao@immunol.a-star.edu.sg", role = c("aut","cre")), person("Hao",
     "Chen", email = "chen_hao@immunol.a-star.edu.sg", role = "cre"))
@@ -27,7 +27,6 @@ Imports:
     flowCore,
     ggplot2,
     gplots,
-    lle,
     vegan,
     reshape,
     Biobase

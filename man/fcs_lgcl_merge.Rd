@@ -9,7 +9,7 @@ fcs_lgcl_merge(fcsFiles, comp = FALSE, verbose = FALSE, markers = NULL,
   mergeMethod = "ceil", fixedNum = 10000)
 }
 \arguments{
-\item{fcsFiles}{the input fcsFiles(usually more than 1 file)}
+\item{fcsFiles}{the input fcsFiles (usually more than 1 file)}
 
 \item{comp}{Boolean tells if do compensation}
 
@@ -17,7 +17,7 @@ fcs_lgcl_merge(fcsFiles, comp = FALSE, verbose = FALSE, markers = NULL,
 
 \item{markers}{Selected markers for analysis, either from names or from description}
 
-\item{lgclMethod}{Logicle transformation method, either \code{auto} or \code{fixed}}
+\item{lgclMethod}{Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}}
 
 \item{w}{Linearization width in asymptotic decades}
 
@@ -40,7 +40,7 @@ transformation and fixed logicle transformation are provided, then mutilple
 FCS files are merged using method \code{all}, \code{min}, \code{fixed} or \code{ceil}
 }
 \examples{
-d<-system.file('extdata',package='sidap')
+d<-system.file('extdata',package='cytofkit')
 fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 merged <- fcs_lgcl_merge(fcsFile)
 }

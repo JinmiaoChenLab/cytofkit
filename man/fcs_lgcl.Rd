@@ -16,7 +16,7 @@ fcs_lgcl(fcsFile, comp = FALSE, verbose = FALSE, markers = NULL,
 
 \item{markers}{Selected markers for analysis, either from names or from description}
 
-\item{lgclMethod}{Logicle transformation method, either \code{auto} or \code{fixed}}
+\item{lgclMethod}{Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}}
 
 \item{w}{Linearization width in asymptotic decades}
 
@@ -33,7 +33,7 @@ The logicle transformend expression data matrix of selected markers
 Read the FCS expresssion data and apply Logicle transformation
 }
 \examples{
-d<-system.file('extdata',package='sidap')
+d<-system.file('extdata',package='cytofkit')
 fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 transformed <- fcs_lgcl(fcsFile)
 }
