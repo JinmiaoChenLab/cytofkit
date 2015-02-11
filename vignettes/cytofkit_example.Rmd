@@ -1,37 +1,37 @@
 
 <!--
-  %\VignetteIndexEntry{SIDAP: run with an example}
+  %\VignetteIndexEntry{cytofkit: run with an example}
   %\VignetteEngine{knitr::knitr}
 -->
 
 
-SIDAP: run with an example
+cytofkit: run with an example
 ====================================================
 
 Load the Package
 --------------------
 
 ```{r, message=FALSE}
-require("sidap") 
+require("cytofkit") 
 ```
 
 Open the package help page to take a first look of the pakcage:
 ```{r, results='hide'}
-?sidap
+?cytofkit
 ```
 
 Options for using the package
 ------------------------------
 
-**sidap** package provides three ways to employ the workforce of this package:
+**cytofkit** package provides three ways to employ the workforce of this package:
 
 + GUI with function `cytof_tsne_densvm_GUI`
 + The core function `cytof_tsne_densvm`
 + Step-by-step 
 
-The most simple way to use the **sidap** package is to either use the GUI or the core function. Both provide almost all the options for this CyToF analysis pipeline. Start the GUI with a simple command `cytof_tsne_densvm_GUI()`, you will find all the options there on the control pannel, click the `?` buttion to get the explanation of each parameter. Launching one analysis simply like this: Choose the input fcs files from the directory where you store the data; select the markers from the auto-generated marker list; choose the directory to save the output; give a base name as a prefix of the names of result files; select a merging method if you have multiple files then you can submit you analysis. Depends on the size of your data, it will take some time to run the analysis. Once it's done, all the results will be generated under you result directory. The core function has these parameters in a command way, you can define these inputs as in the GUI in the arguments of the function `cytof_tsne_densvm`, check the help page `?cytof_tsne_densvm` to check the arguments you need to change.
+The most simple way to use the **cytofkit** package is to either use the GUI or the core function. Both provide almost all the options for this CyToF analysis pipeline. Start the GUI with a simple command `cytof_tsne_densvm_GUI()`, you will find all the options there on the control pannel, click the `?` buttion to get the explanation of each parameter. Launching one analysis simply like this: Choose the input fcs files from the directory where you store the data; select the markers from the auto-generated marker list; choose the directory to save the output; give a base name as a prefix of the names of result files; select a merging method if you have multiple files then you can submit you analysis. Depends on the size of your data, it will take some time to run the analysis. Once it's done, all the results will be generated under you result directory. The core function has these parameters in a command way, you can define these inputs as in the GUI in the arguments of the function `cytof_tsne_densvm`, check the help page `?cytof_tsne_densvm` to check the arguments you need to change.
 
-The GUI and the core function is all you need if you want to make use of the **sidap** package easily. For deep customizing the analysis, the **sidap** package also provides a step-by-step guide for the analysis pipeline.
+The GUI and the core function is all you need if you want to make use of the **cytofkit** package easily. For deep customizing the analysis, the **cytofkit** package also provides a step-by-step guide for the analysis pipeline.
 
 Step-by-step guide
 -----------------------
@@ -43,7 +43,7 @@ Due to the usually big size of the fcs data, we just use one small size file her
 This step is done using function `fcs_lgcl_merge`. The expression data of one or multiple fcs files is extracted, and be merged into one data matrix. Then a transformation method(usually is logicle transformation) is applied to the combined expression matrix. Row names with sample name and sample id are added to the matrix to label the cells.
 
 ```{r}
-dir <- system.file('extdata',package='sidap')
+dir <- system.file('extdata',package='cytofkit')
 files <- list.files(dir, pattern='.fcs$', full=TRUE)
 paraFile <- list.files(dir, pattern='.txt$', full=TRUE)
 parameters <- as.character(read.table(paraFile, sep = "\t", header = TRUE)[, 1])
@@ -52,7 +52,7 @@ parameters <- as.character(read.table(paraFile, sep = "\t", header = TRUE)[, 1])
 
 ### Dimension reduction
 
-Dimension reduction is implemented in function `cytof_dimReduction`, methods like `isomap`, `pca`, `lle`, and `tsne` are provided as options. `tsne` is the recommended and default method.
+Dimension reduction is implemented in function `cytof_dimReduction`, methods like `isomap`, `pca` and `tsne` are provided as options. `tsne` is the recommended and default method.
 
 ```{r, results='hide'}
 ?cytof_dimReduction   ## check the help page
