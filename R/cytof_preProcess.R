@@ -4,11 +4,11 @@
 #' transformation and fixed logicle transformation are provided, then mutilple 
 #' FCS files are merged using method \code{all}, \code{min}, \code{fixed} or \code{ceil}
 #' 
-#' @param fcsFiles the input fcsFiles(usually more than 1 file)
+#' @param fcsFiles the input fcsFiles (usually more than 1 file)
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param lgclMethod Logicle transformation method, either \code{auto} or \code{fixed}
+#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
 #' @param m Full width of the transformed display in asymptotic decades
@@ -18,7 +18,7 @@
 #' @return Merged FCS expression data matrix of selected markers with logicle transformation
 #' @export
 #' @examples
-#' d<-system.file('extdata',package='sidap')
+#' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' merged <- fcs_lgcl_merge(fcsFile)
 fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
@@ -67,17 +67,18 @@ fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param lgclMethod Logicle transformation method, either \code{auto} or \code{fixed}
+#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
 #' @param m Full width of the transformed display in asymptotic decades
 #' @param a Additional negative range to be included in the display in asymptotic decades
 #' @return The logicle transformend expression data matrix of selected markers
-#' @importFrom flowCore read.FCS compensate estimateLogicle logicleTransform parameters
+#' @importFrom flowCore read.FCS compensate estimateLogicle logicleTransform parameters transformList
 #' @importMethodsFrom flowCore transform
+#' @importClassesFrom flowCore transformList
 #' @export
 #' @examples
-#' d<-system.file('extdata',package='sidap')
+#' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' transformed <- fcs_lgcl(fcsFile)
 fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE, 
@@ -114,10 +115,9 @@ fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE,
         if (!(right_marker)) {
             stop("\n Selected marker(s) is not in the input fcs files \n please check your selected markers! \n")
         } else {
-            markers_pl <- paste("^", markers, "$", sep = "")
-            desc_id <- mapply(grep, markers_pl, MoreArgs = list(x = pd$desc, perl = TRUE))
-            name_id <- mapply(grep, markers_pl, MoreArgs = list(x = pd$name, perl = TRUE))
-            marker_id <- unique(c(unlist(desc_id), unlist(name_id)))
+            desc_id <- match(markers, pd$desc)
+            name_id <- match(markers, pd$name)
+            marker_id <- unique(desc_id, name_id)
         }
     } else {
         marker_id <- 1:ncol(fcs@exprs)
@@ -128,6 +128,10 @@ fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE,
         lgcl <- estimateLogicle(fcs, channels = colnames(exprs(fcs))[marker_id])
         lgcl_transformed <- transform(fcs, lgcl)
         exprs <- lgcl_transformed@exprs
+    } else if (lgclMethod == "sign_auto") {
+            lgcl <- sign_auto(fcs, channels = colnames(exprs(fcs))[marker_id])
+            lgcl_transformed <- transform(fcs, lgcl)
+            exprs <- lgcl_transformed@exprs
     } else if (lgclMethod == "fixed") {
         lgcl <- logicleTransform(w = w, t = t, m = m, a = a)
         exprs_raw <- fcs@exprs
@@ -142,3 +146,37 @@ fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE,
     row.names(exprs) <- paste(name, 1:nrow(exprs), sep = "_")
     return(exprs)
 } 
+
+
+sign_auto <- function (x, channels, ...) {
+        if (!is(x, "flowFrame")) 
+                stop("x has to be an object of class \"flowFrame\"")
+        if (missing(channels)) 
+                stop("Please specify the channels to be logicle transformed")
+        indx <- channels %in% colnames(x)
+        if (!all(indx)) 
+                stop(paste("Channels", channels[!indx], "were not found in x ", 
+                           sep = " "))
+        sign_autoLgcl <- function(data, m=4.5, q=0.05) {
+                t <- max(data)
+                ndata <- data[data<0]
+                w <- 0
+                a <- 0
+                if(length(ndata)) {
+                        r <- .Machine$double.eps + quantile(ndata, q)
+                        if (10^m * abs(r) <= t){
+                                w <-  0
+                        }else{
+                                w <- (m-log10(t/abs(r))) / 2
+                        }      
+                } 
+                cat(paste("sign_autoLgcl parameters:", " w=", w, " t=",t," m=",m," a=",a,"\n", sep = ""))
+                logicleTransform( w=w, t=t, m=m, a=a)
+        }
+        
+        rng <- range(x)
+        trans <- lapply(channels, function(p) {
+                sign_autoLgcl(x)
+        })
+        transformList(channels, trans)
+}
