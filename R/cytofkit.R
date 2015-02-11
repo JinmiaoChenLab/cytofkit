@@ -25,7 +25,7 @@
 #' 
 #' Cluster analysis using DensVM
 #' 
-#' Density-based clustering aided by support Vector Machine (\code{\link{DensVM_cluster}}) are used to automate 
+#' Density-based clustering aided by support Vector Machine (\code{\link{densVM_cluster}}) are used to automate 
 #' subset detection from the dimension-reducted map. By using DensVM, we are able to objectively assign every 
 #' cell to an appropriate cluster.
 #' 
@@ -148,7 +148,7 @@ cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL,
     ## cluster
     cluster_output <- NULL
     if (ifCluster)
-        cluster_output <- DensVM_cluster(transformed, exprs)
+        cluster_output <- densVM_cluster(transformed, exprs)
     
     ## write results
     analysis_results <- list(lgclMergedExprs = exprs, transData = transformed, 

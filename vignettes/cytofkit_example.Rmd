@@ -61,11 +61,11 @@ Dimension reduction is implemented in function `cytof_dimReduction`, methods lik
 
 ### Clustering
 
-A Density-based clustering aided by support Vector Machine (function `DensVM_cluster`) is provided to automate subset detection from the transformend map. Of course other clustering methods can be applied instead. 
+A Density-based clustering aided by support Vector Machine (function `densVM_cluster`) is provided to automate subset detection from the transformend map. Of course other clustering methods can be applied instead. 
 
 ```{r, results='hide'}
-?DensVM_cluster   ## check the help page
-#clusterRes <- DensVM_cluster(transformed, exprs)
+?densVM_cluster   ## check the help page
+#clusterRes <- densVM_cluster(transformed, exprs)
 ```
 
 ### Cluster annotation using scatter plot and heat map 

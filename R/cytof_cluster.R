@@ -11,8 +11,8 @@
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' xdata <- fcs_lgcl_merge(fcsFile, mergeMethod = 'fixed', fixedNum = 100)
 #' ydata <- cytof_dimReduction(xdata)
-#' clusters <- DensVM_cluster(ydata, xdata)
-DensVM_cluster <- function(ydata, xdata) {
+#' clusters <- densVM_cluster(ydata, xdata)
+densVM_cluster <- function(ydata, xdata) {
     
     y_range_x <- max(ydata[, 1]) - min(ydata[, 1])
     y_range_y <- max(ydata[, 2]) - min(ydata[, 2])
