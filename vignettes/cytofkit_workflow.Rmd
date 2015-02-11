@@ -117,10 +117,10 @@ We used Density-based clustering aided by support Vector Machine (DensVM) to aut
 
 ![schematic of DensVM](schematic_of_DensVM.PNG)
 
-Check the function `DensVM_cluster` for implementation of this step.
+Check the function `densVM_cluster` for implementation of this step.
 
 ```{r, results='hide'}
-?DensVM_cluster
+?densVM_cluster
 ```
 
 

@@ -8,7 +8,7 @@ cytof_write_results(analysis_results, vizMethods,
   baseName = "cytofkit_analysis", rawFCSdir = getwd(), resDir = getwd())
 }
 \arguments{
-\item{analysis_results}{result data from output of \code{\link{DensVM_cluster}}}
+\item{analysis_results}{result data from output of \code{\link{densVM_cluster}}}
 
 \item{vizMethods}{visualization methods for clustering results, including \code{tsne}, \code{pca} and \code{isomap}.}
 

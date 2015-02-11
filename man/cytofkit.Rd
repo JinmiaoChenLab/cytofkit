@@ -32,7 +32,7 @@ is suggested for dimensionality reduction although we also provide methods like 
 
 Cluster analysis using DensVM
 
-Density-based clustering aided by support Vector Machine (\code{\link{DensVM_cluster}}) are used to automate
+Density-based clustering aided by support Vector Machine (\code{\link{densVM_cluster}}) are used to automate
 subset detection from the dimension-reducted map. By using DensVM, we are able to objectively assign every
 cell to an appropriate cluster.
 

@@ -7,7 +7,7 @@
 peaksGamma_plot(peakdata)
 }
 \arguments{
-\item{peakdata}{a matrix of \code{peakdata} returned from \code{DensVM_cluster}}
+\item{peakdata}{a matrix of \code{peakdata} returned from \code{densVM_cluster}}
 }
 \value{
 a line graph of peak nums vs. increasing gamma

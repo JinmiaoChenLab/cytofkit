@@ -3,7 +3,7 @@
 #' Scatter dot plot and heatmap of the cluster results, and all intermediated files will be 
 #' generated and saved in the \code{resDir}
 #'
-#' @param analysis_results result data from output of \code{\link{DensVM_cluster}}
+#' @param analysis_results result data from output of \code{\link{densVM_cluster}}
 #' @param vizMethods visualization methods for clustering results, including \code{tsne}, \code{pca} and \code{isomap}.
 #' @param baseName a prefix that will be added to the names of result files.
 #' @param rawFCSdir the directory that contains fcs files to be analysed.
@@ -117,7 +117,7 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
 
 #' Plot varaition of peak nums with increasing gamma
 #' 
-#' @param peakdata a matrix of \code{peakdata} returned from \code{DensVM_cluster}
+#' @param peakdata a matrix of \code{peakdata} returned from \code{densVM_cluster}
 #' @return a line graph of peak nums vs. increasing gamma
 #' @export
 #' @examples
