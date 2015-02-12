@@ -148,7 +148,7 @@ cytof_tsne_densvm_GUI <- function() {
     }
     
     visualizationMethods_help <- function(){
-            tkmessageBox(title = "visualizationMethods", message = "The method used for visualizing the clustering results, including \"pca\", \"isomap\", \"tsne\".", 
+            tkmessageBox(title = "visualizationMethods", message = "The method used for visualizing the clustering results(s), multiple selections are allowed. Including \"pca\", \"isomap\", \"tsne\". \n\nWARNING: \"tsne\" is the default selection, \"isomap\" may take long time.", 
                          icon = "info", type = "ok")
     }
     
@@ -260,7 +260,7 @@ cytof_tsne_densvm_GUI <- function() {
     tkpack(tkradiobutton(merge_method_rbuts, text = mergeMethod_array[4], 
         variable = mergeMethod, value = mergeMethod_array[4], 
         command = reset_num2any), side = "left")
-    tkpack(tklabel(merge_method_rbuts, text = "        Fixed_num :"), 
+    tkpack(tklabel(merge_method_rbuts, text = "                  Fixed_num :"), 
         side = "left")
     tkpack(tkentry(merge_method_rbuts, textvariable = fixedNum, 
         width = 8), side = "right")
