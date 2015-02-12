@@ -65,19 +65,32 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
                 dev.off()
         }
         
+        ## data to add to fcsfiles
+        to_add <- clusters
+        trans_col_names <- setdiff(colnames(to_add), "cluster")
+        
         ## cluster scatter plot
         for(x in sort(vizMethods, decreasing = TRUE)){
                 if (x == "tsne"){
                         clusters <- analysis_results$clustersRes[[2]]
                 } else{
                         transformed <- cytof_dimReduction(exprs, method = x)
-                        clusters <- merge(transformed, subset(clusters, select = get("cluster")), by = "row.names")
+                        clusters <- merge(transformed[ ,c(1,2)], subset(clusters, select = get("cluster")), by = "row.names")
                         rownames(clusters) <- clusters[ ,1]
-                        clusters <- clusters[ ,-1]     
+                        clusters <- clusters[ ,-1]  
+                        ## update to_add data
+                        if(ncol(transformed) > 2){
+                                s_cols <- c(1,2,3)  ## maxi 3 columns will be saved for each method
+                        }else{
+                                s_cols <- c(1 : ncol(transformed))
+                        }
+                        to_add <- merge(to_add, transformed[ ,s_cols], by = "row.names")
+                        rownames(to_add) <- to_add[ ,1]
+                        to_add <- to_add[ ,-1]  
+                        trans_col_names <- setdiff(colnames(to_add), "cluster")
                 }
                 
                 ## visualize clusters and save resutls
-                trans_col_names <- colnames(transformed)
                 write.table(clusters, paste(baseName, x, "cluster.txt", 
                                             sep = "_"), sep = "\t", col.names = NA)
                 
@@ -100,14 +113,12 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
                         ggsave(filename = paste(baseName, x, "clusterData_grid_plot.pdf", 
                                                 sep = "_"), cluster_grid_plot, width = grid_width, 
                                height = grid_height)
-                }
-                
-                suppressWarnings(add_col_to_fcs(data = clusters, rawFCSdir = rawFCSdir, 
-                                                analyzedFCSdir = paste(baseName, x, "analyzedFCS", sep = "_"), 
-                                                transformed_col = trans_col_names, cluster_col = c("cluster")))    
+                }      
         }
         
-        
+        suppressWarnings(add_col_to_fcs(data = to_add, rawFCSdir = rawFCSdir, 
+                                        analyzedFCSdir = paste(baseName, "analyzedFCS", sep = "_"), 
+                                        transformed_col = trans_col_names, cluster_col = c("cluster")))     
     } else {
         suppressWarnings(add_col_to_fcs(data = transformed, rawFCSdir = rawFCSdir, 
             analyzedFCSdir = "analyzedFCS", transformed_col = trans_col_names, 
