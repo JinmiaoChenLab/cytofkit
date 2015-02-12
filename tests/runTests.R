@@ -1,1 +1,1 @@
-BiocGenerics:::testPackage("sidap")
+BiocGenerics:::testPackage("cytofkit")
