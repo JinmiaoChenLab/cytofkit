@@ -1,7 +1,7 @@
 Package: cytofkit
 Type: Package
 Title: cytofkit: an integrated analysis pipeline for mass cytometry data
-Version: 0.99.12
+Version: 0.99.13
 Date: 2015-2-12
 Authors@R: c( person("Jinmiao", "Chen", email =
     "chen_jinmiao@immunol.a-star.edu.sg", role = c("aut","cre")), person("Hao",
