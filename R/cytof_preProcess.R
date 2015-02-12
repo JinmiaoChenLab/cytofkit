@@ -117,7 +117,8 @@ fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE,
         } else {
             desc_id <- match(markers, pd$desc)
             name_id <- match(markers, pd$name)
-            marker_id <- unique(desc_id, name_id)
+            mids <- c(desc_id, name_id)
+            marker_id <- unique(mids[!is.na(mids)])
         }
     } else {
         marker_id <- 1:ncol(fcs@exprs)
