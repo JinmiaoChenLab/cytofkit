@@ -1,6 +1,6 @@
 #' Save the cytofkit analysis results
 #' 
-#' Scatter dot plot and heatmap of the cluster results, and all intermediated files will be 
+#' Scatter dot plot and heatmap of the cluster results, and all intermediate files will be 
 #' generated and saved in the \code{resDir}
 #'
 #' @param analysis_results result data from output of \code{\link{densVM_cluster}}
@@ -413,19 +413,20 @@ add_col_to_fcs <- function(data, rawFCSdir, analyzedFCSdir,
         transformed <- data[, transformed_col]
         row.has.na <- !(complete.cases(transformed))
         transformed <- transformed[!row.has.na, ]
-        R_N_transformed <- apply(transformed, 2, function(x) (x - 
-            min(x)) + 0.1)
+        N_transformed <- apply(transformed, 2, function(x) ((x-min(x))/(max(x)-min(x)))*4.4)
+        R_N_transformed <- apply(N_transformed,2,ilgcl)
+#       R_N_transformed <- apply(transformed, 2, function(x) (x-min(x)) + 0.1)
         row.names(R_N_transformed) <- row.names(transformed)
     }
     
     ## transform cluster column
     if (!is.null(cluster_col)) {
         if (row.has.na) {
-            clust_cor_1 <- data[!row.has.na, cluster_col]%%10
-            clust_cor_2 <- floor(data[!row.has.na, cluster_col]/10)
+                clust_cor_1 <- as.numeric(data[!row.has.na, cluster_col])%%10
+                clust_cor_2 <- floor(as.numeric(data[!row.has.na, cluster_col])/10)
         } else {
-            clust_cor_1 <- data[, cluster_col]%%10
-            clust_cor_2 <- floor(data[, cluster_col]/10)
+            clust_cor_1 <- as.numeric(data[, cluster_col])%%10
+            clust_cor_2 <- floor(as.numeric(data[, cluster_col])/10)
         }
         clust_cor_1 <- clust_cor_1 + runif(length(clust_cor_1), 
             0, 0.2)
@@ -513,7 +514,7 @@ add_col_to_fcs <- function(data, rawFCSdir, analyzedFCSdir,
             keyval[[paste("$P", channel_number, "N", sep = "")]] <- channel_name  # Name
             keyval[[paste("P", channel_number, "BS", sep = "")]] <- 0
             keyval[[paste("P", channel_number, "MS", sep = "")]] <- 0
-            keyval[[paste("P", channel_number, "DISPLAY", sep = "")]] <- "LIN"  # data display
+            #keyval[[paste("P", channel_number, "DISPLAY", sep = "")]] <- "LIN"  # data display
         }
         
         pData(params) <- pd

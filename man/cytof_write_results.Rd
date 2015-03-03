@@ -22,7 +22,7 @@ cytof_write_results(analysis_results, vizMethods,
 save all results in the \code{resDir}
 }
 \description{
-Scatter dot plot and heatmap of the cluster results, and all intermediated files will be
+Scatter dot plot and heatmap of the cluster results, and all intermediate files will be
 generated and saved in the \code{resDir}
 }
 \examples{
