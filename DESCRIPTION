@@ -1,12 +1,11 @@
 Package: cytofkit
 Type: Package
 Title: cytofkit: an integrated analysis pipeline for mass cytometry data
-Version: 0.99.15
+Version: 0.99.16
 Date: 2015-2-12
 Authors@R: c( person("Jinmiao", "Chen", email =
-    "chen_jinmiao@immunol.a-star.edu.sg", role = c("aut","cre")), person("Hao",
+    "chen_jinmiao@immunol.a-star.edu.sg", role = c("aut")), person("Hao",
     "Chen", email = "chen_hao@immunol.a-star.edu.sg", role = "cre"))
-Maintainer: Chen Hao <chen_hao@immunol.a-star.edu.sg>
 Description: An integrated mass cytometry data analysis pipeline that enables
     simultaneous illustration of cellular diversity and progression.
 License: GPL-3
