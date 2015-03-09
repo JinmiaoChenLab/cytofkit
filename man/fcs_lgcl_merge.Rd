@@ -5,8 +5,8 @@
 \title{merge the transformed expression data of FCS file(s) of selected markers}
 \usage{
 fcs_lgcl_merge(fcsFiles, comp = FALSE, verbose = FALSE, markers = NULL,
-  lgclMethod = "fixed", w = 0.1, t = 4000, m = 4.5, a = 0,
-  mergeMethod = "ceil", fixedNum = 10000)
+  lgclMethod = "fixed", scaleTo = NULL, w = 0.1, t = 4000, m = 4.5,
+  a = 0, q = 0.05, mergeMethod = "ceil", fixedNum = 10000)
 }
 \arguments{
 \item{fcsFiles}{the input fcsFiles (usually more than 1 file)}
@@ -19,6 +19,8 @@ fcs_lgcl_merge(fcsFiles, comp = FALSE, verbose = FALSE, markers = NULL,
 
 \item{lgclMethod}{Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}}
 
+\item{scaleTo}{scale the expression to same scale, default is NULL, should be a vector of two numbers if scale}
+
 \item{w}{Linearization width in asymptotic decades}
 
 \item{t}{Top of the scale data value}
@@ -26,6 +28,8 @@ fcs_lgcl_merge(fcsFiles, comp = FALSE, verbose = FALSE, markers = NULL,
 \item{m}{Full width of the transformed display in asymptotic decades}
 
 \item{a}{Additional negative range to be included in the display in asymptotic decades}
+
+\item{q}{quantile of negative values removed for auto w estimation, default is 0.05}
 
 \item{mergeMethod}{merge method for mutiple FCS expression data, default is all}
 
