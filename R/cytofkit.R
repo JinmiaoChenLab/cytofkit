@@ -88,6 +88,8 @@ NULL
 #' fixedNum) from each fcs file and combined for analysis.
 #' @param fixedNum up to fixedNum of cells from each fcs file are used for analysis.
 #' @param lgclMethod Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.
+#' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
+#' @param q quantile of negative values removed for auto w estimation, default is 0.05
 #' @param para the vector of selected makers. This can be provided in the \code{paraFile}.
 #' @param paraFile a text file that specifies the list of makers to be used for analysis.
 #' @param ifTransform a boolean to decide if dimensionality reduction will be performed. Default is TRUE.
@@ -110,7 +112,7 @@ NULL
 cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL, 
     resDir = getwd(), baseName = "cytofkit_analysis", para = NULL, 
     paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE, 
-    lgclMethod = "fixed", mergeMethod = "ceil", fixedNum = 10000, 
+    lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil", fixedNum = 10000, 
     ifTransform = TRUE, transformMethod = "tsne", ifCluster = TRUE,
     visualizationMethods = "tsne", writeResults = TRUE, ...) {
     
@@ -137,8 +139,8 @@ cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL,
     ## get transformed, combined, marker-filtered exprs data
     para <- sort(para)
     exprs <- fcs_lgcl_merge(fcsFile, comp = FALSE, verbose = FALSE, 
-        markers = para, lgclMethod = lgclMethod, mergeMethod = mergeMethod, 
-        fixedNum = fixedNum, ...)
+        markers = para, lgclMethod = lgclMethod, scaleTo = scaleTo, q = q,
+        mergeMethod = mergeMethod, fixedNum = fixedNum)
     
     ## dimension reduction
     transformed <- NULL

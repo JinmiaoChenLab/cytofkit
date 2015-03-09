@@ -7,9 +7,10 @@
 cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
   baseName = "cytofkit_analysis", para = NULL,
   paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE,
-  lgclMethod = "fixed", mergeMethod = "ceil", fixedNum = 10000,
-  ifTransform = TRUE, transformMethod = "tsne", ifCluster = TRUE,
-  visualizationMethods = "tsne", writeResults = TRUE, ...)
+  lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil",
+  fixedNum = 10000, ifTransform = TRUE, transformMethod = "tsne",
+  ifCluster = TRUE, visualizationMethods = "tsne", writeResults = TRUE,
+  ...)
 }
 \arguments{
 \item{rawFCSdir}{the directory that contains fcs files to be analysed.}
@@ -29,6 +30,10 @@ cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
 \item{verbose}{Boolean.}
 
 \item{lgclMethod}{Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.}
+
+\item{scaleTo}{scale the expression to same scale, default is NULL, should be a vector of two numbers if scale}
+
+\item{q}{quantile of negative values removed for auto w estimation, default is 0.05}
 
 \item{mergeMethod}{when multiple fcs files are selected, cells can be combined using
 one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}.
