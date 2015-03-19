@@ -70,6 +70,7 @@ cytof_tsne_densvm_GUI <- function() {
                                       caption = "Select FCS files", multi = TRUE, 
                                       filters = matrix(c("{fcs files}", "{.fcs}"), 1, 2), index = 1)
             if (length(fnames) >= 1) {
+                    fnames <- fnames[!(grepl(paste0(.Platform$file.sep, ".fcs$"), fnames))]  # remove empty .fcs files
                     tclvalue(fcsFile) <- paste(fnames, collapse = "}{")
             }
     }
