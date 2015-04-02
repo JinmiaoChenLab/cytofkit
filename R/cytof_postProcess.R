@@ -296,8 +296,8 @@ clust_mean_heatmap <- function(clust_mean, baseName = "Cluster_mean", scaleMetho
     cex_row_label <- (9 - ceiling(nrow(clust_mean)/10))/10
     cex_col_label <- (9 - ceiling(ncol(clust_mean)/10))/10
     
-    heatmap.2(as.matrix(clust_mean), col = bluered, trace = scaleMethod, 
-        symbreaks = FALSE, scale = "none", cexRow = cex_row_label, 
+    heatmap.2(as.matrix(clust_mean), col = bluered, trace = "none", 
+        symbreaks = FALSE, scale = scaleMethod, cexRow = cex_row_label, 
         cexCol = cex_col_label, srtCol = 30, symkey = FALSE, 
         main = paste(baseName, "\n clusterMean heatmap", sep = " "))
 }
