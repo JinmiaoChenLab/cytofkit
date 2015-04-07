@@ -413,9 +413,9 @@ add_col_to_fcs <- function(data, rawFCSdir, analyzedFCSdir,
         transformed <- data[, transformed_col]
         row.has.na <- !(complete.cases(transformed))
         transformed <- transformed[!row.has.na, ]
-        N_transformed <- apply(transformed, 2, function(x) ((x-min(x))/(max(x)-min(x)))*4.4)
-        R_N_transformed <- apply(N_transformed,2,ilgcl)
-#       R_N_transformed <- apply(transformed, 2, function(x) (x-min(x)) + 0.1)
+#         N_transformed <- apply(transformed, 2, function(x) ((x-min(x))/(max(x)-min(x)))*4.4)
+#         R_N_transformed <- apply(N_transformed,2,ilgcl)
+        R_N_transformed <- apply(transformed, 2, function(x) (x-min(x)) + 0.1)
         row.names(R_N_transformed) <- row.names(transformed)
     }
     
@@ -514,7 +514,7 @@ add_col_to_fcs <- function(data, rawFCSdir, analyzedFCSdir,
             keyval[[paste("$P", channel_number, "N", sep = "")]] <- channel_name  # Name
             keyval[[paste("P", channel_number, "BS", sep = "")]] <- 0
             keyval[[paste("P", channel_number, "MS", sep = "")]] <- 0
-            #keyval[[paste("P", channel_number, "DISPLAY", sep = "")]] <- "LIN"  # data display
+            keyval[[paste("P", channel_number, "DISPLAY", sep = "")]] <- "LIN"  # data display
         }
         
         pData(params) <- pd
