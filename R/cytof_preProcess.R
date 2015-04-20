@@ -8,7 +8,7 @@
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
+#' @param transformationMethod transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data
 #' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
@@ -24,11 +24,11 @@
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' merged <- fcs_lgcl_merge(fcsFile)
 fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
-    markers = NULL, lgclMethod = "fixed", scaleTo = NULL, w = 0.1, t = 4000, 
+    markers = NULL, transformationMethod = "arcsin", scaleTo = NULL, w = 0.1, t = 4000, 
     m = 4.5, a = 0, q = 0.05, mergeMethod = "ceil", fixedNum = 10000) {
     
     exprsL <- mapply(fcs_lgcl, fcsFiles, MoreArgs = list(comp = comp, 
-        verbose = verbose, markers = markers, lgclMethod = lgclMethod, 
+        verbose = verbose, markers = markers, transformationMethod = transformationMethod, 
         scaleTo = scaleTo, w = w, t = t, m = m, a = a, q = q), SIMPLIFY = FALSE)
     
     if (mergeMethod == "all") {
@@ -67,7 +67,7 @@ fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
+#' @param transformationMethod transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data
 #' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
@@ -84,7 +84,7 @@ fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
 #' transformed <- fcs_lgcl(fcsFile)
 fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE, 
-                     markers = NULL, lgclMethod = "fixed", scaleTo = NULL,
+                     markers = NULL, transformationMethod = "arcsin", scaleTo = NULL,
                      w = 0.1, t = 4000, m = 4.5, a = 0, q = 0.05) {
         
         ## load FCS data
@@ -127,18 +127,26 @@ fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE,
         }
         
         ## logicle transformation
-        if (lgclMethod == "auto") {
+        if (transformationMethod == "auto") {
                 lgcl <- estimateLogicle(fcs, channels = colnames(exprs(fcs))[marker_id])
                 lgcl_transformed <- transform(fcs, lgcl)
                 exprs <- lgcl_transformed@exprs
-        } else if (lgclMethod == "sign_auto") {
+        } else if (transformationMethod == "sign_auto") {
                 lgcl <- sign_auto(fcs, channels = colnames(fcs@exprs)[marker_id])
                 lgcl_transformed <- transform(fcs, lgcl)
                 exprs <- lgcl_transformed@exprs
-        } else if (lgclMethod == "fixed") {
+        } else if (transformationMethod == "fixed") {
                 lgcl <- logicleTransform(w = w, t = t, m = m, a = a)
                 exprs_raw <- fcs@exprs
                 exprs <- apply(exprs_raw, 2, lgcl)
+        } else if (transformationMethod == "arcsin") {
+                a <- 1
+                b <- 1
+                c <- 0
+                exprs <- fcs@exprs
+                for(m in colnames(exprs)[marker_id]){
+                        exprs[,m] <- asinh(a + b * exprs[,m]) + c
+                }
         }
         
         ## scale the range of data

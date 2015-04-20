@@ -7,10 +7,10 @@
 cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
   baseName = "cytofkit_analysis", para = NULL,
   paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE,
-  lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil",
-  fixedNum = 10000, ifTransform = TRUE, transformMethod = "tsne",
-  ifCluster = TRUE, visualizationMethods = "tsne", writeResults = TRUE,
-  ...)
+  transformationMethod = "arcsin", scaleTo = NULL, q = 0.05,
+  mergeMethod = "ceil", fixedNum = 10000, ifTransform = TRUE,
+  dimReductionMethod = "tsne", ifCluster = TRUE,
+  visualizationMethods = "tsne", writeResults = TRUE, ...)
 }
 \arguments{
 \item{rawFCSdir}{the directory that contains fcs files to be analysed.}
@@ -29,7 +29,7 @@ cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
 
 \item{verbose}{Boolean.}
 
-\item{lgclMethod}{Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.}
+\item{transformationMethod}{transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data.}
 
 \item{scaleTo}{scale the expression to same scale, default is NULL, should be a vector of two numbers if scale}
 
@@ -48,7 +48,7 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{ifTransform}{a boolean to decide if dimensionality reduction will be performed. Default is TRUE.}
 
-\item{transformMethod}{the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.}
+\item{dimReductionMethod}{the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.}
 
 \item{ifCluster}{a boolean to determine if cluster will be conducted.}
 

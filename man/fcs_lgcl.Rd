@@ -5,8 +5,8 @@
 \title{Logicle transformation of the FCS data}
 \usage{
 fcs_lgcl(fcsFile, comp = FALSE, verbose = FALSE, markers = NULL,
-  lgclMethod = "fixed", scaleTo = NULL, w = 0.1, t = 4000, m = 4.5,
-  a = 0, q = 0.05)
+  transformationMethod = "arcsin", scaleTo = NULL, w = 0.1, t = 4000,
+  m = 4.5, a = 0, q = 0.05)
 }
 \arguments{
 \item{fcsFile}{The name of the FCS file}
@@ -17,7 +17,7 @@ fcs_lgcl(fcsFile, comp = FALSE, verbose = FALSE, markers = NULL,
 
 \item{markers}{Selected markers for analysis, either from names or from description}
 
-\item{lgclMethod}{Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}}
+\item{transformationMethod}{transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data}
 
 \item{scaleTo}{scale the expression to same scale, default is NULL, should be a vector of two numbers if scale}
 

@@ -417,8 +417,8 @@ cytof_tsne_densvm_GUI <- function() {
     cytof_tsne_densvm(rawFCSdir = inputs[["rawFCSdir"]], fcsFile = inputs[["fcsFile"]], 
         resDir = inputs[["resDir"]], baseName = inputs[["baseName"]], 
         mergeMethod = inputs[["mergeMethod"]], fixedNum = inputs[["fixedNum"]], 
-        lgclMethod = inputs[["lgclMethod"]], para = inputs[["paraFile"]], 
-        ifTransform = inputs[["ifTransform"]], transformMethod = inputs[["transformMethod"]], 
+        transformationMethod = inputs[["lgclMethod"]], para = inputs[["paraFile"]], 
+        ifTransform = inputs[["ifTransform"]], dimReductionMethod = inputs[["transformMethod"]], 
         ifCluster = inputs[["ifCluster"]], visualizationMethods = inputs[["visualizationMethods"]])
 }
 
