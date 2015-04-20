@@ -121,7 +121,7 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
                                         transformed_col = trans_col_names, cluster_col = c("cluster")))     
     } else {
         suppressWarnings(add_col_to_fcs(data = transformed, rawFCSdir = rawFCSdir, 
-            analyzedFCSdir = "analyzedFCS", transformed_col = trans_col_names, 
+            analyzedFCSdir = "analyzedFCS", transformed_col = colnames(transformed), 
             cluster_col = NULL))
     }
 }
