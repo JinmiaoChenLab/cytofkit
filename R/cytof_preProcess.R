@@ -22,12 +22,12 @@
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' merged <- fcs_lgcl_merge(fcsFile)
-fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
+#' merged <- fcs_trans_merge(fcsFile)
+fcs_trans_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
     markers = NULL, transformationMethod = "arcsin", scaleTo = NULL, w = 0.1, t = 4000, 
     m = 4.5, a = 0, q = 0.05, mergeMethod = "ceil", fixedNum = 10000) {
     
-    exprsL <- mapply(fcs_lgcl, fcsFiles, MoreArgs = list(comp = comp, 
+    exprsL <- mapply(fcs_trans, fcsFiles, MoreArgs = list(comp = comp, 
         verbose = verbose, markers = markers, transformationMethod = transformationMethod, 
         scaleTo = scaleTo, w = w, t = t, m = m, a = a, q = q), SIMPLIFY = FALSE)
     
@@ -82,8 +82,8 @@ fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' transformed <- fcs_lgcl(fcsFile)
-fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE, 
+#' transformed <- fcs_trans(fcsFile)
+fcs_trans <- function(fcsFile, comp = FALSE, verbose = FALSE, 
                      markers = NULL, transformationMethod = "arcsin", scaleTo = NULL,
                      w = 0.1, t = 4000, m = 4.5, a = 0, q = 0.05) {
         

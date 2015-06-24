@@ -1,0 +1,43 @@
+
+bibentry(bibtype = "Manual",
+         title = "High-dimensional analysis of the murine myeloid cell system",
+         author = c(person("Burkhard", "Becher"),
+                    person("Andreas", "Schlitzer"),
+                    person("Jinmiao", "Chen"),
+                    person("Florian", "Mair"),
+                    person("Hermi R", "Sumatoh"),
+                    person("Karen Wei Weng", "Teng"),
+                    person("Donovan", "Low"),
+                    person("Christiane", "Ruedl"),
+                    person("Paola", "Riccardi-Castagnoli"),
+                    person("Michael", "Poidinger"),
+                    person("Melanie", "Greter"),
+                    person("Florent", "Ginhoux"),
+                    person("Evan W", "Newell")),
+         year = "2014",
+         journal = "Nature Immunology",
+         volume = "15",
+         page = "1181–1189",
+         doi = "10.1038/ni.3006",
+         url = "http://www.nature.com/ni/journal/v15/n12/full/ni.3006.html")
+         
+         
+bibentry(bibtype = "Manual",
+         title = "Mapping the Diversity of Follicular Helper T Cells in Human Blood and Tonsils Using High-Dimensional Mass Cytometry Analysis",
+         author = c(person("Michael T.", "Wong"),
+                    person("Jinmiao", "Chen"),
+                    person("Sriram", "Narayanan"),
+                    person("Wenyu", "Lin"),
+                    person("Rosslyn", "Anicete"),
+                    person("Henry Tan Kun", "Kiaang"),
+                    person("Maria Alicia Curotto De", "Lafaille"),
+                    person("Michael", "Poidinger"),
+                    person("Evan W", "Newell")),
+         year = "2015",
+         journal = "Cell Reports",
+         volume = "11",
+         page = "1822-1833",
+         doi = "10.1016/j.celrep.2015.05.022")
+         
+         
+         

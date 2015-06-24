@@ -59,7 +59,7 @@ fixedNum) from each fcs file and combined for analysis.}
 \item{...}{more arguments contral the logicle transformation}
 }
 \value{
-a list containing \code{lgclMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
+a list containing \code{transMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
 }
 \description{
 \code{cytof_tsne_densvm} provides a workflow for one or multiple CyToF data analysis,
