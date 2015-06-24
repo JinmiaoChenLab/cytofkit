@@ -27,8 +27,8 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
     rawFCSdir = getwd(), resDir = getwd()) {
     setwd(resDir)
     ## exprs
-    exprs <- analysis_results$lgclMergedExprs
-    write.table(exprs, paste(baseName, "_lgcl_merged_markerFiltered_exprsData.txt", 
+    exprs <- analysis_results$transMergedExprs
+    write.table(exprs, paste(baseName, "_transformed_merged_markerFiltered_exprsData.txt", 
         sep = ""), sep = "\t", col.names = NA)
     ## transformed
     transformed <- analysis_results$transData

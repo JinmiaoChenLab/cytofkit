@@ -9,7 +9,7 @@
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' xdata <- fcs_lgcl_merge(fcsFile, mergeMethod = 'fixed', fixedNum = 100)
+#' xdata <- fcs_trans_merge(fcsFile, mergeMethod = 'fixed', fixedNum = 100)
 #' ydata <- cytof_dimReduction(xdata)
 #' clusters <- densVM_cluster(ydata, xdata)
 densVM_cluster <- function(ydata, xdata) {
