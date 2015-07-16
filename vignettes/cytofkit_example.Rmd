@@ -40,14 +40,14 @@ Due to the usually big size of the fcs data, we just use one small size file her
 
 ### Load the data
 
-This step is done using function `fcs_trans_merge`. The expression data of one or multiple fcs files is extracted, and be merged into one data matrix. Then a transformation method(usually is logicle transformation) is applied to the combined expression matrix. Row names with sample name and sample id are added to the matrix to label the cells.
+This step is done using function `fcs_lgcl_merge`. The expression data of one or multiple fcs files is extracted, and be merged into one data matrix. Then a transformation method(usually is logicle transformation) is applied to the combined expression matrix. Row names with sample name and sample id are added to the matrix to label the cells.
 
 ```{r}
 dir <- system.file('extdata',package='cytofkit')
 files <- list.files(dir, pattern='.fcs$', full=TRUE)
 paraFile <- list.files(dir, pattern='.txt$', full=TRUE)
 parameters <- as.character(read.table(paraFile, sep = "\t", header = TRUE)[, 1])
-#exprs <- fcs_trans_merge(fcsFile = files, markers = parameters, transformationMethod = "arcsin", mergeMethod = "all")
+#exprs <- fcs_lgcl_merge(fcsFile = files, markers = parameters, lgclMethod = "fixed", mergeMethod = "all")
 ```
 
 ### Dimension reduction

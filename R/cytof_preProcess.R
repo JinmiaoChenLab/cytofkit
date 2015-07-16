@@ -1,6 +1,6 @@
 #' merge the transformed expression data of FCS file(s) of selected markers
 #' 
-#' Apply logicle transformation of selected markers of each FCS file, auto logicle
+#' Apply transformation of selected markers of each FCS file, arcsin, auto logicle
 #' transformation and fixed logicle transformation are provided, then mutilple 
 #' FCS files are merged using method \code{all}, \code{min}, \code{fixed} or \code{ceil}
 #' 
@@ -8,7 +8,7 @@
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param transformationMethod transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data
+#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
 #' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
@@ -22,13 +22,13 @@
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' merged <- fcs_trans_merge(fcsFile)
-fcs_trans_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
-    markers = NULL, transformationMethod = "arcsin", scaleTo = NULL, w = 0.1, t = 4000, 
+#' merged <- fcs_lgcl_merge(fcsFile)
+fcs_lgcl_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE, 
+    markers = NULL, lgclMethod = "fixed", scaleTo = NULL, w = 0.1, t = 4000, 
     m = 4.5, a = 0, q = 0.05, mergeMethod = "ceil", fixedNum = 10000) {
     
-    exprsL <- mapply(fcs_trans, fcsFiles, MoreArgs = list(comp = comp, 
-        verbose = verbose, markers = markers, transformationMethod = transformationMethod, 
+    exprsL <- mapply(fcs_lgcl, fcsFiles, MoreArgs = list(comp = comp, 
+        verbose = verbose, markers = markers, lgclMethod = lgclMethod, 
         scaleTo = scaleTo, w = w, t = t, m = m, a = a, q = q), SIMPLIFY = FALSE)
     
     if (mergeMethod == "all") {
@@ -59,15 +59,15 @@ fcs_trans_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 }
 
 
-#' Logicle transformation of the FCS data
+#' Transformation of the FCS data
 #' 
-#' Read the FCS expresssion data and apply Logicle transformation 
+#' Read the FCS expresssion data and apply the transformation 
 #' 
 #' @param fcsFile The name of the FCS file
 #' @param comp Boolean tells if do compensation
 #' @param verbose Boolean
 #' @param markers Selected markers for analysis, either from names or from description
-#' @param transformationMethod transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data
+#' @param lgclMethod Logicle transformation method, \code{auto}, \code{sign_auto} or \code{fixed}
 #' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
 #' @param w Linearization width in asymptotic decades
 #' @param t Top of the scale data value
@@ -82,9 +82,9 @@ fcs_trans_merge <- function(fcsFiles, comp = FALSE, verbose = FALSE,
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' transformed <- fcs_trans(fcsFile)
-fcs_trans <- function(fcsFile, comp = FALSE, verbose = FALSE, 
-                     markers = NULL, transformationMethod = "arcsin", scaleTo = NULL,
+#' transformed <- fcs_lgcl(fcsFile)
+fcs_lgcl <- function(fcsFile, comp = FALSE, verbose = FALSE, 
+                     markers = NULL, lgclMethod = "fixed", scaleTo = NULL,
                      w = 0.1, t = 4000, m = 4.5, a = 0, q = 0.05) {
         
         ## load FCS data
@@ -127,26 +127,18 @@ fcs_trans <- function(fcsFile, comp = FALSE, verbose = FALSE,
         }
         
         ## logicle transformation
-        if (transformationMethod == "auto") {
+        if (lgclMethod == "auto") {
                 lgcl <- estimateLogicle(fcs, channels = colnames(exprs(fcs))[marker_id])
                 lgcl_transformed <- transform(fcs, lgcl)
                 exprs <- lgcl_transformed@exprs
-        } else if (transformationMethod == "sign_auto") {
+        } else if (lgclMethod == "sign_auto") {
                 lgcl <- sign_auto(fcs, channels = colnames(fcs@exprs)[marker_id])
                 lgcl_transformed <- transform(fcs, lgcl)
                 exprs <- lgcl_transformed@exprs
-        } else if (transformationMethod == "fixed") {
+        } else if (lgclMethod == "fixed") {
                 lgcl <- logicleTransform(w = w, t = t, m = m, a = a)
                 exprs_raw <- fcs@exprs
                 exprs <- apply(exprs_raw, 2, lgcl)
-        } else if (transformationMethod == "arcsin") {
-                a <- 1
-                b <- 1
-                c <- 0
-                exprs <- fcs@exprs
-                for(m in colnames(exprs)[marker_id]){
-                        exprs[,m] <- asinh(a + b * exprs[,m]) + c
-                }
         }
         
         ## scale the range of data

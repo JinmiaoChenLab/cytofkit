@@ -7,10 +7,10 @@
 cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
   baseName = "cytofkit_analysis", para = NULL,
   paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE,
-  transformationMethod = "arcsin", scaleTo = NULL, q = 0.05,
-  mergeMethod = "ceil", fixedNum = 10000, ifTransform = TRUE,
-  dimReductionMethod = "tsne", ifCluster = TRUE,
-  visualizationMethods = "tsne", writeResults = TRUE, ...)
+  lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil",
+  fixedNum = 10000, ifTransform = TRUE, transformMethod = "tsne",
+  ifCluster = TRUE, visualizationMethods = "tsne", writeResults = TRUE,
+  ...)
 }
 \arguments{
 \item{rawFCSdir}{the directory that contains fcs files to be analysed.}
@@ -29,7 +29,7 @@ cytof_tsne_densvm(rawFCSdir = getwd(), fcsFile = NULL, resDir = getwd(),
 
 \item{verbose}{Boolean.}
 
-\item{transformationMethod}{transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data.}
+\item{lgclMethod}{Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.}
 
 \item{scaleTo}{scale the expression to same scale, default is NULL, should be a vector of two numbers if scale}
 
@@ -48,7 +48,7 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{ifTransform}{a boolean to decide if dimensionality reduction will be performed. Default is TRUE.}
 
-\item{dimReductionMethod}{the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.}
+\item{transformMethod}{the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.}
 
 \item{ifCluster}{a boolean to determine if cluster will be conducted.}
 
@@ -59,7 +59,7 @@ fixedNum) from each fcs file and combined for analysis.}
 \item{...}{more arguments contral the logicle transformation}
 }
 \value{
-a list containing \code{transMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
+a list containing \code{lgclMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
 }
 \description{
 \code{cytof_tsne_densvm} provides a workflow for one or multiple CyToF data analysis,

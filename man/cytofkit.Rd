@@ -19,7 +19,7 @@ easily done using the main function \code{\link{cytof_tsne_densvm}} or a GUI for
 
 Pre-processing
 
-Using function \code{\link{fcs_trans_merge}}, one or multiple FCS files were imported via the *read.FCS*
+Using function \code{\link{fcs_lgcl_merge}}, one or multiple FCS files were imported via the *read.FCS*
 function in the *flowCore* package. Then logicle transformation was applied to the expression value
 of selected markers of each FCS file. Auto logicle transformation and fixed logicle transformation
 are provided, then mutilple FCS files are merged using method \code{all}, \code{min}, \code{fixed}
