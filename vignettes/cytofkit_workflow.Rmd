@@ -53,8 +53,8 @@ cytofkit Analysis results
 
 All the analysis results will be saved under your `resDir` (result directory), which was explained below:
 
-+ __*baseName*\_transformed\_merged\_markerFiltered\_exprsData.txt__
-   It contains the expression data from FCS file(s) being logicle transformed by `transformationMethod`, merged by `mergeMethod`, and filtered with selected markers in `para` or `paraFile`.
++ __*baseName*\_lgcl\_merged\_markerFiltered\_exprsData.txt__
+   It contains the expression data from FCS file(s) being logicle transformed by `lgclMethod`, merged by `mergeMethod`, and filtered with selected markers in `para` or `paraFile`.
    
 + __*baseName*\_tsne.pdf__
   scatter plot of the *tsne* transformed results (dimension reduction results).
@@ -95,10 +95,10 @@ cytofkit analysis pipline
 
 ### Pre-processing
 
-.FCS files were imported via the *read.FCS* function in the *flowCore* package. Intensity values of marker expression were then logicle-transformed, and markers selected were extracted for downstream analysis. For multiple files, a parameter of fixedNum is provided to sample fixed number of cells from each fcs file for combined analysis. Check the function `fcs_trans_merge` for implementation of this step.
+.FCS files were imported via the *read.FCS* function in the *flowCore* package. Intensity values of marker expression were then logicle-transformed, and markers selected were extracted for downstream analysis. For multiple files, a parameter of fixedNum is provided to sample fixed number of cells from each fcs file for combined analysis. Check the function `fcs_lgcl_merge` for implementation of this step.
 
 ```{r, results='hide'}
-?fcs_trans_merge
+?fcs_lgcl_merge
 ```
 
 

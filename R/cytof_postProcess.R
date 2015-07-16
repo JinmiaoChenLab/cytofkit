@@ -27,8 +27,8 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
     rawFCSdir = getwd(), resDir = getwd()) {
     setwd(resDir)
     ## exprs
-    exprs <- analysis_results$transMergedExprs
-    write.table(exprs, paste(baseName, "_transformed_merged_markerFiltered_exprsData.txt", 
+    exprs <- analysis_results$lgclMergedExprs
+    write.table(exprs, paste(baseName, "_lgcl_merged_markerFiltered_exprsData.txt", 
         sep = ""), sep = "\t", col.names = NA)
     ## transformed
     transformed <- analysis_results$transData
@@ -121,7 +121,7 @@ cytof_write_results <- function(analysis_results, vizMethods, baseName = "cytofk
                                         transformed_col = trans_col_names, cluster_col = c("cluster")))     
     } else {
         suppressWarnings(add_col_to_fcs(data = transformed, rawFCSdir = rawFCSdir, 
-            analyzedFCSdir = "analyzedFCS", transformed_col = colnames(transformed), 
+            analyzedFCSdir = "analyzedFCS", transformed_col = trans_col_names, 
             cluster_col = NULL))
     }
 }

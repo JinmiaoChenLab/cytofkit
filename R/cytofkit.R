@@ -12,7 +12,7 @@
 #' 
 #' Pre-processing
 #' 
-#' Using function \code{\link{fcs_trans_merge}}, one or multiple FCS files were imported via the *read.FCS* 
+#' Using function \code{\link{fcs_lgcl_merge}}, one or multiple FCS files were imported via the *read.FCS* 
 #' function in the *flowCore* package. Then logicle transformation was applied to the expression value 
 #' of selected markers of each FCS file. Auto logicle transformation and fixed logicle transformation 
 #' are provided, then mutilple FCS files are merged using method \code{all}, \code{min}, \code{fixed} 
@@ -87,18 +87,18 @@ NULL
 #' \code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than 
 #' fixedNum) from each fcs file and combined for analysis.
 #' @param fixedNum up to fixedNum of cells from each fcs file are used for analysis.
-#' @param transformationMethod transformation method, three logicle transformation methods includes: \code{auto}, \code{sign_auto} or \code{fixed} for FCM data, and \code{arcsin} for CyTOF data.
+#' @param lgclMethod Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.
 #' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
 #' @param q quantile of negative values removed for auto w estimation, default is 0.05
 #' @param para the vector of selected makers. This can be provided in the \code{paraFile}.
 #' @param paraFile a text file that specifies the list of makers to be used for analysis.
 #' @param ifTransform a boolean to decide if dimensionality reduction will be performed. Default is TRUE.
-#' @param dimReductionMethod the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.
+#' @param transformMethod the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.
 #' @param ifCluster a boolean to determine if cluster will be conducted.
 #' @param visualizationMethods the method(s) used for visualize the cluster data, multiple selection are accepted, including \code{tsne}, \code{pca} and \code{isomap}
 #' @param writeResults if save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
 #' @param ... more arguments contral the logicle transformation
-#' @return a list containing \code{transMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
+#' @return a list containing \code{lgclMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
 #' @author Chen Jinmiao 
 #' @references \url{http://signbioinfo.github.io/cytofkit/}
 #' @seealso \code{\link{cytofkit}}, \code{\link{cytof_tsne_densvm_GUI}}
@@ -112,8 +112,8 @@ NULL
 cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL, 
     resDir = getwd(), baseName = "cytofkit_analysis", para = NULL, 
     paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE, 
-    transformationMethod = "arcsin", scaleTo = NULL, q = 0.05, mergeMethod = "ceil", fixedNum = 10000, 
-    ifTransform = TRUE, dimReductionMethod = "tsne", ifCluster = TRUE,
+    lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil", fixedNum = 10000, 
+    ifTransform = TRUE, transformMethod = "tsne", ifCluster = TRUE,
     visualizationMethods = "tsne", writeResults = TRUE, ...) {
     
     ## para checking
@@ -129,39 +129,38 @@ cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL,
             stop("no parameter selected!")
     if(!(mergeMethod %in% c("ceil", "all", "min", "fixed")))
             stop("wrong mergeMethod selected!")  
-    if (!(transformationMethod %in% c("auto", "sign_auto", "fixed")))
-            stop("wrong transformationMethod selected!")
-    if(!(dimReductionMethod %in% c("tsne", "pca", "isomap")))
-            stop("wrong dimReductionMethod selected!")
+    if (!(lgclMethod %in% c("auto", "sign_auto", "fixed")))
+            stop("wrong lgclMethod selected!")
+    if(!(transformMethod %in% c("tsne", "pca", "isomap")))
+            stop("wrong transformMethod selected!")
     if(!(all(visualizationMethods %in% c("tsne", "pca", "isomap"))))
             stop("wrong visualizationMethods selected")
     
     ## get transformed, combined, marker-filtered exprs data
     para <- sort(para)
-    exprs <- fcs_trans_merge(fcsFile, comp = FALSE, verbose = FALSE, 
-        markers = para, transformationMethod = transformationMethod, scaleTo = scaleTo, 
-        q = q, mergeMethod = mergeMethod, fixedNum = fixedNum)
+    exprs <- fcs_lgcl_merge(fcsFile, comp = FALSE, verbose = FALSE, 
+        markers = para, lgclMethod = lgclMethod, scaleTo = scaleTo, q = q,
+        mergeMethod = mergeMethod, fixedNum = fixedNum)
     
     ## dimension reduction
     transformed <- NULL
     if (ifTransform){
-            transformed <- cytof_dimReduction(exprs, method = dimReductionMethod)      
+        transformed <- cytof_dimReduction(exprs, method = transformMethod)     
     }else{
-            transformed <- NULL
+        transformed <- NULL
     }
-        
+    
     
     ## cluster
     cluster_output <- NULL
     if (ifCluster){
-            cluster_output <- densVM_cluster(transformed, exprs)
+        cluster_output <- densVM_cluster(transformed, exprs)
     }else{
-            cluster_output <- NULL
+        cluster_output <- NULL
     }
-        
     
     ## write results
-    analysis_results <- list(transMergedExprs = exprs, transData = transformed, 
+    analysis_results <- list(lgclMergedExprs = exprs, transData = transformed, 
         clustersRes = cluster_output)
     if (writeResults == TRUE) {
         cytof_write_results(analysis_results, visualizationMethods, baseName, rawFCSdir, resDir)
