@@ -11,9 +11,31 @@ citEntry(entry="article",
                               as.person("Michael Poidinger"),
                               as.person("Melanie Greter"),
                               as.person("Florent Ginhoux"),
-                              as.person("Evan W Newell")),
-         year = "2014",
+                              as.person("Evan W Newell") ),
+         year = 2014,
          volume = "15",
+         pages = "1181--1189",
          journal = "Nature Immunology",
-         textVersion = paste("Becher B, Schlitzer A and Chen J et al (2014):", 
-         "High-dimensional analysis of the murine myeloid cell system.", "Nature Immunology 14, 1181–1189" ) )
+         textVersion = 
+         paste("Becher B, Schlitzer A and Chen J et al (2014):", 
+               "High-dimensional analysis of the murine myeloid cell system.",
+                "Nature Immunology 14, 1181-1189" ) )
+                
+                
+citEntry(
+	entry="article",
+	title = "Mapping the Diversity of Follicular Helper T Cells in Human Blood and Tonsils Using High-Dimensional Mass Cytometry Analysis", 
+	author = personList( as.person("Michael T. Wong"), 
+	                     as.person("Jinmiao Chen"),
+                         as.person("Sriram Narayanan"),
+                         as.person("Wenyu Lin"),
+                         as.person("Rosslyn Anicete"),
+                         as.person("Henry Tan Kun Kiaang"),
+                         as.person("Maria Alicia Curotto De Lafaille"),
+                         as.person("Michael Poidinger"),
+                         as.person("Evan W. Newell") ),
+	year = "2015",
+	journal = "Cell Reports",
+	volume = "11",
+	pages = "1822--1833",
+	textVersion = "Wong M, Chen J, Narayanan S, Lin W, Anicete R, Kiaang H, Lafaille M, Poidinger M and Newell E (2015). Mapping the Diversity of Follicular Helper T Cells in Human Blood and Tonsils Using High-Dimensional Mass Cytometry Analysis. Cell Reports 11, 1822-1833")
