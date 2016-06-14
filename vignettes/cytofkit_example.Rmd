@@ -1,102 +1,287 @@
-
+---
+title: "**cytofkit**: Quick Start"
+output:
+  BiocStyle::html_document:
+    toc: true
+---
 <!--
-  %\VignetteIndexEntry{cytofkit: run with an example}
-  %\VignetteEngine{knitr::knitr}
+%% \VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{BiocCheck}
 -->
 
 
-cytofkit: run with an example
-====================================================
+# Install and Load the Package
 
-Load the Package
---------------------
+
+To install **cytofkit** package, start R and run the following codes on R console:
+
+```{r, eval=FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("cytofkit")
+```
+
+`Notes`: **cytofkit** GUI is dependent on XQuartz windowing system (X Windows) on Mac (OS X > 10.7). Install XQuartz from http://xquartz.macosforge.org.
+
+* Download the disk image (dmg) file for [XQuartz](https://dl.bintray.com/xquartz/downloads/XQuartz-2.7.9.dmg).
+* Double-clicking on the file to start the installation, you can do it safely by clicking through all the defaults.
+* After the installer runs, you'll have to log out and back on to your Mac OS X account.
+
+Load the Package:
 
 ```{r, message=FALSE}
-require("cytofkit") 
+library("cytofkit") 
 ```
 
-Open the package help page to take a first look of the pakcage:
-```{r, results='hide'}
-?cytofkit
+Read the package description:
+
+```{r, eval=FALSE}
+?cytofkit-package
 ```
 
-Options for using the package
-------------------------------
 
-**cytofkit** package provides three ways to employ the workforce of this package:
+# Options for Using **cytofkit** Package
 
-+ GUI with function `cytof_tsne_densvm_GUI`
-+ The core function `cytof_tsne_densvm`
-+ Step-by-step 
+**cytofkit** provides three ways to employ the workforce of this package:
 
-The most simple way to use the **cytofkit** package is to either use the GUI or the core function. Both provide almost all the options for this CyToF analysis pipeline. Start the GUI with a simple command `cytof_tsne_densvm_GUI()`, you will find all the options there on the control pannel, click the `?` buttion to get the explanation of each parameter. Launching one analysis simply like this: Choose the input fcs files from the directory where you store the data; select the markers from the auto-generated marker list; choose the directory to save the output; give a base name as a prefix of the names of result files; select a merging method if you have multiple files then you can submit you analysis. Depends on the size of your data, it will take some time to run the analysis. Once it's done, all the results will be generated under you result directory. The core function has these parameters in a command way, you can define these inputs as in the GUI in the arguments of the function `cytof_tsne_densvm`, check the help page `?cytof_tsne_densvm` to check the arguments you need to change.
+## Run with GUI 
 
-The GUI and the core function is all you need if you want to make use of the **cytofkit** package easily. For deep customizing the analysis, the **cytofkit** package also provides a step-by-step guide for the analysis pipeline.
+The easiest way to use **cytofkit** package is through the GUI. The GUI provides all main options of **cytofkit** on a visual interface. To launch the GUI, load the package and type the following command:
 
-Step-by-step guide
------------------------
+```{r, eval=FALSE}
+cytofkit_GUI()  
+```
 
-Due to the usually big size of the fcs data, we just use one small size file here as a demo, you can easily expand the analysis to multiple fcs files.
+The interface will appear like below, you can click the information button **!** to check the explanation for each entry and customize your own analysis.
 
-### Load the data
+<u>On Windows:</u>       
 
-This step is done using function `fcs_lgcl_merge`. The expression data of one or multiple fcs files is extracted, and be merged into one data matrix. Then a transformation method(usually is logicle transformation) is applied to the combined expression matrix. Row names with sample name and sample id are added to the matrix to label the cells.
+![cytofkit GUI](cytofkit_GUI_windows.png)
 
-```{r}
+<u>On Mac:</u>     
+
+![cytofkit GUI](cytofkit_GUI_mac.png)
+               
+Start your analysis as simply as following:   
+
+- Choose the input fcs files from the directory where you store FCS data; 
+- Select the markers from the auto-generated marker list; 
+- Choose the directory where to save your output; 
+- Give a project name as a prefix for the names of result files; 
+- Select a data merging method if you have multiple FCS files;
+- Select your clustering method(s), visualization method(s), progression estimation method(s)
+
+Then submit it, that's all. 
+
+Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of *.RData* is for loading the results into the shiny APP. Choose the *.RData* file on the shiny APP then submit it, your journey of exploring the reulsts starts.
+
+You can also manually launch the Shiny APP with command:
+
+```{r, eval=FALSE}
+cytofkitShinyAPP()
+```
+
+### Usage of Shiny APP
+
+<u>Loading .RData to ShinyAPP:</u>       
+
+![](load2shiny.png)
+
+<u>Scatter Plot:</u>       
+
+![](scatterPlot.png)
+
+
+<u>Change Parameters, run FlowSOM:</u>
+
+![](changePara.png)
+
+
+<u>Heatmap:</u>
+
+![](heatmap.png)
+
+
+<u>Progression Plot:</u>       
+
+![](progressionPlot.png)
+
+
+## Run with the Core Function 
+
+**Cytofkit** provides a core function `cytofkit()` to drive the analysis pipeline of mass cytometry data. Users only need to define several key parameters to make their analysis automatically. One simple example of running cytofkit using the core function is like this:
+
+```{r, eval=FALSE}
+set.seed(100)
 dir <- system.file('extdata',package='cytofkit')
-files <- list.files(dir, pattern='.fcs$', full=TRUE)
+file <- list.files(dir ,pattern='.fcs$', full=TRUE)
+parameters <- list.files(dir, pattern='.txt$', full=TRUE)
+res <- cytofkit(fcsFiles = file, 
+                markers = parameters, 
+                projectName = 'cytofkit_test',
+                transformMethod = "cytofAsinh", 
+                mergeMethod = "all",
+                dimReductionMethod = "tsne",
+                clusterMethods = c("Rphenograph", "ClusterX"),    ## accept multiple methods
+                visualizationMethods = c("tsne", "pca"),          ## accept multiple methods
+                progressionMethod = "isomap",
+                uniformClusterSize = 500,
+                resultDir = getwd(),
+                saveResults = TRUE, 
+                saveObject = TRUE, 
+                saveToFCS = TRUE)
+```
+
+You can customize the parameters for your own need, run `?cytofkit` to get information of all the parameters for `cytofkit`. As running with GUI, once the analysis is done, the results will be saved under `resultDir` automatically.
+      
+
+## Run with Commands (Step-by-Step) 
+
+You can make use of the functions exported from cytofkit to make your analysis more flexible and fit your own need.
+
+### Pre-processing
+
+```{r}
+## Loading the FCS data:  
+dir <- system.file('extdata',package='cytofkit')
+file <- list.files(dir ,pattern='.fcs$', full=TRUE)
 paraFile <- list.files(dir, pattern='.txt$', full=TRUE)
-parameters <- as.character(read.table(paraFile, sep = "\t", header = TRUE)[, 1])
-#exprs <- fcs_lgcl_merge(fcsFile = files, markers = parameters, lgclMethod = "fixed", mergeMethod = "all")
+parameters <- as.character(read.table(paraFile, header = TRUE)[,1])
+
+## File name
+file
+
+## parameters
+parameters
 ```
-
-### Dimension reduction
-
-Dimension reduction is implemented in function `cytof_dimReduction`, methods like `isomap`, `pca` and `tsne` are provided as options. `tsne` is the recommended and default method.
-
-```{r, results='hide'}
-?cytof_dimReduction   ## check the help page
-#transformed <- cytof_dimReduction(exprs, method = "tsne")
-```
-
-### Clustering
-
-A Density-based clustering aided by support Vector Machine (function `densVM_cluster`) is provided to automate subset detection from the transformend map. Of course other clustering methods can be applied instead. 
-
-```{r, results='hide'}
-?densVM_cluster   ## check the help page
-#clusterRes <- densVM_cluster(transformed, exprs)
-```
-
-### Cluster annotation using scatter plot and heat map 
-
-```{r, echo=FALSE}
-data <- list.files(dir, pattern='.RData$', full=TRUE)
-load(data)
-```
-
-#### Take a look at the cluster reuslts:
-```{r}
-clusters <- clusterRes[[2]]
-head(clusters)
-```
-
-#### Scatter plot 
-Scatter plot visualize the cell points with colour indicating their assigned clusters and point shape representing their belonging samples. Use `cluster_plot` to visulalize the cluster results:
-```{r}
-cluster_plot(clusters, title = "Demo cluster", point_size = 2)
-```
-
-If the input contains multiple fcs files, can use the `cluster_gridPlot` to visualize the cluster of different samples.
-
-#### Heatmap plot
-Heat map visualizing the mean expression of every marker in every cluster is generated with no scaling on the row or column direction with function `clust_mean_heatmap`. Hierarchical clustering is added using Euclidean distance and complete agglomeration method.
 
 ```{r}
-exprs_cluster <- data.frame(exprs, cluster = clusters[, 3])
-clust_statData <- clust_state(exprs_cluster, stat = "mean")
-clust_mean_heatmap(clust_statData[[1]], baseName = "Demo")
+## Extract the expression matrix with transformation
+data_transformed <- cytof_exprsExtract(fcsFile = file, markers = parameters, 
+                                       comp = FALSE, 
+                                       transformMethod = "cytofAsinh")
+## If analysing flow cytoetry data, you can set comp to TRUE or 
+## provide a transformation matrix to apply compensation
+
+## If you have multiple FCS files, expression can be extracted and combined
+combined_data_transformed <- cytof_exprsMerge(fcsFiles = file, comp=FALSE,
+                                              markers = parameters, 
+                                              transformMethod = "cytofAsinh",
+                                              mergeMethod = "all")
+## change mergeMethod to apply different combination strategy
+
+## Take a look at the extracted expression matrix
+head(data_transformed[ ,1:3])
 ```
 
-If the input contains multiple fcs files, can use the `clust_percentage_heatmap` to visualize the percentage of cells of each cluster in each sample.
+### Cell Subset Detection
+
+```{r, message=FALSE, }
+## use clustering algorithm to detect cell subsets
+## to speed up our test here, we only use 1000 cells
+data_transformed_1k <- data_transformed[1:1000, ]
+
+## run PhenoGraph
+cluster_PhenoGraph <- cytof_cluster(xdata = data_transformed_1k, method = "Rphenograph")
+
+## run ClusterX
+data_transformed_1k_tsne <- cytof_dimReduction(data=data_transformed_1k, method = "tsne")
+cluster_ClusterX <- cytof_cluster(ydata = data_transformed_1k_tsne,  method="ClusterX")
+```
+
+```{r, eval=FALSE}
+## run DensVM (takes long time, we skip here)
+cluster_DensVM <- cytof_cluster(xdata = data_transformed_1k, ydata = data_transformed_1k_tsne, method = "DensVM")
+```
+
+```{r, message=FALSE}
+## run FlowSOM with cluster number 15
+cluster_FlowSOM <- cytof_cluster(xdata = data_transformed_1k, method = "FlowSOM", FlowSOM_k = 12)
+
+## combine data
+data_1k_all <- cbind(data_transformed_1k, data_transformed_1k_tsne, 
+                     PhenoGraph = cluster_PhenoGraph, ClusterX=cluster_ClusterX, 
+                     FlowSOM=cluster_FlowSOM)
+data_1k_all <- as.data.frame(data_1k_all)
+```
+
+
+
+### Cell Subset Visualization and Interpretation 
+
+```{r, message=FALSE}
+## PhenoGraph plot on tsne
+cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", cluster="PhenoGraph", sampleLabel = FALSE)
+
+## PhenoGraph cluster heatmap
+PhenoGraph_cluster_median <- aggregate(. ~ PhenoGraph, data = data_1k_all, median)
+cytof_heatmap(PhenoGraph_cluster_median[, 2:37], baseName = "PhenoGraph Cluster Median")
+```
+
+```{r}
+## ClusterX plot on tsne
+cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", cluster="ClusterX", sampleLabel = FALSE)
+
+## ClusterX cluster heatmap
+ClusterX_cluster_median <- aggregate(. ~ ClusterX, data = data_1k_all, median)
+cytof_heatmap(ClusterX_cluster_median[, 2:37], baseName = "ClusterX Cluster Median")
+```
+
+
+```{r}
+## FlowSOM plot on tsne
+cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", cluster="FlowSOM", sampleLabel = FALSE)
+
+## FlowSOM cluster heatmap
+FlowSOM_cluster_median <- aggregate(. ~ FlowSOM, data = data_1k_all, median)
+cytof_heatmap(FlowSOM_cluster_median[, 2:37], baseName = "FlowSOM Cluster Median")
+```
+
+### Inference of Subset Progression
+
+```{r, message=FALSE}
+## Inference of PhenoGraph cluster relatedness
+PhenoGraph_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_PhenoGraph, method="isomap", uniformClusterSize = 47, seed = 4)
+p_d <- data.frame(PhenoGraph_progression$sampleData, PhenoGraph_progression$progressionData, 
+                cluster = PhenoGraph_progression$sampleCluster, check.names = FALSE)
+
+## cluster relatedness plot
+cytof_clusterPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", cluster="cluster", sampleLabel = FALSE)
+
+## marker expression profile
+markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
+cytof_progressionPlot(data=p_d, markers, orderCol="isomap_1", clusterCol = "cluster")
+```
+
+
+```{r, message=FALSE}
+## Inference of ClusterX cluster relatedness
+ClusterX_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_ClusterX, method="isomap", uniformClusterSize = 29, seed = 3)
+c_d <- data.frame(ClusterX_progression$sampleData, ClusterX_progression$progressionData, 
+                cluster=ClusterX_progression$sampleCluster, check.names = FALSE)
+
+## cluster relatedness plot
+cytof_clusterPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", cluster="cluster", sampleLabel = FALSE)
+
+## marker expression profile
+markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
+cytof_progressionPlot(data=c_d, markers, orderCol="isomap_1", clusterCol = "cluster")
+```
+
+
+### Post-processing
+
+```{r, eval=FALSE}
+## save analysis results to FCS file
+cytof_addToFCS(data_1k_all, rawFCSdir=dir, analyzedFCSdir="analysed_FCS", 
+               transformed_cols = c("tsne_1", "tsne_2"), 
+               cluster_cols = c("PhenoGraph", "ClusterX", "FlowSOM"))
+```
+
+ 
+# Session Information
+
+```{r}
+sessionInfo()
+```
+
 

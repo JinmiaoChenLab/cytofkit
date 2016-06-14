@@ -1,84 +1,97 @@
-#' cytofkit: an integrated analysis pipeline for mass cytometry data
+#' cytofkit: an integrated mass cytometry data analysis pipeline
 #' 
 #' This package is designed to facilitate the analysis workflow of mass cytometry data with 
-#' automatic subset identification and population boundary detection. Both command line and 
-#' a GUI are provided for runing the workflow easily.
+#' automatic subset identification and mapping of cellular progression. Both command line and 
+#' a GUI client are provided for executing the workflow easily.
 #' 
-#' This package integrates merge methods of multiple FCS files, dimension reduction (PCA, t-SNE and ISOMAP) 
-#' with density-based clustering (DensVM) for rapid subset detection. Subset-clustering scatter plot 
-#' and heat map will be generated for objective comparative analysis and statistical testing. This workflow can be 
-#' easily done using the main function \code{\link{cytof_tsne_densvm}} or a GUI for the main function 
-#' \code{\link{cytof_tsne_densvm_GUI}}.
+#' This package integrates merging methods of multiple FCS files, dimension reduction methods (PCA, t-SNE and ISOMAP) 
+#' and clustering methods (DensVM, ClusterX, and Rphenograph) for rapid subset detection. Analysis reuslts can be visualized 
+#' and explored interactively using a specially designed shiny web APP, see \code{\link{cytofkitShinyAPP}}. Moreover, the method isomap is provided to map the cellular progression. 
+#' This workflow can be easily executed with the main function \code{\link{cytofkit}} or through the GUI client \code{\link{cytofkit_GUI}}.
 #' 
 #' Pre-processing
 #' 
-#' Using function \code{\link{fcs_lgcl_merge}}, one or multiple FCS files were imported via the *read.FCS* 
-#' function in the *flowCore* package. Then logicle transformation was applied to the expression value 
-#' of selected markers of each FCS file. Auto logicle transformation and fixed logicle transformation 
-#' are provided, then mutilple FCS files are merged using method \code{all}, \code{min}, \code{fixed} 
-#' or \code{ceil}.
+#' Using function \code{\link{cytof_exprsMerge}}, one or multiple FCS files will be loaded via the *read.FCS* 
+#' function in the *flowCore* package. Then transformation was applied to the expression value 
+#' of selected markers of each FCS file. Transformation methods include \code{cytofAsinh}, \code{autoLgcl}, 
+#' \code{logicle} and \code{arcsinh}, where \code{cytofAsinh} is the default.Then mutilple FCS files are 
+#' merged using one of the merging methods \code{all}, \code{min}, \code{fixed} or \code{ceil}.
 #' 
 #' Dimensionality reduction
 #' 
 #' Using function \code{\link{cytof_dimReduction}}, t-Distributed Stochastic Neighbor Embedding (\code{tsne}) 
 #' is suggested for dimensionality reduction although we also provide methods like \code{isomap} and \code{pca}.
 #' 
-#' Cluster analysis using DensVM
+#' Cluster 
 #' 
-#' Density-based clustering aided by support Vector Machine (\code{\link{densVM_cluster}}) are used to automate 
-#' subset detection from the dimension-reducted map. By using DensVM, we are able to objectively assign every 
-#' cell to an appropriate cluster.
+#' Using function \code{\link{cytof_cluster}}, three cluster method are provided, \code{DensVM}, \code{ClusterX} 
+#' \code{Rphenograph} and \code{FlowSOM}. \code{DensVM}, \code{densityClustX} are performend on the dimension reduced data, while \code{Rphenograph}
+#' works directed on the high dimensional expression data. Method \code{FlowSOM} is integrated from FlowSOM package 
+#' (https://bioconductor.org/packages/release/bioc/html/FlowSOM.html). 
 #' 
 #' Post-processing
 #' 
-#' Cluster results are annotated by using scatter plot and heatmap. Scatter plot visualize the cell points 
-#' with colour indicating their assigned clusters and point shape representing their belonging samples
-#' (\code{\link{cluster_plot}} and \code{\link{cluster_gridPlot}}). Cell events are also grouped by clusters 
-#' and samples, and mean intensity values per cluster for every marker is calculated
-#' (\code{\link{clust_mean_heatmap}} and \code{\link{clust_percentage_heatmap}}). 
-#' Heat map visualizing the mean expression of every marker in every cluster is generated with no scaling on 
-#' the row or column direction. Hierarchical clustering was generated using Euclidean distance and complete 
-#' agglomeration method. We used the heat maps to interrogate marker expression to identify each cluster's 
-#' defining markers. All intermediate files and the plots can be saved using the function \code{\link{cytof_write_results}}.
+#'  - Using function \code{\link{cytof_clusterPlot}} to visualize the cluster results in a catter plot, in which dots represent cells, colours 
+#' indicate their assigned clusters and point shapes represent their belonging samples.
 #' 
+#'  - Using function \code{\link{cytof_heatmap}} to generate heat map to visualize the mean expression of every marker in every cluster. 
+#'  This heat maps is useful to interrogate marker expression to identify each cluster's defining markers. 
+#' 
+#'  - Using function \code{\link{cytof_progressionPlot}} to visualize the expression patter of selected markers against the estimated 
+#'  cellular progression order.
+#'  
+#'  - Using function \code{\link{cytof_addToFCS}} to add any dimension reduced data, cluster results, progression data into the original FCS files,
+#'  new FCS files will be saved for easy checking with other softwares like FlowJo. 
+#' 
+#' All the above post processing can be automatically implemented and saved using one function \code{\link{cytof_writeResults}}.
+#' 
+#' @author Hao Chen, Jinmiao Chen
 #' @examples
 #' 
 #' ## Run on GUI
-#' #cytof_tsne_densvm_GUI()  # remove the hash symbol to launch the GUI
+#' #cytofkit_GUI()  # remove the hash symbol to launch the GUI
 #' 
 #' ## Run on command
 #' dir <- system.file('extdata',package='cytofkit')
 #' file <- list.files(dir, pattern='.fcs$', full=TRUE)
 #' parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 #' ## remove the hash symbol to run the following command
-#' #cytof_tsne_densvm(fcsFile = file, paraFile = parameters, rawFCSdir = dir, baseName = 'test')
+#' #cytofkit(fcsFile = file, markers = parameters)   
 #' 
 #' ## Checking the vignettes for more details 
 #' if(interactive()) browseVignettes(package = 'cytofkit')
 #' 
-#' @seealso \code{\link{cytof_tsne_densvm}}, \code{\link{cytof_tsne_densvm_GUI}}
+#' @seealso \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}
 #' @references \url{http://signbioinfo.github.io/cytofkit/}
 #' @docType package
-#' @name cytofkit
+#' @name cytofkit-package
 #' 
 NULL
 
 
-#' CyTOF data analysis for subpopulation detection 
+
+#' cytofkit: an integrated mass cytometry data analysis pipeline
 #' 
-#' \code{cytof_tsne_densvm} provides a workflow for one or multiple CyToF data analysis, 
-#' including data preprocess with merging methods of multiple fcs file, logicle transformation, 
-#' dimension reduction with PCA, isomap or tsne(default), and a kernal-based local maxima 
-#' clustering combined with SVM for subpopulation detection. The intermediate results can be saved 
-#' into seperate files and the cluster results can be visualized in heatmaps and scatter plots.
+#' The main function to drive the cytofkit workflow.
 #' 
-#' @param rawFCSdir the directory that contains fcs files to be analysed.
-#' @param fcsFile a vector containing names of fcs files to be analyzed. One or multiple fcs files are allowed.
-#' @param resDir the directory where result files will be generated.
-#' @param baseName a prefix that will be added to the names of result files.
-#' @param comp Boolean tells if do compensation. This will be applied to flow cytometry data.
-#' @param verbose Boolean.
-#' @param mergeMethod when multiple fcs files are selected, cells can be combined using 
+#' \code{cytofkit} works as the main funciton to perform the analysis of one or multiple FCS files. 
+#' The workflow contains data merging from multiple FCS file, expression data transformation, 
+#' dimensionality reduction with \code{PCA}, \code{isomap} or \code{tsne} (default), clustering 
+#' analysis with methods includes \code{DensVM}, \code{ClusterX}, \code{Rphenograph)} and \code{FlowSOM} for 
+#' subpopulation detection, and estimation of cellular progression using \code{isomap}. The analysis 
+#' results can be visualized using scatter plot, heatmap plot or progression plot. Dimension reduced 
+#' data and cluster labels will be saved back to new copies of FCS files. By default the analysis 
+#' results will be automatically saved under \code{resultDir} for further annotation. Moreover An 
+#' interactive web application is provided for interactive exploration of the analysis results, 
+#' see \code{cytofkitShinyAPP}.
+#' 
+#' 
+#' @param fcsFiles It can be either the path where stores your FCS files or a vector of FCS file names. 
+#' @param markers It can be either a text file where contains the makers to be used for analysis or a vector of the marker names.
+#' @param projectName A prefix that will be added to the names of all result files.
+#' @param ifCompensation Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
+#' @param transformMethod Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.
+#' @param mergeMethod When multiple fcs files are selected, cells can be combined using 
 #' one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. 
 #' The default option is \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled 
 #' without replacement from each fcs file and combined for analysis.
@@ -86,85 +99,222 @@ NULL
 #' \code{min}: The minimum number of cells among all the selected fcs files are sampled from each fcs file and combined for analysis. 
 #' \code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than 
 #' fixedNum) from each fcs file and combined for analysis.
-#' @param fixedNum up to fixedNum of cells from each fcs file are used for analysis.
-#' @param lgclMethod Logicle transformation method, either \code{auto}, \code{sign_auto} or \code{fixed}.
-#' @param scaleTo scale the expression to same scale, default is NULL, should be a vector of two numbers if scale
-#' @param q quantile of negative values removed for auto w estimation, default is 0.05
-#' @param para the vector of selected makers. This can be provided in the \code{paraFile}.
-#' @param paraFile a text file that specifies the list of makers to be used for analysis.
-#' @param ifTransform a boolean to decide if dimensionality reduction will be performed. Default is TRUE.
-#' @param transformMethod the method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.
-#' @param ifCluster a boolean to determine if cluster will be conducted.
-#' @param visualizationMethods the method(s) used for visualize the cluster data, multiple selection are accepted, including \code{tsne}, \code{pca} and \code{isomap}
-#' @param writeResults if save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
-#' @param ... more arguments contral the logicle transformation
-#' @return a list containing \code{lgclMergedExprs}, \code{transData} and \code{clustersRes}. If choose 'writeResults = TRUE', results will be saved into files under \code{resDir}
-#' @author Chen Jinmiao 
+#' @param fixedNum The fixed number of cells to be extracted from each FCS file.
+#' @param dimReductionMethod The method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.
+#' @param clusterMethods The clustering method(s) used for subpopulation detection, including \code{DensVM}, \code{ClusterX}, \code{Rphenograph} and \code{FlowSOM}. Multiple selection are accepted.
+#' @param visualizationMethods The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selection are accepted.
+#' @param progressionMethod Use the first ordination score of \code{isomap} to estimated the preogression order of cells, choose \code{NULL} to ignore.
+#' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
+#' @param uniformClusterSize The uniform size of each cluster.
+#' @param resultDir The directory where result files will be generated.
+#' @param saveResults If save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
+#' @param saveObject Save the resutls into RData objects for loading back to R for further analysis
+#' @param saveToFCS Save the results back to the FCS files, new FCS files will be generated.
+#' @param ... Other arguments passed to \code{cytof_exprsExtract}
+#' 
+#' @return a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes} and \code{allExpressionData}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
+#' @author Hao Chen, Jinmiao Chen
 #' @references \url{http://signbioinfo.github.io/cytofkit/}
-#' @seealso \code{\link{cytofkit}}, \code{\link{cytof_tsne_densvm_GUI}}
+#' @seealso \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}, \code{\link{cytofkitShinyAPP}}
+#' @useDynLib cytofkit
 #' @export
 #' @examples
 #' dir <- system.file('extdata',package='cytofkit')
 #' file <- list.files(dir, pattern='.fcs$', full=TRUE)
 #' parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 #' ## remove the hash symbol to run the following command
-#' #cytof_tsne_densvm(fcsFile = file, paraFile = parameters, rawFCSdir = dir, baseName = 'test')   
-cytof_tsne_densvm <- function(rawFCSdir = getwd(), fcsFile = NULL, 
-    resDir = getwd(), baseName = "cytofkit_analysis", para = NULL, 
-    paraFile = "./parameter.txt", comp = FALSE, verbose = FALSE, 
-    lgclMethod = "fixed", scaleTo = NULL, q = 0.05, mergeMethod = "ceil", fixedNum = 10000, 
-    ifTransform = TRUE, transformMethod = "tsne", ifCluster = TRUE,
-    visualizationMethods = "tsne", writeResults = TRUE, ...) {
+#' #cytofkit(fcsFile = file, markers = parameters)   
+cytofkit <- function(fcsFiles = getwd(), 
+                     markers = "parameter.txt", 
+                     projectName = "cytofkit", 
+                     ifCompensation = FALSE, 
+                     transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh"), 
+                     mergeMethod = c("ceil", "all", "min", "fixed"), 
+                     fixedNum = 10000, 
+                     dimReductionMethod = c("tsne", "pca", "isomap"), 
+                     clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"), 
+                     visualizationMethods = c("tsne", "pca", "isomap", "NULL"), 
+                     progressionMethod = c("tsne", "pca", "isomap", "NULL"), 
+                     FlowSOM_k = 40,
+                     uniformClusterSize = 500,
+                     resultDir = getwd(), 
+                     saveResults = TRUE, 
+                     saveObject = TRUE, 
+                     saveToFCS = TRUE, ...) {
     
-    ## para checking
-    if (is.null(fcsFile))
-        fcsFile <- list.files(path = rawFCSdir, pattern = ".fcs$", 
+    ## arguments checking
+    if (is.null(fcsFiles) || is.na(fcsFiles) || is.nan(fcsFiles)){
+        stop("Wrong input fcsFiles!")
+    }else if (length(fcsFiles) == 1 && file.info(fcsFiles)$isdir) {
+        fcsFiles <- list.files(path = fcsFiles, pattern = ".fcs$", 
             full.names = TRUE)
-    if (is.null(fcsFile) || length(fcsFile) < 1)
-            stop("No FCS file selected!")
-    if (is.null(para))
-        para <- as.character(read.table(paraFile, sep = "\t", 
-            header = TRUE)[, 1])
-    if (is.null(para) || length(para) < 1)
-            stop("no parameter selected!")
-    if(!(mergeMethod %in% c("ceil", "all", "min", "fixed")))
-            stop("wrong mergeMethod selected!")  
-    if (!(lgclMethod %in% c("auto", "sign_auto", "fixed")))
-            stop("wrong lgclMethod selected!")
-    if(!(transformMethod %in% c("tsne", "pca", "isomap")))
-            stop("wrong transformMethod selected!")
-    if(!(all(visualizationMethods %in% c("tsne", "pca", "isomap"))))
-            stop("wrong visualizationMethods selected")
-    
-    ## get transformed, combined, marker-filtered exprs data
-    para <- sort(para)
-    exprs <- fcs_lgcl_merge(fcsFile, comp = FALSE, verbose = FALSE, 
-        markers = para, lgclMethod = lgclMethod, scaleTo = scaleTo, q = q,
-        mergeMethod = mergeMethod, fixedNum = fixedNum)
-    
-    ## dimension reduction
-    transformed <- NULL
-    if (ifTransform){
-        transformed <- cytof_dimReduction(exprs, method = transformMethod)     
+        rawFCSdir <- fcsFiles
     }else{
-        transformed <- NULL
+        if(dirname(fcsFiles[1]) == "."){
+            rawFCSdir <- getwd()
+        }else{
+            rawFCSdir <- dirname(fcsFiles[1])  
+        }
+    }
+    setwd(rawFCSdir)
+    if(length(fcsFiles) < 1)
+        stop("No FCS file found, please select your fcsFiles!")
+    if(!all(file.exists(fcsFiles)))
+        stop("Can not find file(s):", fcsFiles[which(!file.exists(fcsFiles))])
+    
+    if (length(markers) == 1 && file.exists(markers)) {
+        markers <- as.character(read.table(markers, sep = "\t", 
+                                           header = TRUE)[, 1])
+    }
+    if (is.null(markers) || length(markers) < 1) 
+        stop("no marker selected!")
+  
+    mergeMethod <- match.arg(mergeMethod)
+    
+    if (!is.null(fixedNum) && !(is.numeric(fixedNum))) 
+        stop("uniformClusterSize must be a numeric number!")
+    
+    transformMethod <- match.arg(transformMethod)
+    dimReductionMethod <- match.arg(dimReductionMethod) 
+    
+    if(missing(clusterMethods)){
+        clusterMethods <- "Rphenograph"
+    }else{
+        clusterMethods <- match.arg(clusterMethods, several.ok = TRUE)
     }
     
-    
-    ## cluster
-    cluster_output <- NULL
-    if (ifCluster){
-        cluster_output <- densVM_cluster(transformed, exprs)
+    if(missing(visualizationMethods)){
+        visualizationMethods <- "tsne"
     }else{
-        cluster_output <- NULL
+        visualizationMethods <- match.arg(visualizationMethods, several.ok = TRUE)
     }
     
-    ## write results
-    analysis_results <- list(lgclMergedExprs = exprs, transData = transformed, 
-        clustersRes = cluster_output)
-    if (writeResults == TRUE) {
-        cytof_write_results(analysis_results, visualizationMethods, baseName, rawFCSdir, resDir)
+    progressionMethod <- match.arg(progressionMethod)
+    
+    if (!(is.numeric(uniformClusterSize))) 
+        stop("uniformClusterSize must be a numeric number!")
+    
+    
+    ## print arguments for user info
+    message("Input arguments:")
+    cat("* Project Name: ")
+    cat(projectName, "\n")
+    cat("* Input FCS files for analysis:\n ")
+    cat(paste0("  -", basename(fcsFiles), "\n"))
+    cat("* Makrers:\n ")
+    cat(paste0("  -", markers, "\n"))
+    cat("* Data merging method: ")
+    cat(mergeMethod, "\n")
+    cat("* Data transformation method: ")
+    cat(transformMethod, "\n")
+    cat("* Dimensionality reduction method: ")
+    cat(dimReductionMethod, "\n")
+    cat("* Data clustering method(s): ")
+    cat(clusterMethods, "\n")
+    cat("* Data visualization method(s): ")
+    cat(visualizationMethods, "\n")
+    cat("* Subset progression analysis method: ")
+    cat(progressionMethod, "\n\n")
+    
+    
+    ## get marker-filtered, transformed, combined exprs data
+    message("Extract expression data...")
+    exprs_data <- cytof_exprsMerge(fcsFiles, comp = ifCompensation, verbose = FALSE, 
+                                   markers = markers, transformMethod = transformMethod, 
+                                   mergeMethod = mergeMethod, fixedNum = fixedNum, ...)
+    cat("  ", nrow(exprs_data), " x ", ncol(exprs_data), " data was extracted!\n")
+    
+    
+    ## dimension reduced data, a list
+    message("Dimension reduction...")
+    alldimReductionMethods <- unique(c(visualizationMethods, dimReductionMethod))
+    allDimReducedList <- lapply(alldimReductionMethods, 
+                                cytof_dimReduction, data = exprs_data)
+    names(allDimReducedList) <- alldimReductionMethods
+    
+    
+    ## cluster results, a list
+    message("Run clustering...")
+    cluster_res <- lapply(clusterMethods, cytof_cluster, 
+                          ydata = allDimReducedList[[dimReductionMethod]], 
+                          xdata = exprs_data)
+    names(cluster_res) <- clusterMethods
+    
+    
+    ## progression analysis results, a list  
+    ## NOTE, currently only the first cluster method resutls 
+    ## are used for preogression visualization(by default: cluster_res[[1]])
+    message("Progression analysis...")   
+    progression_res <- cytof_progression(data = exprs_data, 
+                                         cluster = cluster_res[[1]], 
+                                         method = progressionMethod,
+                                         uniformClusterSize = uniformClusterSize)
+    
+    
+    ## exprs_data_all for shinyAPP usage
+    exprs_data_all <- as.data.frame(exprs_data)
+    exprs_data_all$runFlowSOM <- TRUE
+    exprs_data_all$DensityPlot <- TRUE
+    exprs_data_all$DotPlot <- TRUE
+    exprs_data_all$ColorBySample <- TRUE
+    
+    ## wrap the results
+    analysis_results <- list(expressionData = exprs_data,
+                             dimReductionMethod = dimReductionMethod,
+                             visualizationMethods = visualizationMethods,
+                             dimReducedRes = allDimReducedList,
+                             clusterRes = cluster_res, 
+                             progressionRes = progression_res,
+                             allExpressionData = exprs_data_all)
+     
+    
+    ## save the results
+    message("Analysis DONE, saving the reuslts...") 
+    if(saveObject){
+        objFile <- paste0(resultDir, .Platform$file.sep, projectName, ".RData")
+        save(analysis_results, file = objFile)
+        cat("R obejct is saved in ", objFile, "\n")
+        message("  **THIS R OBJECT IS THE INPUT OF SHINY APP!**  ")
+        
+    }
+    
+    if (saveResults == TRUE) {
+        cat("Writing results\n")
+        cytof_writeResults(analysis_results = analysis_results, 
+                           projectName=projectName, 
+                           resultDir=resultDir,
+                           saveToFCS = saveToFCS,
+                           rawFCSdir=rawFCSdir)
     } else {
         return(analysis_results)
     }
-} 
+}
+
+
+
+#' A Shiny app to interactively visualize the analysis results 
+#' 
+#' Load the RData object saved by cytofkit, explore the analysis results with interactive control
+#'
+#' @import shiny
+#' @author Hao Chen
+#' @export
+#' @examples 
+#' if (interactive()) cytofkit::cytofkitShinyAPP()
+cytofkitShinyAPP = function() {
+    shiny::runApp(system.file('shiny', package = 'cytofkit'))
+}
+
+
+
+#' check the package update news
+#' 
+#' @export
+cytofkitNews <- function() 
+{
+    newsfile <- file.path(system.file(package = "cytofkit"), 
+                          "NEWS")
+    file.show(newsfile)
+}
+
+

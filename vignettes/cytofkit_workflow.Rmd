@@ -1,147 +1,111 @@
-
+---
+title: "**cytofkit**: An Integrated Mass Cytometry Data Analysis Pipeline"
+output:
+  BiocStyle::html_document:
+    toc: true
+---
 <!--
-  %\VignetteIndexEntry{cytofkit: workflow of mass cytometry data analysis}
-  %\VignetteEngine{knitr::knitr}
+%% \VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{BiocCheck}
 -->
 
 
-cytofkit: workflow of mass cytometry data analysis
-====================================================
-             
-             
-Introduction
------------------------
+# Introduction
 
-The **cytofkit** package is designed to facilitate the analysis of mass cytometry data with automatic subset identification and population boundary detection. It integrates dimension reduction (PCA, t-SNE or ISOMAP) with density-based clustering (DensVM) for rapid subset detection. Subset-clustering scatter plot and heat map will be generated for objective comparative analysis and statistical testing.
-                   
-                   
-cytofkit quick start
---------------------------
+The **cytofkit** package is designed to facilitate the analysis of mass cytometry data from one or multiple FCS files. User can customize their data merging strategy to combine data from multiple files with proper transformation; apply state-of-the-art clustering methods like *DensVM* [1] and *PhenoGraph* [2] as well as a in-house developed algorithm *ClusterX* to automatically detect cell subsets; visualize the high dimensional data with cluster labels by either linear transformation like *PCA* or non-linear dimensionality reduction like *ISOMAP* [3] or *t-SNE* [4]; map the progression of cellular subtypes estimated by *ISOMAP* and profile the marker expression along the cell progression. In 
+addition to providing the research community with an one-stop analysis platform, **cytofkit** is shipped together with an intuitively designed GUI and an interactive web app to facilitate the easy analysis and interpretation of the mass cytometry data. 
 
-### Run with GUI
+           
+# **cytofkit** Analysis Pipline
 
-**cytofkit** provides a user friendly GUI to use **cytofkit** package. It provides the options for customizing your own analysis.To launch the GUI, just type the command:
-```{r}
-require("cytofkit") 
-# cytof_tsne_densvm_GUI()  ## remove the hash symbol to open the GUI
-```
+A schematic overview of the **cytofkit** pipeline is as below, it contains four major components: 
 
-The interface will appear like this, you can click the help button `?` to check the information for each entry.
+- Pre-processing
+- Cell subset detection
+- Cell subset visualization and interpretation
+- Inference of subset progression. 
 
-![cytofkit GUI](cytofkit_GUI.PNG)
+![cytofkit pipeline](cytofkit_pipeline.png)
                
-               
-### Run on commands
 
-**cytofkit** also provides a core function `cytof_tsne_densvm()` to facilitate the analysis pipeline of mass cytometry data. Users only need to define several key parameters to make their analysis automatically. One simple way of running cytofkit using the core function is like this:
+## Pre-processing
+
+In this step, one or multiple selected FCS files will be loaded into the R environment using the 
+`read.FCS` function of **flowCore** package. Expression values of selected markers are then extracted and transformed with a proper transformation method (including *cytofAsinh* (suggest for CyTOF data), *autoLgcl* (suggest for FCM data), *logicle* and *arcsinh*), expression matrixes from multiple files are then combined into a single matrix. For multiple FCS files, **cytofkit** provides four data combining methods including i) *ceil* which samples up to a user specified number of cells without replacement from each FCS file then combine, ii) *all* which takes all cells from each FCS file then combine, iii) *min* which samples a minimum number of cells among all FCS files from each FCS file then combine and iv) *fixed* which samples an user specified number of cells (with replacement when the total number of cell in the file is less than the specified number) from each FCS file then combine. After combination, the whole dataset will be stored in a data matrix, with row names represented as *filename_cellID*, column mames represented as *marker_name<marker_desc>*.
+This step is implemented in funciton `cytof_exprsMerge`, read the details of this funcion:
+
 ```{r, eval=FALSE}
-dir <- system.file('extdata',package='cytofkit')
-file <- list.files(dir ,pattern='.fcs$', full=TRUE)
-parameters <- list.files(dir, pattern='.txt$', full=TRUE)
-# change "writeResluts" to TRUE for your analysis if you want to save the result files
-cytof_tsne_densvm(fcsFile = file, paraFile = parameters, rawFCSdir = dir, baseName = 'test')   
-```
-
-You can also define more parameters to create your own analysis, please check the help page of `cytof_tsne_densvm()` to get more information of the parameters.
-```{r, results='hide'}
-?cytof_tsne_densvm
-```
-             
-             
-cytofkit Analysis results
---------------------------------
-
-All the analysis results will be saved under your `resDir` (result directory), which was explained below:
-
-+ __*baseName*\_lgcl\_merged\_markerFiltered\_exprsData.txt__
-   It contains the expression data from FCS file(s) being logicle transformed by `lgclMethod`, merged by `mergeMethod`, and filtered with selected markers in `para` or `paraFile`.
-   
-+ __*baseName*\_tsne.pdf__
-  scatter plot of the *tsne* transformed results (dimension reduction results).
-                       
-+ __*baseName*\_dimension\_transformed.txt__
-  It contains the dimension reduced data by *tsne*.
-                    
-+ __*baseName*\_tsne\_cluster.txt__
-  It contains the cluster results by *denSVM* on the tsne transformed data.
-                         
-+ __*baseName*\_NumOfpeaks\_Vs\_kernalBandwith.pdf__
-  A line graph shows the number of peaks with increasing bandwidth(gamma)
-                   
-+ __*baseName*\_tsne\_cluster\_plot.pdf__
-  A scatter plot of the cluster results, clusters are labelled in different colours, and samples are represented by different shapes.
-                     
-+ __*baseName*\_tsne\_cluster\_grid\_plot.pdf__
-  A scatter plot of the cluster results for each FCS file, and combined in a grid plot (if more than one FCS input files are analysised)
-                         
-+ __*baseName*\_clusterMean.txt__
-  It contains the mean expression value of each marker in each cluster. 
-                  
-+ __*baseName*\_clusterMeanHeatmap.pdf__
-  A heat map shows the mean expression value of each marker in each cluster. 
-                   
-+ __*baseName*\_clusterCellCount.txt__
-  It contains the number and percentage of cells in each cluster for each FCS file, 
-                   
-+ __*baseName*\_clusterPercHeatmap.pdf__
-  A heat map shows the cluster percentage of cells for each FCS file.
-                       
-+ __*baseName*\_analyzedFCS__
-  The dimension transformed data and cluster results are saved into each corresponding FCS fileS under this directory.
-                        
-                        
-cytofkit analysis pipline
---------------------------------
-
-### Pre-processing
-
-.FCS files were imported via the *read.FCS* function in the *flowCore* package. Intensity values of marker expression were then logicle-transformed, and markers selected were extracted for downstream analysis. For multiple files, a parameter of fixedNum is provided to sample fixed number of cells from each fcs file for combined analysis. Check the function `fcs_lgcl_merge` for implementation of this step.
-
-```{r, results='hide'}
-?fcs_lgcl_merge
+?cytof_exprsMerge
 ```
 
 
-### Dimensionality reduction
+## Cell Subset Detection
 
-t-Distributed Stochastic Neighbor Embedding (t-SNE)[1] is suggested for dimensionality reduction although we also provide methods like PCA and ISOMAP. Briefly, t-SNE converts pair-wise distances between every two data points into a conditional probability that they are potential neighbors. It initializes the embedding by putting the low-dimensional data points in random locations that are adjusted in iteration, aiming to optimize the match of the conditional probability distributions between high and low dimensional spaces. The optimization is done using a gradient descent method to minimize a cost function defined by Kullback-Leibler divergences. We utilized bh\_tsne with R package *Rtsne*, an efficient implementation of t-SNE via Barnes-Hut approximations[2]. Check the function `cytof_dimReduction` for implementation of this step.
+The subset detection is performed by clustering algorithms. **cytofkit** is shipped with two 
+state-of-the-art clustering methods *DensVM* and *PhenoGraph* and an in-house developed clustering 
+algorithm *ClusterX*. Among them, *DensVM* and *ClusterX* are density-based clustering algorithms 
+estimated from the *t-SNE* embedded map. While *PhenoGraph* is a graph based clustering algorithm 
+performed directly on the high dimensional data. For version later than 1.4.4, we plugged in the *FlowSOM* clustering algorithm [5]. Check the function `cytof_cluster` for implementation of this step.
 
-```{r, results='hide'}
-?cytof_dimReduction
+```{r, eval=FALSE}
+?cytof_cluster
 ```
 
   
-### Cluster analysis using DensVM
+## Cell Subset Visualization and Interpretation 
 
-We used Density-based clustering aided by support Vector Machine (DensVM) to automate subset detection from the t-SNE map (schematic of DensVM). By using DensVM, we are able to objectively assign every cell to an appropriate cluster. 
+Three dimensionality reduction methods are integrated into **cytofkit** for visualizing the high 
+dimensional mass cytometry data into an information-condensed and relationship-preserved 
+two-dimensional map. These included one linear transformation method *PCA* and two non-linear 
+transformation methods *ISOMAP* and *t-SNE*. *PCA* is a widely used technique to remove the linear correlation between variables. After *PCA*, data is represented by principal components, and those 
+two or three principal components with highest variance are used to visualize the data. *ISOMAP* is 
+used to embed the high dimensional data points into low dimensions while preserving the intrinsic 
+geometry of the data structure. *t-SNE* finds the two-dimensional representation of high-dimensional
+data that best preserve both local and global geometry. After dimensional reduction, **cytofkit** plots the cell points into these transformed two-dimensional map with point color representing its
+cell type detected from last step, and point shape representing which sample the cell is from. To 
+summarize the expression profile of each cell subset, a heat map can be generated to visualize the
+mean or median expression for each marker in each cell type. This heat map can greatly facilitate 
+the interpretation of known cell types with prior knowledge of their special marker expression 
+features as well as detection of new cell types with novel expression patterns. Check the function
+`cytof_dimReduction` for implementation of this step.
 
-![schematic of DensVM](schematic_of_DensVM.PNG)
-
-Check the function `densVM_cluster` for implementation of this step.
-
-```{r, results='hide'}
-?densVM_cluster
+```{r, eval=FALSE}
+?cytof_dimReduction
 ```
 
 
-### Cluster annotation using scatter plot and heat map
+## Inference of Subset Progression
 
-In order to examine whether DensVM clusters represent biologically meaningful cell populations, we annotated individual clusters by using scatter plot(`cluster_plot` and `cluster_gridPlot`) and heat maps (`clust_mean_heatmap` and `clust_percentage_heatmap`). Scatter plot visualize the cell points with colour indicating their assigned clusters and point shape representing their belonging samples. Cell events are also grouped by clusters and mean intensity values per cluster for every marker is calculated (`clust_state`). Heat map visualizing the mean expression of every marker in every cluster is generated with no scaling on the row or column direction. Hierarchical clustering was generated using Euclidean distance and complete agglomeration method. We used the heat maps to interrogate marker expression to identify each cluster's defining markers.  
+Instead of inferring the subset progression using all cells, we perform the progression path 
+estimation based on the detected subsets of cells.  Specifically, we down sample the number of 
+cells to a fixed number for each cell subset, thus to make every subset has the equal number of 
+cells. This removes the potential dominant influence from cell subtypes with most number of 
+cells. Then *ISOMAP* is used to infer the relationships among the down sampled subsets. *ISOMAP* is 
+able to compare the overall relatedness of cells and embed the cells taking into account the nonlinear geodesic distances between cells. By plotting the marker expression along the *ISOMAP* dimension 1 or dimension 2 with lowess regression, markers with expression patterns that highly correlated with progression can be defined as regulatory markers. Check the function `cytof_progression` for implementation of this step.
 
-### Post-processing
-
-The cluster results can be visualized with dimension transformed data from "tsne", "pca" and "isomap". The cluster coordinates, together with the t-SNE, PCA and ISOMAP coordinates, were added to the .FCS files as additional parameters and saved for post analysis, all intermediate files and the plots can be saved using the function `cytof_write_results`.
-
-```{r, results='hide'}
-?cytof_write_results
-
+```{r, eval=FALSE}
+?cytof_progression
 ```
 
-             
-             
-References
---------------
 
-[1] L.J.P. van der Maaten and G.E. Hinton. Visualizing High-Dimensional Data Using t-SNE. Journal of Machine Learning Research 9(Nov):2579-2605, 2008.
+## Post-processing
 
-[2] L.J.P. van der Maaten. Barnes-Hut-SNE. In Proceedings of the International Conference on Learning Representations, 2013.
+The cluster results can be visualized with dimension transformed data from *t-SNE*, *PCA* and *ISOMAP*. The cluster coordinates, together with the *t-SNE*, *PCA* and *ISOMAP* coordinates, will be stored to the FCS files as additional parameters and for post analysis, all result files and plots can be saved using the function `cytof_writeResults`.
+
+```{r, eval=FALSE}
+?cytof_writeResults
+```
+
+Among the saved results, an R data object will be saved with suffix of *.RData*, this is specially for loading to the shiny web APP for interactive visualization and exploration of the analysis results. The shiny APP can be launched with command `cytofkitShinyAPP()` or through this link 
+             
+# References
+
+[1] Becher B, Schlitzer A, Chen J, Mair F, Sumatoh HR, Wei K, et al. High-dimensional analysis of the murine myeloid cell system. Nat Immunol. 2014;15.doi:10.1038/ni.3006.nature
+
+[2] Levine JH, Simonds EF, Bendall SC, Davis KL, Amir ED, Tadmor MD, et al. Data-Driven Phenotypic Dissection of AML Reveals Progenitor-like Cells that Correlate with Prognosis. Cell. Elsevier Inc.; 2015; 1???14. doi:10.1016/j.cell.2015.05.047
+
+[3] Tenenbaum JB, de Silva V, Langford JC, Silva V De, Langford JC. A global geometric framework for nonlinear dimensionality reduction. Science. American Association for the Advancement of Science; 2000;290: 2319-23. doi:10.1126/science.290.5500.2319
+
+[4] Maaten L Van Der. Accelerating t-SNE using Tree-Based Algorithms. J Mach Learn Res. 2014;15: 1-21.
+
+[5] Van Gassen S, Callebaut B, Van Helden MJ, Lambrecht BN, Demeester P, Dhaene T, et al. FlowSOM: Using Self-Organizing Maps for Visualization and Interpretation of Cytometry Data. Cytometry A. 2015; 1-10. doi:10.1002/cyto.a.22625
