@@ -1,21 +1,22 @@
 Package: cytofkit
 Type: Package
-Title: cytofkit: an integrated analysis pipeline for mass cytometry data
-Version: 1.5.2
-Date: 2015-2-12
+Title: cytofkit: an integrated mass cytometry data analysis pipeline
+Version: 1.5.3
+Date: 2016-06-08
 Author: Jinmiao Chen, Hao Chen
 Description: An integrated mass cytometry data analysis pipeline that enables
     simultaneous illustration of cellular diversity and progression.
-License: GPL-3
-Maintainer: Jinmiao Chen <Chen_Jinmiao@immunol.a-star.edu.sg>
-biocViews: BiomedicalInformatics, GUI, CellBiology, Clustering,
-    DimensionReduction, MassSpectrometry
+License: Artistic-2.0
+Maintainer: Jinmiao Chen <Chen_Jinmiao@immunol.a-star.edu.sg>, Hao Chen <chen_hao@immunol.a-star.edu.sg>
+biocViews: FlowCytometry, GUI, CellBiology, Clustering,
+    DimensionReduction, BiomedicalInformatics
 Depends:
-    R (>= 2.10.0)
+    R (>= 2.10.0), ggplot2, plyr
 VignetteBuilder: knitr
 Suggests:
     knitr,
     RUnit,
+    testthat,
     BiocGenerics
 Imports:
     tcltk,
@@ -23,8 +24,20 @@ Imports:
     Rtsne,
     e1071,
     flowCore,
-    ggplot2,
     gplots,
-    vegan,
+    VGAM,
     reshape,
-    Biobase
+    reshape2,
+    shiny,
+    vegan,
+    Biobase,
+    doParallel,
+    parallel,
+    pdist,
+    methods,
+    FlowSOM(>= 1.4.0),
+    igraph(>= 1.0.1),
+    RANN(>= 2.5),
+    Rcpp (>= 0.12.0)
+LinkingTo: Rcpp
+RoxygenNote: 5.0.1
