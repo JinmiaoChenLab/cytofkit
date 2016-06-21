@@ -4,18 +4,20 @@
 \alias{cytof_dimReduction}
 \title{Dimension reduction for high dimensional data}
 \usage{
-cytof_dimReduction(data, method = c("tsne", "pca", "isomap", "NULL"),
-  out_dim = 2, isomap_distMethod = "euclidean", isomap_k = 5,
-  isomap_ndim = NULL, isomapFragmentOK = TRUE, ...)
+cytof_dimReduction(data, method = c("tsne", "pca", "isomap", "diffusionmap",
+  "NULL"), distMethod = "euclidean", out_dim = 2, tsneSeed = 42,
+  isomap_k = 5, isomap_ndim = NULL, isomapFragmentOK = TRUE, ...)
 }
 \arguments{
 \item{data}{Input expression data matrix.}
 
-\item{method}{Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca} or \code{tsne}.}
+\item{method}{Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca} , \code{diffusionmap} or \code{tsne}.}
+
+\item{distMethod}{Method for distance calcualtion, default is "euclidean", other choices like "manhattan", "cosine", "rankcor"....}
 
 \item{out_dim}{The dimensionality of the output.}
 
-\item{isomap_distMethod}{Method for distance calcualtion for \code{isomap}.}
+\item{tsneSeed}{Set a seed if you want reproducible t-SNE results.}
 
 \item{isomap_k}{Number of shortest dissimilarities retained for a point, parameter for \code{isomap} method.}
 
@@ -23,14 +25,14 @@ cytof_dimReduction(data, method = c("tsne", "pca", "isomap", "NULL"),
 
 \item{isomapFragmentOK}{What to do if dissimilarity matrix is fragmented, parameter for \code{isomap} method.}
 
-\item{...}{Other parameters passed to Rtsne}
+\item{...}{Other parameters passed to the method, check \code{\link{Rtsne}}, \code{\link{DiffusionMap}}, \code{\link{isomap}}.}
 }
 \value{
 a matrix of the dimension reducted data, with colnames method_ID, and rownames same as the input data.
 }
 \description{
 Apply dimension reduction on the cytof expression data, 
-with method \code{pca}, \code{tsne} or \code{isomap}.
+with method \code{pca}, \code{tsne}, \code{diffusionmap} or \code{isomap}.
 }
 \examples{
 data(iris)

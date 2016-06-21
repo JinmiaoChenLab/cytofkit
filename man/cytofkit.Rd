@@ -11,7 +11,7 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   dimReductionMethod = c("tsne", "pca", "isomap"),
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
   visualizationMethods = c("tsne", "pca", "isomap", "NULL"),
-  progressionMethod = c("tsne", "pca", "isomap", "NULL"), FlowSOM_k = 40,
+  progressionMethod = c("diffusionmap", "isomap", "NULL"), FlowSOM_k = 40,
   uniformClusterSize = 500, resultDir = getwd(), saveResults = TRUE,
   saveObject = TRUE, saveToFCS = TRUE, ...)
 }

@@ -19,7 +19,7 @@
 #' markers <- as.character(read.table(parameters, sep = "\t", header = TRUE)[, 1])
 #' xdata <- cytof_exprsMerge(fcsFile, markers = markers, mergeMethod = 'fixed', fixedNum = 100)
 #' ydata <- cytof_dimReduction(xdata, method = "tsne")
-#' clusters <- cytof_cluster(ydata, xdata, method = "DensVM")
+#' clusters <- cytof_cluster(ydata, xdata, method = "ClusterX")
 cytof_cluster <- function(ydata = NULL, 
                           xdata = NULL, 
                           method = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),

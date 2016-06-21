@@ -1,48 +1,83 @@
 #' Progression estimation of cytof expression data 
 #' 
-#' Apply isomap to estimate the relationship of cell progression
+#' Infer the progression based on the relationship of cell subsets estimated 
+#' using ISOMAP or Diffusion map.
 #' 
 #' @param data Expression data matrix.
 #' @param cluster A vector of cluster results for the data.
-#' @param method Method for estimation of cell progression, isomap by default, tsne or pca.
-#' @param uniformClusterSize The down sampled size of each cluster.
-#' @param seed The seed for random down sample of the clusters.
+#' @param method Method for estimation of cell progression, isomap or diffusionmap.
+#' @param out_dim Number of transformed dimenions choosed for output.
+#' @param clusterSampleMethod Cluster sampling method including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
+#' \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled without replacement from each cluster and combined for analysis.
+#' \code{all}: all cells from each cluster are combined for analysis. 
+#' \code{min}: The minimum number of cells among all clusters are sampled from cluster and combined for analysis. 
+#' \code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than fixedNum) from each cluster and combined for analysis.
+#' @param clusterSampleSize The number of cells to be sampled from each cluster.
+#' @param sampleSeed The seed for random down sample of the clusters.
+#' 
 #' @return a list includes sampleData, sampleCluster and progressionData.
 #' 
 #' @export
 #' @examples
-#' data(iris)
-#' in_data <- iris[, 1:4]
-#' out_data <- cytof_progression(in_data, cluster = iris[,5], uniformClusterSize = 50)
-cytof_progression <- function(data, cluster, method="isomap", uniformClusterSize = 500, seed = 500){
+#' d<-system.file('extdata', package='cytofkit')
+#' fcsFile <- list.files(d, pattern='.fcs$', full=TRUE)
+#' parameters <- list.files(d, pattern='.txt$', full=TRUE)
+#' markers <- as.character(read.table(parameters, sep = "\t", header = TRUE)[, 1])
+#' xdata <- cytof_exprsMerge(fcsFile, markers = markers, mergeMethod = 'fixed', fixedNum = 2000)
+#' clusters <- cytof_cluster(xdata = xdata, method = "Rphenograph")
+#' prog <- cytof_progression(data = xdata, cluster = clusters, clusterSampleSize = 100)
+#' d <- as.data.frame(cbind(prog$progressionData, cluster = factor(prog$sampleCluster)))
+#' cytof_clusterPlot(data =d, xlab = "diffusionmap_1", ylab="diffusionmap_2", cluster = "cluster", sampleLabel = FALSE)
+cytof_progression <- function(data, cluster, 
+                              method=c("diffusionmap", "isomap", "NULL"), 
+                              out_dim = 2,
+                              clusterSampleMethod = c("ceil", "all", "fixed", "min"),
+                              clusterSampleSize = 500, 
+                              sampleSeed = 123){
     
     data <- as.matrix(data)
-    
-    if(!is.null(uniformClusterSize)){
-        clusterStat <- as.data.frame(table(cluster))
-        uniformClusterSize <- min(uniformClusterSize, min(clusterStat$Freq))
-        
-        set.seed(seed)
-        clusterList <- split(1:length(cluster), factor(cluster))
-        eachCluster <- llply(clusterList, function(x) sample(x, uniformClusterSize, replace = FALSE))
-        sampleCellID <- do.call(base::c, eachCluster)
-        
-        nCluster <- rep(1:length(unique(cluster)), each = uniformClusterSize)
-        sampleData <- data[sampleCellID, ,drop=FALSE]
-    }else{
-        sampleData <- data
-        nCluster <- cluster
-    }
-    
-    if(method == "isomap"){
-        progressionData <- cytof_dimReduction(sampleData, method = "isomap", out_dim = 2)
-    }else if(method == "tsne"){
-        progressionData <- cytof_dimReduction(sampleData, method = "tsne", out_dim = 2)
-    }else if(method == "pca"){
-        progressionData <- cytof_dimReduction(sampleData, method = "pca", out_dim = 2)
-    }else{
+    method <- match.arg(method)
+    if(method == "NULL"){
         return(NULL)
     }
+    clusterSampleMethod <- match.arg(clusterSampleMethod)
+    if(missing(cluster)){
+        message("No cluster vector proveided, take all data for estimation.")
+        clusterSampleMethod <- "all"
+        cluster <- rep(1, length.out = nrow(data))
+    }
+    cellClusterList <- split(1:nrow(data), cluster)
+    switch(clusterSampleMethod,
+           ceil = {
+               mergeFunc <- function(x) {
+                   if (length(x) < clusterSampleSize) {
+                       x
+                   } else {
+                       sample(x, size = clusterSampleSize, replace = FALSE)
+                   }
+               }
+               sampleCellID <- do.call(base::c, lapply(cellClusterList, mergeFunc))
+           },
+           all = {
+               sampleCellID <- do.call(base::c, cellClusterList)
+           },
+           fixed = {
+               mergeFunc <- function(x) {
+                   sample(x, size = clusterSampleSize, replace = ifelse(length(x) < clusterSampleSize, TRUE, FALSE))
+               }
+               sampleCellID <- do.call(base::c, lapply(cellClusterList, mergeFunc))
+           },
+           min = {
+               minSize <- min(sapply(cellClusterList, length))
+               mergeFunc <- function(x) {
+                   sample(x, size = minSize, replace = FALSE)
+               }
+               sampleCellID <- do.call(base::c, lapply(cellClusterList, mergeFunc))
+           })
+    
+    sampleData <- data[sampleCellID, ,drop=FALSE]
+    nCluster <- cluster[sampleCellID]
+    progressionData <- cytof_dimReduction(sampleData, method = method, out_dim = out_dim)
     
     progressRes <- list(sampleData = sampleData, 
                         sampleCluster = nCluster, 

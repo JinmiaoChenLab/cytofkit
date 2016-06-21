@@ -134,7 +134,7 @@ cytofkit <- function(fcsFiles = getwd(),
                      dimReductionMethod = c("tsne", "pca", "isomap"), 
                      clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"), 
                      visualizationMethods = c("tsne", "pca", "isomap", "NULL"), 
-                     progressionMethod = c("tsne", "pca", "isomap", "NULL"), 
+                     progressionMethod = c("diffusionmap", "isomap", "NULL"), 
                      FlowSOM_k = 40,
                      uniformClusterSize = 500,
                      resultDir = getwd(), 
@@ -265,7 +265,8 @@ cytofkit <- function(fcsFiles = getwd(),
                              dimReducedRes = allDimReducedList,
                              clusterRes = cluster_res, 
                              progressionRes = progression_res,
-                             allExpressionData = exprs_data_all)
+                             allExpressionData = exprs_data_all,
+                             resultDir = resultDir)
      
     
     ## save the results
