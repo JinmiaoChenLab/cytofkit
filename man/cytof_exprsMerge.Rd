@@ -6,7 +6,7 @@
 \usage{
 cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
   transformMethod = "cytofAsinh", scaleTo = NULL, mergeMethod = c("ceil",
-  "all", "fixed", "min"), fixedNum = 10000, ...)
+  "all", "fixed", "min"), fixedNum = 10000, sampleSeed = 123, ...)
 }
 \arguments{
 \item{fcsFiles}{A vector of FCS file names.}
@@ -19,16 +19,15 @@ cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
 
 \item{scaleTo}{Scale the expression to a specified range c(a, b), default is NULL.}
 
-\item{mergeMethod}{Merge method for mutiple FCS expression data. cells can be combined using 
-one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. 
-The default option is \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled 
-without replacement from each fcs file and combined for analysis.
+\item{mergeMethod}{Merge method for mutiple FCS expression data. cells can be combined using one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
+\code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled without replacement from each fcs file and combined for analysis.
 \code{all}: all cells from each fcs file are combined for analysis. 
 \code{min}: The minimum number of cells among all the selected fcs files are sampled from each fcs file and combined for analysis. 
-\code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than 
-fixedNum) from each fcs file and combined for analysis.}
+\code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than fixedNum) from each fcs file and combined for analysis.}
 
 \item{fixedNum}{The fixed number of cells to be extracted from each FCS file.}
+
+\item{sampleSeed}{A sampling seed for reproducible expression matrix merging.}
 
 \item{...}{Other arguments passed to \code{cytof_exprsExtract}}
 }

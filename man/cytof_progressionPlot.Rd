@@ -4,25 +4,31 @@
 \alias{cytof_progressionPlot}
 \title{Progression plot}
 \usage{
-cytof_progressionPlot(data, markers, orderCol = "isomap_1",
-  clusterCol = "cluster", min_expr = NULL,
-  trend_formula = "expression ~ sm.ns(Pseudotime, df=3)")
+cytof_progressionPlot(data, markers, clusters, orderCol = "isomap_1",
+  clusterCol = "cluster", reverseOrder = FALSE, addClusterLabel = TRUE,
+  min_expr = NULL, trend_formula = "expression ~ sm.ns(Pseudotime, df=3)")
 }
 \arguments{
 \item{data}{The data frame for progression plot.}
 
 \item{markers}{The column names of the selected markers for visualization.}
 
+\item{clusters}{Selecte clusters for plotting, defauls select all.}
+
 \item{orderCol}{The column name of the estimated cell progression order.}
 
-\item{clusterCol}{The column name of the cluster results}
+\item{clusterCol}{The column name of the cluster results.}
 
-\item{min_expr}{the threshold of the minimal expression value for markers}
+\item{reverseOrder}{If reverse the value of orderCol.}
+
+\item{addClusterLabel}{If add the cluster label on the plot.}
+
+\item{min_expr}{the threshold of the minimal expression value for markers.}
 
 \item{trend_formula}{a symbolic description of the model to be fit.}
 }
 \value{
-a heatmap object from \code{gplots}
+a ggplot2 object
 }
 \description{
 Plot the expression trend along the estimated cell progressing order

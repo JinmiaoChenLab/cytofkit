@@ -1,5 +1,5 @@
 ---
-title: "**cytofkit**: Quick Start"
+title: "cytofkit: Quick Start"
 output:
   BiocStyle::html_document:
     toc: true
@@ -74,13 +74,19 @@ Then submit it, that's all.
 
 Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of *.RData* is for loading the results into the shiny APP. Choose the *.RData* file on the shiny APP then submit it, your journey of exploring the reulsts starts.
 
-You can also manually launch the Shiny APP with command:
+
+### Usage of Shiny APP
+
+Shiny APP can be deployed locally with following command:
 
 ```{r, eval=FALSE}
 cytofkitShinyAPP()
 ```
 
-### Usage of Shiny APP
+
+or through the public link:   
+
+[cytofkitShinyAPP](https://chenhao.shinyapps.io/cytofkitShinyAPP/)
 
 <u>Loading .RData to ShinyAPP:</u>       
 
@@ -124,7 +130,7 @@ res <- cytofkit(fcsFiles = file,
                 clusterMethods = c("Rphenograph", "ClusterX"),    ## accept multiple methods
                 visualizationMethods = c("tsne", "pca"),          ## accept multiple methods
                 progressionMethod = "isomap",
-                uniformClusterSize = 500,
+                clusterSampleSize = 500,
                 resultDir = getwd(),
                 saveResults = TRUE, 
                 saveObject = TRUE, 
@@ -240,7 +246,8 @@ cytof_heatmap(FlowSOM_cluster_median[, 2:37], baseName = "FlowSOM Cluster Median
 
 ```{r, message=FALSE}
 ## Inference of PhenoGraph cluster relatedness
-PhenoGraph_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_PhenoGraph, method="isomap", uniformClusterSize = 47, seed = 4)
+PhenoGraph_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_PhenoGraph, 
+                                            method="isomap", clusterSampleSize = 50, sampleSeed = 5)
 p_d <- data.frame(PhenoGraph_progression$sampleData, PhenoGraph_progression$progressionData, 
                 cluster = PhenoGraph_progression$sampleCluster, check.names = FALSE)
 
@@ -249,13 +256,14 @@ cytof_clusterPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", cluster="cluster",
 
 ## marker expression profile
 markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
-cytof_progressionPlot(data=p_d, markers, orderCol="isomap_1", clusterCol = "cluster")
+cytof_progressionPlot(data=p_d, markers=markers, orderCol="isomap_1", clusterCol = "cluster")
 ```
 
 
 ```{r, message=FALSE}
 ## Inference of ClusterX cluster relatedness
-ClusterX_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_ClusterX, method="isomap", uniformClusterSize = 29, seed = 3)
+ClusterX_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_ClusterX, 
+                                          method="isomap", clusterSampleSize = 30, sampleSeed = 3)
 c_d <- data.frame(ClusterX_progression$sampleData, ClusterX_progression$progressionData, 
                 cluster=ClusterX_progression$sampleCluster, check.names = FALSE)
 

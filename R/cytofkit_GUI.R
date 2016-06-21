@@ -25,6 +25,7 @@ cytofkit_GUI <- function() {
     transformMethods <- c("cytofAsinh", "autoLgcl")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
     clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
+    progressionMethods <- c("diffusionmap", "isomap", "NULL")
     
     rawFCSdir <- tclVar(cur_dir)
     fcsFile <- tclVar("")
@@ -339,10 +340,12 @@ cytofkit_GUI <- function() {
                                      command = progressionMethod_help)
     progressionMethod_rbuts <- tkframe(tt)
     tkpack(tklabel(progressionMethod_rbuts, text = ""), side = "left")
-    tkpack(tkradiobutton(progressionMethod_rbuts, text = "isomap", variable = progressionMethod, 
-                         value = "isomap"), side = "left")
-    tkpack(tkradiobutton(progressionMethod_rbuts, text = "NULL", 
-                         variable = progressionMethod, value = "NULL"), side = "left")
+    tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[1], 
+                         variable = progressionMethod, value = progressionMethods[1]), side = "left")
+    tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[2], 
+                         variable = progressionMethod, value = progressionMethods[2]), side = "left")
+    tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[3], 
+                         variable = progressionMethod, value = progressionMethods[3]), side = "left")
     
     ## submit / reset / quit
     submit_button <- tkbutton(tt, text = "Submit", command = submit)

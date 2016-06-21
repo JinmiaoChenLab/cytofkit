@@ -9,15 +9,13 @@
 #' @param markers Selected markers for analysis, either marker names/descriptions or marker IDs.
 #' @param transformMethod Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.
 #' @param scaleTo Scale the expression to a specified range c(a, b), default is NULL.
-#' @param mergeMethod Merge method for mutiple FCS expression data. cells can be combined using 
-#' one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. 
-#' The default option is \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled 
-#' without replacement from each fcs file and combined for analysis.
+#' @param mergeMethod Merge method for mutiple FCS expression data. cells can be combined using one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
+#' \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled without replacement from each fcs file and combined for analysis.
 #' \code{all}: all cells from each fcs file are combined for analysis. 
 #' \code{min}: The minimum number of cells among all the selected fcs files are sampled from each fcs file and combined for analysis. 
-#' \code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than 
-#' fixedNum) from each fcs file and combined for analysis.
+#' \code{fixed}: a fixed num (specified by fixedNum) of cells are sampled (with replacement when the total number of cell is less than fixedNum) from each fcs file and combined for analysis.
 #' @param fixedNum The fixed number of cells to be extracted from each FCS file.
+#' @param sampleSeed A sampling seed for reproducible expression matrix merging.
 #' @param ... Other arguments passed to \code{cytof_exprsExtract}
 #' 
 #' @return A matrix containing the merged expression data, with selected markers, row names added as \code{filename_cellID}, column mamed added as \code{name<desc>}.
@@ -35,7 +33,8 @@ cytof_exprsMerge <- function(fcsFiles,
                              transformMethod = "cytofAsinh", 
                              scaleTo = NULL, 
                              mergeMethod = c("ceil", "all", "fixed", "min"), 
-                             fixedNum = 10000, ...) {
+                             fixedNum = 10000, 
+                             sampleSeed = 123, ...) {
     
     exprsL <- mapply(cytof_exprsExtract, fcsFiles, 
                      MoreArgs = list(comp = comp, markers = markers, 
@@ -44,6 +43,8 @@ cytof_exprsMerge <- function(fcsFiles,
                      SIMPLIFY = FALSE)
 
     mergeMethod <- match.arg(mergeMethod)
+    if(is.numeric(sampleSeed))
+        set.seed(sampleSeed)
     switch(mergeMethod,
            ceil = {
                mergeFunc <- function(x) {
@@ -121,9 +122,9 @@ cytof_exprsExtract <- function(fcsFile,
     ## load FCS files
     name <- sub(".fcs", "", basename(fcsFile))
     if (verbose) {
-        fcs <- read.FCS(fcsFile)
+        fcs <- read.FCS(fcsFile, transformation = FALSE)
     } else {
-        fcs <- suppressWarnings(read.FCS(fcsFile))
+        fcs <- suppressWarnings(read.FCS(fcsFile, transformation = FALSE))
     }
     
     ## compensation

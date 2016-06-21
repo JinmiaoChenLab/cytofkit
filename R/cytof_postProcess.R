@@ -11,7 +11,7 @@
 #' @return save all results in the \code{resultDir}
 #' @importFrom gplots heatmap.2 bluered    
 #' @importFrom ggplot2 ggplot ggsave aes_string facet_wrap geom_point geom_rug theme_bw theme xlab ylab ggtitle coord_fixed guides guide_legend scale_shape_manual scale_colour_manual
-#' @importFrom reshape cast melt.data.frame
+#' @importFrom reshape2 dcast
 #' @importFrom ggplot2 ggplot ggsave aes_string geom_line geom_point xlab ylab ggtitle theme_bw
 #' @importFrom flowCore write.FCS flowFrame inverseLogicleTransform
 #' @importFrom grDevices dev.off pdf rainbow
@@ -91,7 +91,7 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
                     pdf(paste(projectName, methodj, "cluster_percentage_heatmap.pdf", sep = "_"))
                     par(mar = rep(2, 4), cex.main = 0.7)
                     
-                    clust_percentage <- cast(clust_cellCount, sample ~ cluster, value = "percentage")
+                    clust_percentage <- dcast(clust_cellCount, sample ~ cluster, value = "percentage")
                     percColNames <- clust_percentage$sample
                     clust_percentage <- clust_percentage[, -which(colnames(clust_percentage) == "sample")]
                     percRowNames <- paste("cluster_", colnames(clust_percentage), sep = "")
@@ -192,6 +192,7 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
 #' @param addLabel Boolean, if add cluster labels.
 #' @param labelSize the size of cluster labels.
 #' @param sampleLabel If use point shapes to represent different samples.
+#' @param fixCoord If fix the Cartesian coordinates.
 #' @return the ggplot object of the scatter cluster plot.
 #' @export
 #' @importFrom ggplot2 element_text element_rect element_blank element_line element_text annotate
@@ -204,9 +205,9 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
 #' rownames(data) <- rnames
 #' data$sample <- "data"
 #' cytof_clusterPlot(data, xlab="dim1", ylab="dim2", cluster="cluster", sample = "sample")
-cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, 
-                              title = "cluster", type = 1, point_size = NULL,
-                              addLabel=TRUE, labelSize=10, sampleLabel=TRUE) {
+cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluster", 
+                              type = 1, point_size = NULL, addLabel=TRUE, 
+                              labelSize=10, sampleLabel=TRUE, fixCoord=TRUE) {
     
     if(!is.data.frame(data))
         data <- as.data.frame(data)
@@ -242,7 +243,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample,
         if(sampleLabel){
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster, shape = sample)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
-                scale_colour_manual(values = rainbow(cluster_num)) + coord_fixed() +
+                scale_colour_manual(values = rainbow(cluster_num)) + 
                 xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "scatter plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
@@ -251,7 +252,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample,
         }else{
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
-                scale_colour_manual(values = rainbow(cluster_num)) + coord_fixed() +
+                scale_colour_manual(values = rainbow(cluster_num)) + 
                 xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "scatter plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
@@ -262,13 +263,13 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample,
             edata <- data[ ,c(xlab, ylab, cluster)]
             colnames(edata) <- c('x', "y", "z")
             center <- aggregate(cbind(x,y) ~ z, data = edata, median)
-            cp <- cp + annotate("text", label = center[,1], x=center[,2], y = center[,3], 
-                                size = labelSize, colour = "black")
+            cp <- cp + annotate("text", label = center[,1], x=center[,2], y = center[,3],
+                               size = labelSize, colour = "black")
         }
         
     }else if (type == 2){
         cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
-            facet_wrap(~sample, ncol = grid_col_num, scales = "free") + coord_fixed() + 
+            facet_wrap(~sample, ncol = grid_col_num, scales = "free") + 
             geom_point(size = point_size - 0.05 * sample_num) + 
             scale_colour_manual(values = rainbow(cluster_num)) + 
             xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "grid plot", sep = " ")) + 
@@ -278,6 +279,10 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample,
                    shape = guide_legend(nrow = size_legend_row, override.aes = list(size = 4)))
     }else{ 
         stop("Undefined type, only 1 or 2.") 
+    }
+    
+    if(fixCoord){
+        cp <- cp + coord_fixed()
     }
     
     return(cp)
@@ -331,20 +336,59 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
 
 
 
+
+cytof_colorPlot <- function(data, xlab, ylab, zlab, pointSize=1, 
+                      addLabel=TRUE, labelSize=1, removeOutlier = TRUE){
+    
+    remove_outliers <- function(x, na.rm = TRUE, ...) {
+        qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+        H <- 1.5 * IQR(x, na.rm = na.rm)
+        y <- x
+        y[x < (qnt[1] - H)] <- qnt[1] - H
+        y[x > (qnt[2] + H)] <- qnt[2] + H
+        y
+    }
+    
+    data <- as.data.frame(data)
+    title <- zlab
+    data <- data[,c(xlab, ylab, zlab)]
+    if(removeOutlier)
+        data[,zlab] <- remove_outliers(data[,zlab])
+    zlab <- "Expression"
+    colnames(data) <- c(xlab, ylab, zlab)
+    gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = zlab)) + 
+        geom_point(size = pointSize, alpha = 1) + theme_bw() 
+    scale_colour_gradient2(low="blue", mid="white", high="red",     midpoint=median(data[[zlab]])) +
+        theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+        theme(axis.text=element_text(size=8), axis.title=element_text(size=12,face="bold"))
+    
+    return(gp)
+}
+
+
+
 #' Progression plot
 #' 
 #' Plot the expression trend along the estimated cell progressing order
 #' 
 #' @param data The data frame for progression plot.
 #' @param markers The column names of the selected markers for visualization.
+#' @param clusters Selecte clusters for plotting, defauls select all.
 #' @param orderCol The column name of the estimated cell progression order.
-#' @param clusterCol The column name of the cluster results
-#' @param min_expr the threshold of the minimal expression value for markers
+#' @param clusterCol The column name of the cluster results.
+#' @param reverseOrder If reverse the value of orderCol.
+#' @param addClusterLabel If add the cluster label on the plot.
+#' @param clusterLabelSize The size of the cluster label.
+#' @param segmentSize The size of the cluster label arrow.
+#' @param min_expr the threshold of the minimal expression value for markers.
 #' @param trend_formula a symbolic description of the model to be fit.
-#' @return a heatmap object from \code{gplots}
+#' 
+#' @return a ggplot2 object
 #' @importFrom VGAM vgam sm.ns
 #' @importFrom reshape2 melt
 #' @importFrom plyr ddply .
+#' @importFrom ggrepel geom_text_repel
 #' 
 #' @export
 #' 
@@ -360,22 +404,39 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
 #' exprs_cluster <- data.frame(cluster = c, m1 = m1, m2 = m2, m3 = m3, m4 = m4, isomap_1 = m5)
 #' row.names(exprs_cluster) <- sample(rnames, 1000)
 #' cytof_progressionPlot(exprs_cluster, markers = c("m1","m2","m3","m4"))
-cytof_progressionPlot <- function(data, markers, orderCol="isomap_1", clusterCol = "cluster", 
-                             min_expr = NULL, trend_formula="expression ~ sm.ns(Pseudotime, df=3)"){
+cytof_progressionPlot <- function(data, markers, clusters, 
+                                  orderCol="isomap_1", 
+                                  clusterCol = "cluster", 
+                                  reverseOrder = FALSE,
+                                  addClusterLabel = TRUE,
+                                  clusterLabelSize = 5,
+                                  segmentSize = 0.5,
+                                  min_expr = NULL, 
+                                  trend_formula="expression ~ sm.ns(Pseudotime, df=3)"){
     
     if(!is.data.frame(data)) data <- data.frame(data, check.names = FALSE)
     if(!all(markers %in% colnames(data))) stop("Unmatching markers found!")
     if(!(length(orderCol)==1 && orderCol %in% colnames(data)))
-        stop("Can not find orderCol in data")
+        stop("Can not find orderCol in data!")
     if(!(length(clusterCol)==1 && clusterCol %in% colnames(data)))
-        stop("Can not find clusterCol in data")
+        stop("Can not find clusterCol in data!")
+    if(!missing(clusters)){
+        if(!all(clusters %in% data[[clusterCol]]))
+            stop("Wrong clusters selected!")
+        data <- data[data[[clusterCol]] %in% clusters, , drop=FALSE]
+    }
     
+    if(reverseOrder){
+        newOrderCol <- paste0(orderCol, "(reverse)")
+        data[[newOrderCol]] <- -data[[orderCol]]
+        orderCol <- newOrderCol
+    }
     orderValue <- data[[orderCol]]
     data <- data[order(orderValue), c(markers, clusterCol)]
     data$Pseudotime <- sort(orderValue)
     
     mdata <- melt(data, id.vars = c("Pseudotime", clusterCol), 
-                  variable.name = "markers", variable.name= "expression")
+                  variable.name = "markers", value.name= "expression")
     colnames(mdata) <- c("Pseudotime", clusterCol, "markers", "expression")
     mdata$markers <- factor(mdata$markers)
     mdata[[clusterCol]] <- factor(mdata[[clusterCol]])
@@ -407,12 +468,12 @@ cytof_progressionPlot <- function(data, markers, orderCol="isomap_1", clusterCol
     cell_size <- 1
     x_lab <- orderCol
     y_lab <- "Expression"
-    legend_title <- clusterCol
+    legend_title <- "Cluster"
     
     ## copied from monocle package
     monocle_theme_opts <- function(){
         theme(strip.background = element_rect(colour = 'white', fill = 'white')) +
-            theme(panel.border = element_blank(), axis.line = element_line()) +
+            #theme(panel.border = element_blank(), axis.line = element_line()) +
             theme(panel.grid.minor.x = element_blank(), panel.grid.minor.y = element_blank()) +
             theme(panel.grid.major.x = element_blank(), panel.grid.major.y = element_blank()) + 
             theme(panel.background = element_rect(fill='white')) +
@@ -421,12 +482,29 @@ cytof_progressionPlot <- function(data, markers, orderCol="isomap_1", clusterCol
     
     q <- ggplot(aes_string(x="Pseudotime", y="expression"), data=mdata) 
     q <- q + geom_point(aes_string(color=color_by), size=I(cell_size))
-    q <- q + geom_line(aes_string(x="Pseudotime", y="expectation"), data=vgamPredict)
+    q <- q + geom_line(aes_string(x="Pseudotime", y="expectation"), data=vgamPredict, size = 0.9)
     q <- q + facet_wrap(~markers, ncol=plot_cols, scales="free_y")
     q <- q + ylab(y_lab) + xlab(x_lab) + theme_bw()
     q <- q + guides(colour = guide_legend(title = legend_title, override.aes = list(size = cell_size*3)))
     q <- q + monocle_theme_opts() 
     
+    if(addClusterLabel){
+        # edata <- data[ ,c("Pseudotime", clusterCol)]
+        # colnames(edata) <- c('x', "z")
+        # center <- aggregate(x ~ z, data = edata, median)
+        # center$y <- -0.5 ## add to the botom
+        # q <- q + geom_text_repel(data=center, aes(x=x, y=y, label=z), parse=TRUE)
+        mdata$cluster <- mdata[[clusterCol]]
+        center <- aggregate(cbind(Pseudotime, expression) ~ cluster + markers, data = mdata, median)
+        q <- q + geom_text_repel(data=center, aes(x=Pseudotime, y=expression, label=cluster),
+                                 size = clusterLabelSize, fontface = 'bold',
+                                 box.padding = unit(0.5, 'lines'),
+                                 point.padding = unit(1.6, 'lines'),
+                                 segment.color = '#555555',
+                                 segment.size = segmentSize,
+                                 arrow = arrow(length = unit(0.02, 'npc')))
+    }
+
     q
 }
 
@@ -513,7 +591,7 @@ cytof_addToFCS <- function(data, rawFCSdir, analyzedFCSdir, transformed_cols = c
     for (i in 1:length(sample)) {
     	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
         cat("Save to file:", fn, "\n")
-        fcs <- read.FCS(fn)
+        fcs <- read.FCS(fn, transformation = FALSE)
         pattern <- paste(sample[i], "_", sep = "")
         to_add_i <- as.data.frame(to_add[grep(pattern, row.names(to_add), fixed = TRUE), ])
         m <- regexpr("_[0-9]*$", row.names(to_add_i))
