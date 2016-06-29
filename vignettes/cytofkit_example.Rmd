@@ -6,7 +6,7 @@ output:
 ---
 <!--
 %% \VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{BiocCheck}
+%\VignetteIndexEntry{Quick Start}
 -->
 
 
@@ -72,44 +72,7 @@ Start your analysis as simply as following:
 
 Then submit it, that's all. 
 
-Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of *.RData* is for loading the results into the shiny APP. Choose the *.RData* file on the shiny APP then submit it, your journey of exploring the reulsts starts.
-
-
-### Usage of Shiny APP
-
-Shiny APP can be deployed locally with following command:
-
-```{r, eval=FALSE}
-cytofkitShinyAPP()
-```
-
-
-or through the public link:   
-
-[cytofkitShinyAPP](https://chenhao.shinyapps.io/cytofkitShinyAPP/)
-
-<u>Loading .RData to ShinyAPP:</u>       
-
-![](load2shiny.png)
-
-<u>Scatter Plot:</u>       
-
-![](scatterPlot.png)
-
-
-<u>Change Parameters, run FlowSOM:</u>
-
-![](changePara.png)
-
-
-<u>Heatmap:</u>
-
-![](heatmap.png)
-
-
-<u>Progression Plot:</u>       
-
-![](progressionPlot.png)
+Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of **_.RData_** is for loading the results into the shiny APP. Choose the **_.RData_** file on the shiny APP then submit it, your journey of exploring the reulsts starts.
 
 
 ## Run with the Core Function 
@@ -142,7 +105,7 @@ You can customize the parameters for your own need, run `?cytofkit` to get infor
 
 ## Run with Commands (Step-by-Step) 
 
-You can make use of the functions exported from cytofkit to make your analysis more flexible and fit your own need.
+You can make use of the functions exported from cytofkit to make your analysis more flexible and fit your own need. Here we use a sample data for demo:
 
 ### Pre-processing
 
@@ -196,7 +159,8 @@ cluster_ClusterX <- cytof_cluster(ydata = data_transformed_1k_tsne,  method="Clu
 
 ```{r, eval=FALSE}
 ## run DensVM (takes long time, we skip here)
-cluster_DensVM <- cytof_cluster(xdata = data_transformed_1k, ydata = data_transformed_1k_tsne, method = "DensVM")
+cluster_DensVM <- cytof_cluster(xdata = data_transformed_1k, 
+                                ydata = data_transformed_1k_tsne, method = "DensVM")
 ```
 
 ```{r, message=FALSE}
@@ -211,12 +175,12 @@ data_1k_all <- as.data.frame(data_1k_all)
 ```
 
 
-
 ### Cell Subset Visualization and Interpretation 
 
 ```{r, message=FALSE}
 ## PhenoGraph plot on tsne
-cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", cluster="PhenoGraph", sampleLabel = FALSE)
+cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", 
+                  cluster="PhenoGraph", sampleLabel = FALSE)
 
 ## PhenoGraph cluster heatmap
 PhenoGraph_cluster_median <- aggregate(. ~ PhenoGraph, data = data_1k_all, median)
@@ -235,7 +199,8 @@ cytof_heatmap(ClusterX_cluster_median[, 2:37], baseName = "ClusterX Cluster Medi
 
 ```{r}
 ## FlowSOM plot on tsne
-cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", cluster="FlowSOM", sampleLabel = FALSE)
+cytof_clusterPlot(data=data_1k_all, xlab="tsne_1", ylab="tsne_2", 
+                  cluster="FlowSOM", sampleLabel = FALSE)
 
 ## FlowSOM cluster heatmap
 FlowSOM_cluster_median <- aggregate(. ~ FlowSOM, data = data_1k_all, median)
@@ -246,32 +211,51 @@ cytof_heatmap(FlowSOM_cluster_median[, 2:37], baseName = "FlowSOM Cluster Median
 
 ```{r, message=FALSE}
 ## Inference of PhenoGraph cluster relatedness
-PhenoGraph_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_PhenoGraph, 
-                                            method="isomap", clusterSampleSize = 50, sampleSeed = 5)
-p_d <- data.frame(PhenoGraph_progression$sampleData, PhenoGraph_progression$progressionData, 
-                cluster = PhenoGraph_progression$sampleCluster, check.names = FALSE)
+PhenoGraph_progression <- cytof_progression(data = data_transformed_1k, 
+                                            cluster = cluster_PhenoGraph, 
+                                            method="isomap", clusterSampleSize = 50, 
+                                            sampleSeed = 5)
+p_d <- data.frame(PhenoGraph_progression$sampleData, 
+                  PhenoGraph_progression$progressionData, 
+                  cluster = PhenoGraph_progression$sampleCluster, 
+                  check.names = FALSE)
 
 ## cluster relatedness plot
-cytof_clusterPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", cluster="cluster", sampleLabel = FALSE)
+cytof_clusterPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", 
+                  cluster="cluster", sampleLabel = FALSE)
 
 ## marker expression profile
 markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
+
+cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1])
+cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2])
+
 cytof_progressionPlot(data=p_d, markers=markers, orderCol="isomap_1", clusterCol = "cluster")
 ```
 
 
 ```{r, message=FALSE}
 ## Inference of ClusterX cluster relatedness
-ClusterX_progression <- cytof_progression(data = data_transformed_1k, cluster = cluster_ClusterX, 
-                                          method="isomap", clusterSampleSize = 30, sampleSeed = 3)
-c_d <- data.frame(ClusterX_progression$sampleData, ClusterX_progression$progressionData, 
-                cluster=ClusterX_progression$sampleCluster, check.names = FALSE)
+ClusterX_progression <- cytof_progression(data = data_transformed_1k, 
+                                          cluster = cluster_ClusterX, 
+                                          method="isomap", 
+                                          clusterSampleSize = 30, 
+                                          sampleSeed = 3)
+c_d <- data.frame(ClusterX_progression$sampleData, 
+                  ClusterX_progression$progressionData,
+                  cluster=ClusterX_progression$sampleCluster, 
+                  check.names = FALSE)
 
 ## cluster relatedness plot
-cytof_clusterPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", cluster="cluster", sampleLabel = FALSE)
+cytof_clusterPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", 
+                  cluster="cluster", sampleLabel = FALSE)
 
 ## marker expression profile
 markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
+
+cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1])
+cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2])
+
 cytof_progressionPlot(data=c_d, markers, orderCol="isomap_1", clusterCol = "cluster")
 ```
 
@@ -291,5 +275,4 @@ cytof_addToFCS(data_1k_all, rawFCSdir=dir, analyzedFCSdir="analysed_FCS",
 ```{r}
 sessionInfo()
 ```
-
 

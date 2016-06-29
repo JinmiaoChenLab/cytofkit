@@ -4,8 +4,8 @@
 \alias{cytof_writeResults}
 \title{Save the cytofkit analysis results}
 \usage{
-cytof_writeResults(analysis_results, projectName = "cytofkit",
-  resultDir = getwd(), saveToFCS = TRUE, rawFCSdir = getwd())
+cytof_writeResults(analysis_results, projectName, resultDir, saveToFCS = TRUE,
+  rawFCSdir = getwd())
 }
 \arguments{
 \item{analysis_results}{result data from output of \code{\link{cytofkit}}}

@@ -6,6 +6,7 @@
 #' @param data Expression data matrix.
 #' @param cluster A vector of cluster results for the data.
 #' @param method Method for estimation of cell progression, isomap or diffusionmap.
+#' @param distMethod Method for distance calcualtion, default is "euclidean", other choices like "manhattan", "cosine", "rankcor".
 #' @param out_dim Number of transformed dimenions choosed for output.
 #' @param clusterSampleMethod Cluster sampling method including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
 #' \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled without replacement from each cluster and combined for analysis.
@@ -30,6 +31,7 @@
 #' cytof_clusterPlot(data =d, xlab = "diffusionmap_1", ylab="diffusionmap_2", cluster = "cluster", sampleLabel = FALSE)
 cytof_progression <- function(data, cluster, 
                               method=c("diffusionmap", "isomap", "NULL"), 
+                              distMethod = "euclidean",
                               out_dim = 2,
                               clusterSampleMethod = c("ceil", "all", "fixed", "min"),
                               clusterSampleSize = 500, 
@@ -46,6 +48,9 @@ cytof_progression <- function(data, cluster,
         clusterSampleMethod <- "all"
         cluster <- rep(1, length.out = nrow(data))
     }
+    if(is.numeric(sampleSeed))
+        set.seed(sampleSeed) # Set a seed if you want reproducible results
+    
     cellClusterList <- split(1:nrow(data), cluster)
     switch(clusterSampleMethod,
            ceil = {
@@ -77,7 +82,8 @@ cytof_progression <- function(data, cluster,
     
     sampleData <- data[sampleCellID, ,drop=FALSE]
     nCluster <- cluster[sampleCellID]
-    progressionData <- cytof_dimReduction(sampleData, method = method, out_dim = out_dim)
+    progressionData <- cytof_dimReduction(sampleData, method = method, 
+                                          distMethod = distMethod, out_dim = out_dim)
     
     progressRes <- list(sampleData = sampleData, 
                         sampleCluster = nCluster, 

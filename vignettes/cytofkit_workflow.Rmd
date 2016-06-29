@@ -6,13 +6,13 @@ output:
 ---
 <!--
 %% \VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{BiocCheck}
+%\VignetteIndexEntry{Analysis Pipeline}
 -->
 
 
 # Introduction
 
-The **cytofkit** package is designed to facilitate the analysis of mass cytometry data from one or multiple FCS files. User can customize their data merging strategy to combine data from multiple files with proper transformation; apply state-of-the-art clustering methods like *DensVM* [1] and *PhenoGraph* [2] as well as a in-house developed algorithm *ClusterX* to automatically detect cell subsets; visualize the high dimensional data with cluster labels by either linear transformation like *PCA* or non-linear dimensionality reduction like *ISOMAP* [3] or *t-SNE* [4]; map the progression of cellular subtypes estimated by *ISOMAP* and profile the marker expression along the cell progression. In 
+The **cytofkit** package is designed to facilitate the analysis of mass cytometry data from one or multiple FCS files. User can customize their data merging strategy to combine data from multiple files with proper transformation; apply state-of-the-art clustering methods like *DensVM* [1] and *PhenoGraph* [2] as well as a in-house developed algorithm *ClusterX* to automatically detect cell subsets; visualize the high dimensional data with cluster labels by either linear transformation like *PCA* or non-linear dimensionality reduction like *ISOMAP* [3] or *t-SNE* [4]; map the progression of cellular subtypes estimated by *ISOMAP* or *Diffusion map* [5] and profile the marker expression along the cell progression. In 
 addition to providing the research community with an one-stop analysis platform, **cytofkit** is shipped together with an intuitively designed GUI and an interactive web app to facilitate the easy analysis and interpretation of the mass cytometry data. 
 
            
@@ -45,7 +45,7 @@ The subset detection is performed by clustering algorithms. **cytofkit** is ship
 state-of-the-art clustering methods *DensVM* and *PhenoGraph* and an in-house developed clustering 
 algorithm *ClusterX*. Among them, *DensVM* and *ClusterX* are density-based clustering algorithms 
 estimated from the *t-SNE* embedded map. While *PhenoGraph* is a graph based clustering algorithm 
-performed directly on the high dimensional data. For version later than 1.4.4, we plugged in the *FlowSOM* clustering algorithm [5]. Check the function `cytof_cluster` for implementation of this step.
+performed directly on the high dimensional data. For version later than 1.4.4, we plugged in the *FlowSOM* clustering algorithm [6]. Check the function `cytof_cluster` for implementation of this step.
 
 ```{r, eval=FALSE}
 ?cytof_cluster
@@ -80,8 +80,8 @@ Instead of inferring the subset progression using all cells, we perform the prog
 estimation based on the detected subsets of cells.  Specifically, we down sample the number of 
 cells to a fixed number for each cell subset, thus to make every subset has the equal number of 
 cells. This removes the potential dominant influence from cell subtypes with most number of 
-cells. Then *ISOMAP* is used to infer the relationships among the down sampled subsets. *ISOMAP* is 
-able to compare the overall relatedness of cells and embed the cells taking into account the nonlinear geodesic distances between cells. By plotting the marker expression along the *ISOMAP* dimension 1 or dimension 2 with lowess regression, markers with expression patterns that highly correlated with progression can be defined as regulatory markers. Check the function `cytof_progression` for implementation of this step.
+cells. Then *Diffusion Map* or *ISOMAP* is used to infer the relationships among the down sampled subsets. *Diffusion Map* and  *ISOMAP* are both
+able to compare the overall relatedness of cells and embed the cells taking into account the nonlinear geodesic distances between cells. By plotting the marker expression along the *Diffusion Map* or *ISOMAP* dimension 1 or dimension 2 with lowess regression, markers with expression patterns that highly correlated with progression can be defined as regulatory markers. Check the function `cytof_progression` for implementation of this step.
 
 ```{r, eval=FALSE}
 ?cytof_progression
@@ -96,7 +96,7 @@ The cluster results can be visualized with dimension transformed data from *t-SN
 ?cytof_writeResults
 ```
 
-Among the saved results, an R data object will be saved with suffix of *.RData*, this is specially for loading to the shiny web APP for interactive visualization and exploration of the analysis results. The shiny APP can be launched with command `cytofkitShinyAPP()` or through this link 
+Among the saved results, an R data object will be saved with suffix of *.RData*, this is specially for loading to the shiny web APP for interactive visualization and exploration of the analysis results. The shiny APP can be launched with command `cytofkitShinyAPP()` or through this link https://chenhao.shinyapps.io/cytofkitShinyAPP/.
              
 # References
 
@@ -108,4 +108,6 @@ Among the saved results, an R data object will be saved with suffix of *.RData*,
 
 [4] Maaten L Van Der. Accelerating t-SNE using Tree-Based Algorithms. J Mach Learn Res. 2014;15: 1-21.
 
-[5] Van Gassen S, Callebaut B, Van Helden MJ, Lambrecht BN, Demeester P, Dhaene T, et al. FlowSOM: Using Self-Organizing Maps for Visualization and Interpretation of Cytometry Data. Cytometry A. 2015; 1-10. doi:10.1002/cyto.a.22625
+[5] Haghverdi L, Buettner F, Theis FJ. Diffusion maps for high-dimensional single-cell analysis of differentiation data. Bioinformatics. 2015; 1-10. doi:10.1093/bioinformatics/btv325
+
+[6] Van Gassen S, Callebaut B, Van Helden MJ, Lambrecht BN, Demeester P, Dhaene T, et al. FlowSOM: Using Self-Organizing Maps for Visualization and Interpretation of Cytometry Data. Cytometry A. 2015; 1-10. doi:10.1002/cyto.a.22625

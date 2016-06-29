@@ -6,7 +6,8 @@
 \usage{
 cytof_progressionPlot(data, markers, clusters, orderCol = "isomap_1",
   clusterCol = "cluster", reverseOrder = FALSE, addClusterLabel = TRUE,
-  min_expr = NULL, trend_formula = "expression ~ sm.ns(Pseudotime, df=3)")
+  clusterLabelSize = 5, segmentSize = 0.5, min_expr = NULL,
+  trend_formula = "expression ~ sm.ns(Pseudotime, df=3)")
 }
 \arguments{
 \item{data}{The data frame for progression plot.}
@@ -22,6 +23,10 @@ cytof_progressionPlot(data, markers, clusters, orderCol = "isomap_1",
 \item{reverseOrder}{If reverse the value of orderCol.}
 
 \item{addClusterLabel}{If add the cluster label on the plot.}
+
+\item{clusterLabelSize}{The size of the cluster label.}
+
+\item{segmentSize}{The size of the cluster label arrow.}
 
 \item{min_expr}{the threshold of the minimal expression value for markers.}
 

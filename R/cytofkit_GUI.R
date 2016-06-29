@@ -166,7 +166,7 @@ cytofkit_GUI <- function() {
     }
     
     progressionMethod_help <- function() {
-        tkmessageBox(title = "progressionMethod", message = "The method used for cellular progression analysis including \"isomap\"\n\nIf \"NULL\" was selected, no progression estimation will be performed.", 
+        tkmessageBox(title = "progressionMethod", message = "The method used for cellular progression analysis including \"diffusion map\" and \"isomap\"\n\nIf \"NULL\" was selected, no progression estimation will be performed.", 
                      icon = "info", type = "ok")
     }
     
@@ -471,17 +471,16 @@ cytofkit_GUI <- function() {
                  clusterMethods = inputs[["clusterMethods"]], 
                  visualizationMethods = inputs[["visualizationMethods"]], 
                  progressionMethod = inputs[["progressionMethod"]], 
-                 uniformClusterSize = 500,
+                 clusterSampleSize = 500,
                  resultDir = inputs[["resultDir"]], 
                  saveResults = TRUE, 
-                 saveObject = TRUE, 
-                 saveToFCS = TRUE)
+                 saveObject = TRUE)
         
         okMessage <- paste0("Analysis Done, results are saved under ",
                             inputs[["resultDir"]])
     }
     
-    launchShinyAPP_GUI(okMessage)
+    launchShinyAPP_GUI(message = okMessage, dir = inputs[["resultDir"]])
 }
 
 
@@ -490,11 +489,12 @@ cytofkit_GUI <- function() {
 #' A shiny APP for interactive exploration of the analysis results
 #' 
 #' @param message A message to determine if open the shiny APP
+#' @param dir Result direcroty.
 #' 
 #' @export
 #' @examples
 #' # launchShinyAPP_GUI()
-launchShinyAPP_GUI <- function(message){
+launchShinyAPP_GUI <- function(message="cytofkit", dir = getwd()){
     ifAPP <- tclVar("n")
     ss <- tktoplevel(borderwidth = 10)
     tkwm.title(ss, "cytofkit: Analysis Done")
@@ -510,17 +510,19 @@ launchShinyAPP_GUI <- function(message){
     }
     yesBut <- tkbutton(ss, text = " YES ", command = onYes)
     noBut <- tkbutton(ss, text = " NO ", command = onNo)
+    openDirBut <- tkbutton(ss, text = "Open", command = function(){opendir(dir)})
     okBut <- tkbutton(ss, text = "OK", command = function(){tkdestroy(ss)})
     tkgrid(tklabel(ss, text = message))
     
-    tkgrid(tklabel(ss, text = "\n"))  
-    
     if(message != "Analysis is cancelled."){
+        tkgrid(openDirBut)
+        tkgrid(tklabel(ss, text = "\n"))
         tkgrid(tklabel(ss, text = "Launch Shiny APP to check your reuslts:"))
         tkgrid(noBut, tklabel(ss, text = "    "), yesBut)
         tkgrid.configure(noBut, sticky = "e")
         tkgrid.configure(yesBut, sticky = "e")
     }else{
+        tkgrid(tklabel(ss, text = "\n"))
         tkgrid(okBut)
     }
     
@@ -528,6 +530,15 @@ launchShinyAPP_GUI <- function(message){
     
     if(tclvalue(ifAPP) == "y"){
         cytofkitShinyAPP()
+    }
+}
+
+## function for opening the results directory
+opendir <- function(dir = getwd()){
+    if (.Platform['OS.type'] == "windows"){
+        shell.exec(dir)
+    } else {
+        system(paste(Sys.getenv("R_BROWSER"), dir))
     }
 }
 
