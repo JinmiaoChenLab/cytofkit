@@ -5,7 +5,8 @@
 \title{Heatmap plot of cluster mean value results}
 \usage{
 cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
-  cex_row_label = NULL, cex_col_label = NULL)
+  cex_row_label = NULL, cex_col_label = NULL, key.par = list(mgp = c(1.5,
+  0.5, 0), mar = c(2.5, 2.5, 3, 1.5)), keysize = 1.4, margins = c(5, 5))
 }
 \arguments{
 \item{data}{a matrix with rownames and colnames}
@@ -17,6 +18,12 @@ cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
 \item{cex_row_label}{Text size for row labels.}
 
 \item{cex_col_label}{Text size for column labels.}
+
+\item{key.par}{graphical parameters for the color key.}
+
+\item{keysize}{numeric value indicating the size of the key.}
+
+\item{margins}{numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.}
 }
 \value{
 a heatmap object from \code{gplots}

@@ -70,11 +70,16 @@ cytof_dimReduction <- function(data,
                if(is.null(ord)){
                    mapped <- NULL
                }else{
-                   if(nrow(ord@eigenvectors) != nrow(data)){
+                   if(nrow(ord@eigenvectors) != nrow(data) || any(!complete.cases(ord@eigenvectors))){
                        message("Run Diffusion Map failed!")
                        return(NULL)
                    }
                    mapped <- ord@eigenvectors
+                   mapped <- apply(mapped, 2, function(x) {
+                       ## replace inf value to max finite value
+                       x[is.infinite(x)] <- max(x[is.finite(x)])
+                       x
+                   })
                }
            },
            isomap={
@@ -95,7 +100,7 @@ cytof_dimReduction <- function(data,
                if(is.null(ord)){
                    mapped <- NULL
                }else{
-                   if(nrow(ord$points) != nrow(data)){
+                   if(nrow(ord$points) != nrow(data) || any(!complete.cases(ord$points))){
                        message("Run ISOMAP failed!")
                        return(NULL)
                    }

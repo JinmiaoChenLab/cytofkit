@@ -9,7 +9,6 @@
 #' @param saveToFCS save the results back to the FCS files, new FCS files will be generated.
 #' @param rawFCSdir the directory that contains fcs files to be analysed.
 #' @return save all results in the \code{resultDir}
-#' @importFrom gplots heatmap.2 bluered    
 #' @importFrom ggplot2 ggplot ggsave aes_string facet_wrap geom_point geom_rug theme_bw theme xlab ylab ggtitle coord_fixed guides guide_legend scale_shape_manual scale_colour_manual
 #' @importFrom reshape2 dcast
 #' @importFrom ggplot2 ggplot ggsave aes_string geom_line geom_point xlab ylab ggtitle theme_bw
@@ -25,9 +24,36 @@
 #' p <- list.files(d, pattern='.txt$', full=TRUE)
 #' #tr <- cytofkit(fcsFile=f,markers=p,projectName='t',saveResults=FALSE)
 #' #cytof_write_results(tr,projectName = 'test',resultDir=d,rawFCSdir =d)
-cytof_writeResults <- function(analysis_results, projectName = "cytofkit", 
-                               resultDir = getwd(), saveToFCS = TRUE, rawFCSdir = getwd()) {
+cytof_writeResults <- function(analysis_results, 
+                               projectName, 
+                               resultDir, 
+                               saveToFCS = TRUE, 
+                               rawFCSdir = getwd()) {
     
+    if(missing(projectName)){
+        if(!is.null(analysis_results$projectName)){
+            projectName <- analysis_results$projectName
+        }else{
+            projectName <- "cytofkit_"
+        }
+    }
+    
+    if(missing(resultDir)){
+        if(!is.null(analysis_results$resultDir)){
+            resultDir <- analysis_results$resultDir
+        }else{
+            resultDir <- getwd()
+        }
+    }
+    
+    if(missing(rawFCSdir)){
+        if(!is.null(analysis_results$rawFCSdir)){
+            rawFCSdir <- analysis_results$rawFCSdir
+        }else{
+            rawFCSdir <- getwd()
+        }
+    }
+     
     curwd <- getwd()
     setwd(resultDir)
     
@@ -52,55 +78,28 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
             methodj <- names(clusterData)[j]
             dataj <- clusterData[[j]]
             if(!is.null(dataj)){
-                write.csv(dataj, paste(projectName, methodj,"clusters.csv", sep="_"))
+                write.csv(dataj, paste(projectName, methodj, "clusters.csv", sep="_"))
                 
-                ## cluster mean and median
-                exprs_cluster <- data.frame(exprs, cluster = dataj)
-                cluster_mean <- aggregate(. ~ cluster, data = exprs_cluster, mean)
-                cluster_median <- aggregate(. ~ cluster, data = exprs_cluster, median)
+                exprs_cluster_sample <- data.frame(exprs, cluster = dataj, check.names = FALSE)
+                ## cluster mean 
+                cluster_mean <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "mean")
                 write.csv(cluster_mean, paste(projectName, methodj, "cluster_mean_data.csv", sep = "_"))
-                write.csv(cluster_median, paste(projectName, methodj, "cluster_median_data.csv", sep = "_"))
-                
                 pdf(paste(projectName, methodj, "cluster_mean_heatmap.pdf", sep = "_"))
-                par(cex.main = 0.8)
-                rownames(cluster_mean) <- paste("cluster_", cluster_mean$cluster, sep = "")
-                cytof_heatmap(cluster_mean[, -which(colnames(cluster_mean) == "cluster")], 
-                              paste(projectName, methodj, "\ncluster mean", sep = " "))
+                cytof_heatmap(cluster_mean, paste(projectName, methodj, "\ncluster mean", sep = " "))
                 dev.off()
-                
+                ## cluster median
+                cluster_median <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "median")
+                write.csv(cluster_median, paste(projectName, methodj, "cluster_median_data.csv", sep = "_"))
                 pdf(paste(projectName, methodj, "cluster_median_heatmap.pdf", sep = "_"))
-                par(cex.main = 0.8)
-                rownames(cluster_median) <- paste("cluster_", cluster_median$cluster, sep = "")
-                cytof_heatmap(cluster_median[, -which(colnames(cluster_median) == "cluster")], 
-                              paste(projectName, methodj, "\ncluster median", sep = " "))
+                cytof_heatmap(cluster_median, paste(projectName, methodj, "\ncluster median", sep = " "))
                 dev.off()
                 
                 ## cluster percentage
-                sampleName <- sub("_[0-9]*$", "", row.names(exprs))
-                clusterCounts <- as.data.frame(table(sampleName, dataj))
-                colnames(clusterCounts) <- c("sample", "cluster", "cellCount")
-                
-                sampleCellCount <- as.data.frame(table(sampleName))
-                colnames(sampleCellCount) <- c("sample", "totalCellCount")
-                clust_cellCount <- merge(clusterCounts, sampleCellCount, by = "sample")
-                clust_cellCount$percentage <- round(clust_cellCount$cellCount/clust_cellCount$totalCellCount * 100, 2)
-                
-                write.csv(clust_cellCount, paste(projectName, methodj, "cluster_cell_percentage.txt", sep = "_"))
-                
                 if (ifMultiFCS) {
+                    cluster_percentage <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "percentage")
+                    write.csv(cluster_percentage, paste(projectName, methodj, "cluster_cell_percentage.csv", sep = "_"))
                     pdf(paste(projectName, methodj, "cluster_percentage_heatmap.pdf", sep = "_"))
-                    par(mar = rep(2, 4), cex.main = 0.7)
-                    
-                    clust_percentage <- dcast(clust_cellCount, sample ~ cluster, value = "percentage")
-                    percColNames <- clust_percentage$sample
-                    clust_percentage <- clust_percentage[, -which(colnames(clust_percentage) == "sample")]
-                    percRowNames <- paste("cluster_", colnames(clust_percentage), sep = "")
-                    clust_percentage <- t(as.matrix(clust_percentage))
-                    row.names(clust_percentage) <- percRowNames
-                    colnames(clust_percentage) <- percColNames
-    
-                    cytof_heatmap(clust_percentage, 
-                                    paste(projectName, methodj, "cluster\ncell percentage", sep = " "))
+                    cytof_heatmap(cluster_percentage, paste(projectName, methodj, "cluster\ncell percentage", sep = " "))
                     dev.off()
                 }
             }
@@ -158,21 +157,12 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
                        analyzedFCSdir = paste(projectName, "analyzedFCS", sep = "_"), 
                        transformed_cols = trans_col_names, cluster_cols = cluster_col_names)
     }
-    
-    ## progression plot
-    progressionData <- analysis_results$progressionRes
-    if(!is.null(progressionData)){
-        progDataFrame <- do.call(cbind, progressionData) 
-        mnames <- colnames(progressionData[[1]]) 
-        ptnames <- colnames(progressionData[[3]])
-        colnames(progDataFrame) <- c(mnames, "cluster", ptnames)
-        for(iptname in ptnames){
-            ipg <- cytof_progressionPlot(progDataFrame, mnames, iptname, "cluster")
-            ggsave(filename = paste(projectName, iptname, "progression_plot.pdf", sep = "_"), ipg)
-        }
-    }
-    
     setwd(curwd)
+    
+    message(paste0("Writing results Done! Results are saved under path: ",
+                   resultDir))
+    
+    return(NULL)
 }
 
 
@@ -192,6 +182,7 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
 #' @param addLabel Boolean, if add cluster labels.
 #' @param labelSize the size of cluster labels.
 #' @param sampleLabel If use point shapes to represent different samples.
+#' @param labelRepel If repel the cluste labels to avoid label overlapping.
 #' @param fixCoord If fix the Cartesian coordinates.
 #' @return the ggplot object of the scatter cluster plot.
 #' @export
@@ -207,7 +198,8 @@ cytof_writeResults <- function(analysis_results, projectName = "cytofkit",
 #' cytof_clusterPlot(data, xlab="dim1", ylab="dim2", cluster="cluster", sample = "sample")
 cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluster", 
                               type = 1, point_size = NULL, addLabel=TRUE, 
-                              labelSize=10, sampleLabel=TRUE, fixCoord=TRUE) {
+                              labelSize=10, sampleLabel=TRUE, 
+                              labelRepel = FALSE, fixCoord=TRUE) {
     
     if(!is.data.frame(data))
         data <- as.data.frame(data)
@@ -244,7 +236,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster, shape = sample)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
                 scale_colour_manual(values = rainbow(cluster_num)) + 
-                xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "scatter plot", sep = " ")) + 
+                xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Scatter Plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
                 guides(colour = guide_legend(nrow = col_legend_row, override.aes = list(size = 4)), 
@@ -253,7 +245,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
                 scale_colour_manual(values = rainbow(cluster_num)) + 
-                xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "scatter plot", sep = " ")) + 
+                xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Scatter Plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
                 guides(colour = guide_legend(nrow = col_legend_row, override.aes = list(size = 4)))
@@ -263,16 +255,27 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
             edata <- data[ ,c(xlab, ylab, cluster)]
             colnames(edata) <- c('x', "y", "z")
             center <- aggregate(cbind(x,y) ~ z, data = edata, median)
-            cp <- cp + annotate("text", label = center[,1], x=center[,2], y = center[,3],
-                               size = labelSize, colour = "black")
+            
+            if(labelRepel && !sampleLabel){
+                cp <- cp + geom_text_repel(data=center, aes_string(x = "x", y = "y", label = "z"),
+                                           size = labelSize, fontface = 'bold', color = "black",
+                                           box.padding = unit(0.5, 'lines'),
+                                           point.padding = unit(1.6, 'lines'),
+                                           segment.color = '#555555',
+                                           segment.size = 0.5,
+                                           arrow = arrow(length = unit(0.02, 'npc')))
+            }else{
+                cp <- cp + annotate("text", label = center[,1], x=center[,2], y = center[,3],
+                                    size = labelSize, colour = "black")
+            }
         }
         
     }else if (type == 2){
         cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
-            facet_wrap(~sample, ncol = grid_col_num, scales = "free") + 
+            facet_wrap(~sample, ncol = grid_col_num, scales = "fixed") + 
             geom_point(size = point_size - 0.05 * sample_num) + 
             scale_colour_manual(values = rainbow(cluster_num)) + 
-            xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "grid plot", sep = " ")) + 
+            xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Grid Plot", sep = " ")) + 
             theme_bw() + theme(legend.position = "bottom") + 
             theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
             guides(colour = guide_legend(nrow = col_legend_row, override.aes = list(size = 4)), 
@@ -297,7 +300,13 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
 #' @param scaleMethod Method indicating if the values should be centered and scaled in either the row direction or the column direction, or none. The default is 'none'.
 #' @param cex_row_label Text size for row labels.
 #' @param cex_col_label Text size for column labels.
+#' @param key.par graphical parameters for the color key. 
+#' @param keysize numeric value indicating the size of the key.
+#' @param margins numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.
 #' @return a heatmap object from \code{gplots}
+#' 
+#' @importFrom gplots heatmap.2 bluered   
+#' 
 #' @export
 #' @examples
 #' m1 <- c(rnorm(300, 10, 2), rnorm(400, 4, 2), rnorm(300, 7))
@@ -314,7 +323,10 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
 #' rownames(cluster_mean) <- paste("cluster_", cluster_mean$cluster, sep = "")
 #' cytof_heatmap(cluster_mean[, -which(colnames(cluster_mean) == "cluster")])
 cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
-                          cex_row_label = NULL, cex_col_label = NULL) {
+                          cex_row_label = NULL, cex_col_label = NULL, 
+                          key.par = list(mgp=c(1.5, 0.5, 0), mar=c(2.5, 2.5, 3, 1.5)), 
+                          keysize = 1.4,
+                          margins = c(5, 5)) {
     
     data <- as.matrix(data)
     
@@ -325,20 +337,46 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
         cex_col_label <- (11 - ceiling(ncol(data)/10))/10
     }
     
-    heatmap.2(data, col = bluered, trace = "none", 
-        symbreaks = FALSE, scale = scaleMethod, 
-        cexRow = cex_row_label, 
-        cexCol = cex_col_label, 
-        srtCol = 90, symkey = FALSE, 
-        key.par=list(mgp=c(1.5, 0.5, 0), mar=c(2.5, 2.5, 3, 1.5)), keysize = 1.3,
-        main = paste(baseName, "heatmap", sep = " "))
+    heatmap.2(x = data, 
+              col = bluered, 
+              trace = "none", 
+              symbreaks = FALSE, 
+              scale = scaleMethod, 
+              cexRow = cex_row_label, 
+              cexCol = cex_col_label, 
+              srtCol = 30, symkey = FALSE, 
+              key.par=key.par, 
+              margins = margins,
+              keysize = keysize,
+              main = paste(baseName, "Heat Map"))
 }
 
 
-
-
-cytof_colorPlot <- function(data, xlab, ylab, zlab, pointSize=1, 
-                      addLabel=TRUE, labelSize=1, removeOutlier = TRUE){
+#' Plot the data with color-coded marker values
+#' 
+#' @param data A dataframe containing the xlab, ylab and zlab.
+#' @param xlab The column name of data for x lab.
+#' @param ylab The column name of data for y lab.
+#' @param zlab The column name of data for z lab.
+#' @param colorPalette Color Palette. 
+#' @param pointSize The size of the point.
+#' @param removeOutlier If remove the outliers.
+#' @return A ggplot object.
+#' 
+#' @importFrom ggplot2 scale_colour_gradientn
+#' @importFrom grDevices colorRampPalette topo.colors heat.colors terrain.colors cm.colors
+#' 
+#' @export
+#' @examples
+#' x <- c(rnorm(100, mean = 1), rnorm(100, mean = 3), rnorm(100, mean = 9))
+#' y <- c(rnorm(100, mean = 2), rnorm(100, mean = 8), rnorm(100, mean = 5))
+#' c <- rnorm(300, 10, 5)
+#' data <- data.frame(dim1 = x, dim2 = y, marker = c)
+#' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
+cytof_colorPlot <- function(data, xlab, ylab, zlab, 
+                            colorPalette = c("bluered", "topo", "heat", "terrain", "cm"), 
+                            pointSize=1, 
+                            removeOutlier = TRUE){
     
     remove_outliers <- function(x, na.rm = TRUE, ...) {
         qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
@@ -350,15 +388,36 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab, pointSize=1,
     }
     
     data <- as.data.frame(data)
-    title <- zlab
+    title <- paste(zlab, "Expression Level Plot")
     data <- data[,c(xlab, ylab, zlab)]
+    
     if(removeOutlier)
         data[,zlab] <- remove_outliers(data[,zlab])
-    zlab <- "Expression"
-    colnames(data) <- c(xlab, ylab, zlab)
-    gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = zlab)) + 
-        geom_point(size = pointSize, alpha = 1) + theme_bw() 
-    scale_colour_gradient2(low="blue", mid="white", high="red",     midpoint=median(data[[zlab]])) +
+
+    colorPalette <- match.arg(colorPalette)
+    switch(colorPalette,
+           bluered = {
+               myPalette <- colorRampPalette(c("blue", "white", "red"))
+           },
+           topo = {
+               myPalette <- colorRampPalette(topo.colors(50))
+           },
+           heat = {
+               myPalette <- colorRampPalette(heat.colors(50))
+           },
+           terrain = {
+               myPalette <- colorRampPalette(terrain.colors(50))
+           },
+           cm = {
+               myPalette <- colorRampPalette(cm.colors(50))
+           }
+    )
+    zlength <- nrow(data)
+    exp <- "Expression"
+    colnames(data) <- c(xlab, ylab, exp)
+    gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = exp)) + 
+        scale_colour_gradientn(name = zlab, colours = myPalette(zlength)) +
+        geom_point(size = pointSize) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
         theme(axis.text=element_text(size=8), axis.title=element_text(size=12,face="bold"))
@@ -367,7 +426,73 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab, pointSize=1,
 }
 
 
-
+#' Statistics of the cluster relusts
+#' 
+#' Calculate the mean or median expression level of each marker for each cluster, or percentage
+#' of cell numbers of each cluster for each sample.
+#' 
+#' @param data Input data frame.
+#' @param markers The names of markers used for calcualtion.
+#' @param cluster The column name contatining cluster labels.
+#' @param sample The samples used for calculation.
+#' @param statMethod Statistics contatining mean, median or percentage.
+#' 
+#' @return A matrix of the satatistics results
+#'
+#' @importFrom stats aggregate
+#' @importFrom reshape2 dcast
+#' @export
+#' @examples 
+#' m1 <- c(rnorm(300, 10, 2), rnorm(400, 4, 2), rnorm(300, 7))
+#' m2 <- c(rnorm(300, 4), rnorm(400, 16), rnorm(300, 10, 3))
+#' m3 <- c(rnorm(300, 16), rnorm(400, 40, 3), rnorm(300, 10))
+#' m4 <- c(rnorm(300, 7, 3), rnorm(400, 30, 2), rnorm(300, 10))
+#' m5 <- c(rnorm(300, 27), rnorm(400, 40, 1),rnorm(300, 10))
+#' c <- c(rep(1,300), rep(2,400), rep(3,300))
+#' rnames <- paste(paste('sample_', c('A','B','C','D'), sep = ''), 
+#' rep(1:250,each = 4), sep='_') 
+#' exprs_cluster <- data.frame(cluster = c, m1 = m1, m2 = m2, m3 = m3, m4 = m4, m5 = m5)
+#' row.names(exprs_cluster) <- rnames
+#' cytof_clusterStat(data = exprs_cluster, cluster = "cluster", statMethod = "mean")
+cytof_clusterStat <- function(data, markers, cluster = "cluster", sample, 
+                              statMethod = c("mean", "median", "percentage", "NULL")){
+    
+    data <- as.data.frame(data)
+    statMethod <- match.arg(statMethod)
+    
+    if(missing(sample)){
+        sample <- "sample"
+        data$sample <- sub("_[0-9]*$", "", row.names(data))
+    }
+    
+    if(missing(markers)){
+        markers <- setdiff(colnames(data), c(cluster, sample))
+    }
+    
+    exprs_cluster <- data[ ,markers, drop=FALSE]
+    exprs_cluster$cluster <- data[[cluster]]
+    switch(statMethod,
+           mean = {
+               statData <- aggregate(. ~ cluster, data = exprs_cluster, mean)
+           },
+           median = {
+               statData <- aggregate(. ~ cluster, data = exprs_cluster, median)
+           }, 
+           percentage = {
+               cluster_sample <- data.frame(cluster = data[[cluster]], sample = data[[sample]])
+               cluster_sample$value <- 1
+               clust_sample_count <- dcast(cluster_sample, cluster ~ sample, fun.aggregate = length)
+               statData <- apply(clust_sample_count[,-1], 2, function(x){round(x/sum(x)*100, 2)})
+               statData <- data.frame(statData, cluster = clust_sample_count$cluster, check.names = FALSE)
+           })
+    
+    rownames(statData) <- paste0("cluster_", statData$cluster)
+    statData$cluster <- NULL  ## remove cluster column
+    
+    return(as.matrix(statData))
+}
+    
+    
 #' Progression plot
 #' 
 #' Plot the expression trend along the estimated cell progressing order
@@ -386,6 +511,7 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab, pointSize=1,
 #' 
 #' @return a ggplot2 object
 #' @importFrom VGAM vgam sm.ns
+#' @importFrom ggplot2 arrow unit
 #' @importFrom reshape2 melt
 #' @importFrom plyr ddply .
 #' @importFrom ggrepel geom_text_repel
@@ -478,7 +604,8 @@ cytof_progressionPlot <- function(data, markers, clusters,
             theme(panel.grid.major.x = element_blank(), panel.grid.major.y = element_blank()) + 
             theme(panel.background = element_rect(fill='white')) +
             theme(legend.position = "right") +
-            theme(axis.title = element_text(size = 15)) }
+            theme(axis.title = element_text(size = 15)) +
+            theme(axis.text=element_text(size=8), axis.title=element_text(size=12,face="bold"))}
     
     q <- ggplot(aes_string(x="Pseudotime", y="expression"), data=mdata) 
     q <- q + geom_point(aes_string(color=color_by), size=I(cell_size))
@@ -590,6 +717,11 @@ cytof_addToFCS <- function(data, rawFCSdir, analyzedFCSdir, transformed_cols = c
     
     for (i in 1:length(sample)) {
     	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
+    	if(!file.exists(fn)){
+    	    ## stop the writing if cannot find the file
+    	    message(paste("rawFCSdir is not correct, can not find raw FCS file:", fn))
+    	    return(NULL)
+    	}
         cat("Save to file:", fn, "\n")
         fcs <- read.FCS(fn, transformation = FALSE)
         pattern <- paste(sample[i], "_", sep = "")

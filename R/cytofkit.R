@@ -105,14 +105,13 @@ NULL
 #' @param visualizationMethods The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selection are accepted.
 #' @param progressionMethod Use the first ordination score of \code{isomap} to estimated the preogression order of cells, choose \code{NULL} to ignore.
 #' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
-#' @param uniformClusterSize The uniform size of each cluster.
+#' @param clusterSampleSize The uniform size of each cluster.
 #' @param resultDir The directory where result files will be generated.
 #' @param saveResults If save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
 #' @param saveObject Save the resutls into RData objects for loading back to R for further analysis
-#' @param saveToFCS Save the results back to the FCS files, new FCS files will be generated.
 #' @param ... Other arguments passed to \code{cytof_exprsExtract}
 #' 
-#' @return a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes} and \code{allExpressionData}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
+#' @return a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes}, \code{projectName}, \code{rawFCSdir} and \code{resultDir}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
 #' @author Hao Chen, Jinmiao Chen
 #' @references \url{http://signbioinfo.github.io/cytofkit/}
 #' @seealso \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}, \code{\link{cytofkitShinyAPP}}
@@ -134,13 +133,12 @@ cytofkit <- function(fcsFiles = getwd(),
                      dimReductionMethod = c("tsne", "pca", "isomap"), 
                      clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"), 
                      visualizationMethods = c("tsne", "pca", "isomap", "NULL"), 
-                     progressionMethod = c("diffusionmap", "isomap", "NULL"), 
+                     progressionMethod = c("NULL", "diffusionmap", "isomap"), 
                      FlowSOM_k = 40,
-                     uniformClusterSize = 500,
+                     clusterSampleSize = 500,
                      resultDir = getwd(), 
                      saveResults = TRUE, 
-                     saveObject = TRUE, 
-                     saveToFCS = TRUE, ...) {
+                     saveObject = TRUE, ...) {
     
     ## arguments checking
     if (is.null(fcsFiles) || is.na(fcsFiles) || is.nan(fcsFiles)){
@@ -172,7 +170,7 @@ cytofkit <- function(fcsFiles = getwd(),
     mergeMethod <- match.arg(mergeMethod)
     
     if (!is.null(fixedNum) && !(is.numeric(fixedNum))) 
-        stop("uniformClusterSize must be a numeric number!")
+        stop("clusterSampleSize must be a numeric number!")
     
     transformMethod <- match.arg(transformMethod)
     dimReductionMethod <- match.arg(dimReductionMethod) 
@@ -191,8 +189,8 @@ cytofkit <- function(fcsFiles = getwd(),
     
     progressionMethod <- match.arg(progressionMethod)
     
-    if (!(is.numeric(uniformClusterSize))) 
-        stop("uniformClusterSize must be a numeric number!")
+    if (!(is.numeric(clusterSampleSize))) 
+        stop("clusterSampleSize must be a numeric number!")
     
     
     ## print arguments for user info
@@ -248,24 +246,18 @@ cytofkit <- function(fcsFiles = getwd(),
     progression_res <- cytof_progression(data = exprs_data, 
                                          cluster = cluster_res[[1]], 
                                          method = progressionMethod,
-                                         uniformClusterSize = uniformClusterSize)
-    
-    
-    ## exprs_data_all for shinyAPP usage
-    exprs_data_all <- as.data.frame(exprs_data)
-    exprs_data_all$runFlowSOM <- TRUE
-    exprs_data_all$DensityPlot <- TRUE
-    exprs_data_all$DotPlot <- TRUE
-    exprs_data_all$ColorBySample <- TRUE
+                                         out_dim = 4,
+                                         clusterSampleSize = clusterSampleSize)
     
     ## wrap the results
     analysis_results <- list(expressionData = exprs_data,
                              dimReductionMethod = dimReductionMethod,
-                             visualizationMethods = visualizationMethods,
+                             visualizationMethods = alldimReductionMethods, #visualizationMethods,
                              dimReducedRes = allDimReducedList,
                              clusterRes = cluster_res, 
                              progressionRes = progression_res,
-                             allExpressionData = exprs_data_all,
+                             projectName = projectName,
+                             rawFCSdir = rawFCSdir,
                              resultDir = resultDir)
      
     
@@ -276,16 +268,11 @@ cytofkit <- function(fcsFiles = getwd(),
         save(analysis_results, file = objFile)
         cat("R obejct is saved in ", objFile, "\n")
         message("  **THIS R OBJECT IS THE INPUT OF SHINY APP!**  ")
-        
     }
     
     if (saveResults == TRUE) {
         cat("Writing results\n")
-        cytof_writeResults(analysis_results = analysis_results, 
-                           projectName=projectName, 
-                           resultDir=resultDir,
-                           saveToFCS = saveToFCS,
-                           rawFCSdir=rawFCSdir)
+        cytof_writeResults(analysis_results = analysis_results)
     } else {
         return(analysis_results)
     }
@@ -313,8 +300,8 @@ cytofkitShinyAPP = function() {
 #' @export
 cytofkitNews <- function() 
 {
-    newsfile <- file.path(system.file(package = "cytofkit"), 
-                          "NEWS")
+    newsfile <- file.path(system.file(package = "cytofkit"),
+                          "NEWS.Rd")
     file.show(newsfile)
 }
 

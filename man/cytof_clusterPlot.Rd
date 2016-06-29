@@ -6,7 +6,7 @@
 \usage{
 cytof_clusterPlot(data, xlab, ylab, cluster, sample, title = "cluster",
   type = 1, point_size = NULL, addLabel = TRUE, labelSize = 10,
-  sampleLabel = TRUE, fixCoord = TRUE)
+  sampleLabel = TRUE, labelRepel = FALSE, fixCoord = TRUE)
 }
 \arguments{
 \item{data}{The data frame of cluster results, which should contains at least xlab, ylab and cluster.}
@@ -30,6 +30,8 @@ cytof_clusterPlot(data, xlab, ylab, cluster, sample, title = "cluster",
 \item{labelSize}{the size of cluster labels.}
 
 \item{sampleLabel}{If use point shapes to represent different samples.}
+
+\item{labelRepel}{If repel the cluste labels to avoid label overlapping.}
 
 \item{fixCoord}{If fix the Cartesian coordinates.}
 }

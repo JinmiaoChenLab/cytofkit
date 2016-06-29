@@ -4,10 +4,12 @@
 \alias{launchShinyAPP_GUI}
 \title{GUI for launching shiny APP}
 \usage{
-launchShinyAPP_GUI(message)
+launchShinyAPP_GUI(message = "cytofkit", dir = getwd())
 }
 \arguments{
 \item{message}{A message to determine if open the shiny APP}
+
+\item{dir}{Result direcroty.}
 }
 \description{
 A shiny APP for interactive exploration of the analysis results

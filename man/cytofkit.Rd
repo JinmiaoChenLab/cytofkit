@@ -11,9 +11,9 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   dimReductionMethod = c("tsne", "pca", "isomap"),
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
   visualizationMethods = c("tsne", "pca", "isomap", "NULL"),
-  progressionMethod = c("diffusionmap", "isomap", "NULL"), FlowSOM_k = 40,
-  uniformClusterSize = 500, resultDir = getwd(), saveResults = TRUE,
-  saveObject = TRUE, saveToFCS = TRUE, ...)
+  progressionMethod = c("NULL", "diffusionmap", "isomap"), FlowSOM_k = 40,
+  clusterSampleSize = 500, resultDir = getwd(), saveResults = TRUE,
+  saveObject = TRUE, ...)
 }
 \arguments{
 \item{fcsFiles}{It can be either the path where stores your FCS files or a vector of FCS file names.}
@@ -47,7 +47,7 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{FlowSOM_k}{Number of clusters for meta clustering in FlowSOM.}
 
-\item{uniformClusterSize}{The uniform size of each cluster.}
+\item{clusterSampleSize}{The uniform size of each cluster.}
 
 \item{resultDir}{The directory where result files will be generated.}
 
@@ -55,12 +55,10 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{saveObject}{Save the resutls into RData objects for loading back to R for further analysis}
 
-\item{saveToFCS}{Save the results back to the FCS files, new FCS files will be generated.}
-
 \item{...}{Other arguments passed to \code{cytof_exprsExtract}}
 }
 \value{
-a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes} and \code{allExpressionData}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
+a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes}, \code{projectName}, \code{rawFCSdir} and \code{resultDir}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
 }
 \description{
 The main function to drive the cytofkit workflow.

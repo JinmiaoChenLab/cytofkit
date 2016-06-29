@@ -6,14 +6,17 @@
     \itemize{
       \item concised the title in vignette, tiny modification
       \item added missed halo variable in ClusterX
-      \item added transformation=FALSE in calling read.FCS function to avoid unexpected transformation
-      \item added resultDir to analysis_results object
+      \item added transformation=FALSE in calling read.FCS function to avoid unexpected transformation for flow cytometry data.
       \item changed cast from reshap to dcast from reshap2 in function cytof_writeResults
+      \item added projectName, rawFCSdir, resultDir entries in analysis_results object
+      \item modified parameters for cytof_writeResults, only need analysis_results object
+      \item replaced parameter uniformClusterSize in cytofkit to clusterSampleSize
       
     }
   }
   \subsection{NEW FEATURES}{
     \itemize{
+      \item redesigned shiny APP, big updates on subset progression tab, support FlowSOM and Diffusion map running. Added save buttion.
       \item rewrited most of the codes in function cytof_progression
       \item added diffusionmap in cytof_progression, updated on GUI
       \item added reverseOrder option in cytof_progressionPlot function
@@ -21,8 +24,11 @@
       \item added segmentSize option in cytof_progressionPlot function
       \item added cluster filetering and addClusterLabel option in cytof_progressionPlot
       \item added fixCoord option to function cytof_clusterPlot
+      \item added distMethod option in cytof_progression function
       \item added distance calculation options in cytof_dimReduction
       \item added tsneSeed in cytof_dimReduction for reproducible t-SNE results
+      \item added cytof_clusterStat and cytof_colorPlot function in cytof_postProcess
+      \item added a button on GUI to open the resultDir once the cytof_writeResults was done, cross platform.
     }
   }
 }
