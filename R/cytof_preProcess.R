@@ -251,14 +251,17 @@ cytofAsinh <- function(value, cofactor = 5) {
 
 #' a modified version of "estimateLogicle" from flowCore
 #' 
+#' Used boxplot outlier detection to filter outliers in negative values 
+#' before calculating the r using the fifth percnetile of the negative values.
 #' 
-#' @param x Data.
-#' @param channels Channel names.
-#' @param m Para m.
-#' @param q Para q.
+#' @param x A flowFrame object.
+#' @param channels Channel names to be transformed.
+#' @param m The full width of the transformed display in asymptotic decades. m should be greater than zero.
+#' @param q The percentile of negative values used as reference poiont of negative range.
 #' @importFrom methods is
+#' @importFrom flowCore logicleTransform
 #' @noRd
-#' @return a list of transformations
+#' @return a list of autoLgcl transformations
 autoLgcl <- function(x, channels, m = 4.5, q = 0.05) {
     if (!is(x, "flowFrame")) 
         stop("x has to be an object of class \"flowFrame\"")
@@ -268,40 +271,31 @@ autoLgcl <- function(x, channels, m = 4.5, q = 0.05) {
     if (!all(indx)) 
         stop(paste("Channels", channels[!indx], "were not found in the FCS file.\n ", 
             sep = " "))
-    rng <- range(x)
+
     trans <- lapply(channels, function(p) {
-        lgclParaEstimate(x@exprs[, p], p = p, m = m, q = q)
+        data <- x@exprs[, p]
+        w <- 0
+        t <- max(data)
+        ndata <- data[data < 0]
+        ## use 1.5 * IQR to filter outliers in negative values
+        nThres <- quantile(ndata, 0.25) - 1.5 * IQR(ndata)
+        ndata <- ndata[ndata >= nThres]
+        transId <- paste(p, "autolgclTransform", sep = "_")
+        
+        if (length(ndata)) {
+            r <- .Machine$double.eps + quantile(ndata, q)
+            ## Check to avoid failure of negative w
+            if (10^m * abs(r) <= t) {
+                w <- 0  
+            } else {
+                w <- (m - log10(t/abs(r)))/2
+                if(w>2) {
+                    w <- 0.5
+                }
+            }
+        }
+        logicleTransform(transformationId = transId, 
+                         w = w, t = t, m = m, a = 0)
     })
     transformList(channels, trans)
 }
-
-lgclParaEstimate <- function(data, p, m = 4.5, q = 0.05, type = "instrument") {
-    t <- max(data)
-    ndata <- data[data < 0]
-    w <- 0
-    a <- 0
-    transId <- paste(p, "autolgclTransform", sep = "_")
-    
-    if (missing(m)) {
-        if (type == "instrument") 
-            m <- 4.5
-        else m <- log10(t) + 1
-    }
-    
-    if (length(ndata)) {
-        r <- .Machine$double.eps + quantile(ndata, q)
-        if (10^m * abs(r) <= t) {
-            w <- 0  ## this special check to avoid failure of negative w
-        } else {
-            w <- (m - log10(t/abs(r)))/2
-            if(w>2) {
-                w <- 0.5
-                #cat("w is coerced to 0.5\n")
-            }
-        }
-    }
-    # cat(paste('sign_autoLgcl parameters:', ' w=', w, ' t=',t,'
-    # m=',m,' a=',a,'\n', sep = ''))
-    logicleTransform(transformationId = transId, 
-                     w = w, t = t, m = m, a = a)
-} 
