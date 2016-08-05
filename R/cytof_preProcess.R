@@ -171,27 +171,40 @@ cytof_exprsExtract <- function(fcsFile,
             stop("Sorry, input markers cannot be recognized!")
         }
     }else{
-        marker_id <- 1:ncol(fcs@exprs)
+        ## Exclude "Time", "Event" channel
+        exclude_channels <- grep("Time|Event", colnames(fcs@exprs), ignore.case = TRUE)
+        marker_id <- setdiff(seq_along(colnames(fcs@exprs)), exclude_channels)
     }
+    
+    ## Identify markers doesn't need transformation
+    ## "FSC-x", "SSC-x"
+    noTrans_channels <- grep("FSC|SSC", colnames(fcs@exprs), ignore.case = TRUE)
+    transMarker_id <- setdiff(marker_id, noTrans_channels)
    
     ## exprs transformation
     transformMethod <- match.arg(transformMethod)
     switch(transformMethod,
            cytofAsinh = {
-               exprs <- apply(as.matrix(fcs@exprs[, marker_id]), 2, cytofAsinh)
+               data <- fcs@exprs
+               data[ ,transMarker_id] <- apply(data[ ,transMarker_id, drop=FALSE], 2, cytofAsinh)
+               exprs <- data[ ,marker_id, drop=FALSE]
            },
            autoLgcl = {
-               trans <- autoLgcl(fcs, channels = colnames(fcs@exprs)[marker_id], q = q)
+               trans <- autoLgcl(fcs, channels = colnames(fcs@exprs)[transMarker_id], q = q)
                transformed <- flowCore::transform(fcs, trans)
-               exprs <- transformed@exprs[, marker_id]
+               exprs <- transformed@exprs[, marker_id, drop=FALSE]
            },
            logicle = {
+               data <- fcs@exprs
                trans <- flowCore::logicleTransform(w = l_w, t = l_t, m = l_m, a = l_a)
-               exprs <- apply(fcs@exprs[, marker_id], 2, trans)
+               data[ ,transMarker_id] <- apply(data[ ,transMarker_id, drop=FALSE], 2, trans)
+               exprs <- data[ ,marker_id, drop=FALSE]
            },
            arcsinh = {
+               data <- fcs@exprs
                trans <- flowCore::arcsinhTransform(a = a_a, b = a_b, c = a_c)
-               exprs <- apply(fcs@exprs[, marker_id], 2, trans)
+               data[ ,transMarker_id] <- apply(data[ ,transMarker_id, drop=FALSE], 2, trans)
+               exprs <- data[ ,marker_id, drop=FALSE]
            })
     
     ## rescale data
