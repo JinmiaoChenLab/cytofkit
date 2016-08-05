@@ -553,8 +553,8 @@ opendir <- function(dir = getwd()){
 #' #getParameters_GUI()
 getParameters_GUI <- function(fcsFile, rawFCSdir) {
     
-    if (is.null(fcsFile)) {
-        fcsFile <- list.files(path = rawFCSdir, pattern = ".fcs$")
+    if (missing(fcsFile)) {
+        fcsFile <- list.files(path = rawFCSdir, pattern = ".fcs$", full.names = TRUE)
     }
     
     fcs <- suppressWarnings(read.FCS(fcsFile[1]))
@@ -572,7 +572,7 @@ getParameters_GUI <- function(fcsFile, rawFCSdir) {
     tkwm.title(mm, "cytofkit: marker selection")
     scr <- tkscrollbar(mm, repeatinterval = 5, command = function(...) tkyview(tl, 
         ...))
-    tl <- tklistbox(mm, height = 20, selectmode = "multiple", yscrollcommand = function(...) tkset(scr, 
+    tl <- tklistbox(mm, height = 30, width = 40, selectmode = "multiple", yscrollcommand = function(...) tkset(scr, 
         ...), background = "white")
     OnOK <- function() {
         tclvalue(markerChoice) <- paste(markers[as.numeric(tkcurselection(tl)) + 

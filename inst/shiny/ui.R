@@ -14,9 +14,7 @@ shinyUI(fluidPage(
                h4("Plot Annotation:"),
                wellPanel(
                    checkboxInput("addLabel", label = "Add Cluster Labels", value = TRUE),
-                   checkboxInput("labelRepel", label = "Repel Cluster Labels", value = FALSE),
-                   checkboxInput("sampleLabel", label = "Label Samples by Shapes", value = FALSE),
-                   checkboxInput("facetPlot", label = "Seperate Plot by Samples", value = FALSE)
+                   checkboxInput("labelRepel", label = "Repel Cluster Labels", value = FALSE)
                ),
                
                hr(),
@@ -46,35 +44,40 @@ shinyUI(fluidPage(
         ),
         column(9,
                tabsetPanel(type = "pills",
-                           tabPanel("Scatter Plot", fluidPage(
+                           tabPanel("Cluster Plot", fluidPage(
                                hr(),
                                fluidRow(
                                    column(2,
                                           uiOutput("S_PlotMethod")
                                    ),
-                                   column(2, 
+                                   column(4, 
                                           uiOutput("S_PlotFunction")
                                    ),
                                    column(2,
-                                          numericInput("S_PointSize", "Point Size:", value = 3)
+                                          numericInput("S_PointSize", "Point Size:", value = 1)
                                    ),
                                    column(2, 
                                           numericInput("S_LabelSize", "Label Size:", value = 12)
                                    ),
                                    column(2,
-                                          selectInput('colorPalette', label = "Color Palette:", 
-                                                      choices = c("bluered", "topo", "heat", "terrain", "cm"), 
-                                                      selected = "bluered", width = "100%")
-                                   ),
-                                   column(2,
                                           uiOutput("S_ifFlowSOM")
                                    )
                                ),
-                               hr(),
                                conditionalPanel("input.s_ifFlowSOM == 'No'",
+                                                fluidRow(
+                                                    column(3,
+                                                           checkboxInput("sampleLabel", label = "Label Samples by Shapes", value = FALSE)
+                                                    ),
+                                                    column(3,
+                                                           checkboxInput("facetPlot", label = "Seperate Plot by Samples", value = FALSE)
+                                                    ),
+                                                    column(6)
+                                                ),
+                                                hr(),
                                                 plotOutput("S_ScatterPlot", width = "80%")
                                                 ),
                                conditionalPanel("input.s_ifFlowSOM == 'Yes'",
+                                                hr(),
                                                 h4("FlowSOM Clustering Setup:"),
                                                 hr(),
                                                 wellPanel(
@@ -86,33 +89,99 @@ shinyUI(fluidPage(
                                )
                            )),
                            
-                           tabPanel("Heat Map", fluidPage(
+                           tabPanel("Marker Plot", fluidPage(
                                hr(),
-                               fluidRow(
-                                   column(4, 
-                                          uiOutput("H_plotCluster")
-                                   ),
-                                   column(2,
-                                          selectInput('H_plotMethod', strong('Heatmap Type:'), 
-                                                      choices = c("mean", "median", "percentage"), 
-                                                      selected = "mean", width = "100%")
-                                   ),
-                                   column(2,
-                                          selectInput('H_scaleMethod', strong('Scale Data:'), 
-                                                      choices = c("none", "row", "column"), 
-                                                      selected = "none", width = "100%")
-                                   ),
-                                   column(2,
-                                          numericInput("H_rowLabelSize", "Row Label Size:", value = 1, step = 0.5)
-                                   ),
-                                   column(2, 
-                                          numericInput("H_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
-                                   )
+                               wellPanel(
+                                   uiOutput("M_plotType")
                                ),
-                               
                                hr(),
-                               plotOutput("H_heatmapPlot", width = "100%")
-                               
+                               conditionalPanel("input.m_plotType == 'Heat Map'",
+                                                fluidRow(
+                                                    column(4, 
+                                                           uiOutput("H_plotCluster")
+                                                    ),
+                                                    column(2,
+                                                           selectInput('H_plotMethod', strong('Heatmap Type:'), 
+                                                                       choices = c("mean", "median", "percentage"), 
+                                                                       selected = "mean", width = "100%")
+                                                    ),
+                                                    column(2,
+                                                           selectInput('H_scaleMethod', strong('Scale Data:'), 
+                                                                       choices = c("none", "row", "column"), 
+                                                                       selected = "none", width = "100%")
+                                                    ),
+                                                    column(2,
+                                                           numericInput("H_rowLabelSize", "Row Label Size:", value = 1, step = 0.5)
+                                                    ),
+                                                    column(2, 
+                                                           numericInput("H_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
+                                                    )
+                                                ),
+                                                hr(),
+                                                plotOutput("H_heatmapPlot", width = "100%")
+                                                ),
+                               conditionalPanel("input.m_plotType == 'Expression Map'",
+                                                fluidRow(
+                                                    column(3,
+                                                           uiOutput("M_PlotMethod")
+                                                    ),
+                                                    column(3, 
+                                                           uiOutput("M_PlotMarker")
+                                                    ),
+                                                    column(3,
+                                                           numericInput("M_PointSize", "Point Size:", value = 1)
+                                                    ),
+                                                    column(3,
+                                                           selectInput('colorPalette', label = "Color Palette:", 
+                                                                       choices = c("bluered", "topo", "heat", "terrain", "cm"), 
+                                                                       selected = "bluered", width = "100%")
+                                                    )
+                                                ),
+                                                hr(),
+                                                plotOutput("M_markerExpressionPlot", width = "100%")
+                                                ),
+                               conditionalPanel("input.m_plotType == 'Marker Density'",
+                                                fluidRow(
+                                                    column(2,
+                                                           uiOutput("M_stackFactor")
+                                                    ),
+                                                    column(2, 
+                                                           numericInput("M_rotationDegree", "Rotation Degree:", 
+                                                                        value = 0, step = 1, min=0, max=90)
+                                                    ),
+                                                    column(2,
+                                                           numericInput("M_markerTextSize", "Marker Text Size:", 
+                                                                        value = 12, step = 1, min=1, max=15)
+                                                    ),
+                                                    column(2,
+                                                           numericInput("M_xlab_size", "x Label Size:", 
+                                                                        value = 2, step = 1, min=1, max=10)
+                                                    ),
+                                                    column(2,
+                                                           numericInput("M_legendTextSize", "Legend Size:", 
+                                                                        value = 1, step = 0.5, min=1, max=10)
+                                                    ),
+                                                    column(2,
+                                                           numericInput("M_legendRow", "Legend Row:", 
+                                                                        value = 2, step = 1, min=1, max=10)
+                                                    )
+                                                ),
+                                                uiOutput("M_markerSelect"),
+                                                hr(),
+                                                actionButton("M_updateDensityPlot", "Update Plot", icon = icon("hand-pointer-o")),
+                                                plotOutput("M_stackDensityPlot", width = "100%")
+                                                
+                                                ),
+                               conditionalPanel("input.m_plotType == 'Label Clusters'",
+                                                uiOutput("M_labelCluster"),
+                                                hr(),
+                                                lapply(1:100, function(i) {
+                                                    uiOutput(paste0('Cluster', i))
+                                                }),
+                                                hr(),
+                                                actionButton("updatelabel", "Submit Cluster Label", icon = icon("hand-o-right")),
+                                                hr()
+                                                )
                            )),
                            
                            tabPanel("Subset Progression", fluidPage(
@@ -154,7 +223,19 @@ shinyUI(fluidPage(
                                                 hr(),
                                                 uiOutput("P_markerSelect"),
                                                 hr(),
-                                                checkboxInput("P_reverseOrder", label = "Reverse Order", value = FALSE),
+                                                fluidRow(
+                                                    column(2,
+                                                           checkboxInput("P_reverseOrder", label = "Reverse Order", value = FALSE)
+                                                    ),
+                                                    column(3,
+                                                           checkboxInput("P_combineTrends", label = "Combine Trend Lines", value = FALSE)
+                                                    ),
+                                                    column(3,
+                                                           actionButton("P_updateRegressionPlot", "Update Plot", icon = icon("hand-pointer-o"))
+                                                    ),
+                                                    column(4)
+                                                    
+                                                ),
                                                 plotOutput("P_markerPlot", width = "100%")
                                                 ),
                                
@@ -163,6 +244,7 @@ shinyUI(fluidPage(
                                                 
                                                 wellPanel(
                                                     h5("Cluster-based down-sampling to remove subset aboundance heterogeneity"),
+                                                    
                                                     fluidRow(
                                                         column(4,
                                                                uiOutput("P_clusterMethod")
@@ -176,6 +258,11 @@ shinyUI(fluidPage(
                                                                            selected = "ceil", width = "100%")
                                                         )
                                                     ),
+                                                    
+                                                    tableOutput('P_clusterTable'),
+                                                    
+                                                    uiOutput("P_clusterFilter"),
+                                                    hr(),
                                                 
                                                     h5("Diffusionmap Parameters"),
                                                     fluidRow(
@@ -184,8 +271,8 @@ shinyUI(fluidPage(
                                                                            selected = "euclidean", width = "100%")
                                                         ),
                                                         column(6,
-                                                               numericInput("P_outDim", "Output Dimensionality:", value = 3, 
-                                                                            min = 1, max = 5, step = 1, width = "100%")
+                                                               numericInput("P_outDim", "Output Dimensionality:", value = 4, 
+                                                                            min = 1, max = 6, step = 1, width = "100%")
                                                         )
                                                     )
                                                 ),
