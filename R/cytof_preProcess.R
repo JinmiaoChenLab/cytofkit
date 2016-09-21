@@ -113,7 +113,7 @@ cytof_exprsExtract <- function(fcsFile,
                                verbose = FALSE, 
                                comp = FALSE, 
                                markers = NULL, 
-                               transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh"), 
+                               transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"), 
                                scaleTo = NULL, 
                                q = 0.05,
                                l_w = 0.1, l_t = 4000, l_m = 4.5, l_a = 0,
@@ -204,6 +204,10 @@ cytof_exprsExtract <- function(fcsFile,
                data <- fcs@exprs
                trans <- flowCore::arcsinhTransform(a = a_a, b = a_b, c = a_c)
                data[ ,transMarker_id] <- apply(data[ ,transMarker_id, drop=FALSE], 2, trans)
+               exprs <- data[ ,marker_id, drop=FALSE]
+           },
+           none = {
+               data <- fcs@exprs
                exprs <- data[ ,marker_id, drop=FALSE]
            })
     
