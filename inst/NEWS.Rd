@@ -1,6 +1,20 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.5.8 (2016-08-19)}{
+  \subsection{MODIFICATION}{
+    \itemize{
+      \item add none option for transformation method to support FCS files with data already transformed
+      \item big updates on the layout of shinyAPP, functions categorized into four panels ("cluster", "marker", "sample", "progression")
+      \item add "Seperate Plot by Samples" on side panel, remove option "Label Samples by Shapes"
+      \item make sample filter works on subset progression panel, support plot labeld on grid plot 
+      \item added "group samples" function to relabel and group samples in sample panel
+      \item added subset precentage change plot in sample panel
+    }
+  }
+}
+
+
 \section{Changes in version 1.5.7 (2016-07-13)}{
   \subsection{MODIFICATION}{
     \itemize{
@@ -15,7 +29,8 @@
       \item Added combined view of marker expression patten on scatter plot and marker expression trend on subset progression
       \item Added stack density plot in Marker Plot
       \item Added cluster annotation (Label Clusters) in Marker Plot
-    }
+      }
+  }
 }
 
 

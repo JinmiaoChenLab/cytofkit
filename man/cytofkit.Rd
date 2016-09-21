@@ -6,7 +6,7 @@
 \usage{
 cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   projectName = "cytofkit", ifCompensation = FALSE,
-  transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh"),
+  transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"),
   mergeMethod = c("ceil", "all", "min", "fixed"), fixedNum = 10000,
   dimReductionMethod = c("tsne", "pca", "isomap"),
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),

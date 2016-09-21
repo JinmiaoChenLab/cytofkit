@@ -22,7 +22,7 @@ cytofkit_GUI <- function() {
     fcsFiles <- ""
     cur_dir <- getwd()
     mergeMethods <- c("all", "min", "ceil", "fixed")
-    transformMethods <- c("cytofAsinh", "autoLgcl")
+    transformMethods <- c("cytofAsinh", "autoLgcl", "none")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
     clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
     progressionMethods <- c("diffusionmap", "isomap", "NULL")
@@ -305,6 +305,8 @@ cytofkit_GUI <- function() {
         variable = transformMethod, value = transformMethods[1]), side = "left")
     tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[2],
         variable = transformMethod, value = transformMethods[2]), side = "left")
+    tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[3],
+        variable = transformMethod, value = transformMethods[3]), side = "left")
     
     ## cluster method
     cluster_label <- tklabel(tt, text = "Cluster Method(s) :")

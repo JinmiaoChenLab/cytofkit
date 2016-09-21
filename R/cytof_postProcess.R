@@ -221,7 +221,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
     sample_num <- length(unique(data[[sample]]))
     col_legend_row <- ceiling(cluster_num/15)
     size_legend_row <- ceiling(sample_num/4)
-    grid_col_num <- round(sqrt(sample_num))
+    grid_row_num <- round(sqrt(sample_num))
     if (sample_num >= 8) {
         shape_value <- LETTERS[1:sample_num]
     } else {
@@ -271,8 +271,8 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
         }
         
     }else if (type == 2){
-        cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
-            facet_wrap(~sample, ncol = grid_col_num, scales = "fixed") + 
+        cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) +
+            facet_wrap(~sample, nrow = grid_row_num, scales = "fixed") + 
             geom_point(size = point_size - 0.05 * sample_num) + 
             scale_colour_manual(values = rainbow(cluster_num)) + 
             xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Grid Plot", sep = " ")) + 
@@ -280,6 +280,26 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
             theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
             guides(colour = guide_legend(nrow = col_legend_row, override.aes = list(size = 4)), 
                    shape = guide_legend(nrow = size_legend_row, override.aes = list(size = 4)))
+        
+        if(addLabel){
+            edata <- data[ ,c(xlab, ylab, cluster)]
+            colnames(edata) <- c('x', "y", "z")
+            center <- aggregate(cbind(x,y) ~ z, data = edata, median) 
+            
+            if(labelRepel && !sampleLabel){
+                cp <- cp + geom_text_repel(data=center, aes_string(x = "x", y = "y", label = "z"),
+                                           size = labelSize, fontface = 'bold', color = "black",
+                                           box.padding = unit(0.5, 'lines'),
+                                           point.padding = unit(1.6, 'lines'),
+                                           segment.color = '#555555',
+                                           segment.size = 0.5,
+                                           arrow = arrow(length = unit(0.02, 'npc')))
+            }else{
+                cp <- cp + geom_text(data=center, aes_string(x = "x", y = "y", label = "z"), 
+                                     size = labelSize, colour = "black") 
+            }
+        }
+            
     }else{ 
         stop("Undefined type, only 1 or 2.") 
     }
@@ -486,7 +506,9 @@ cytof_clusterStat <- function(data, markers, cluster = "cluster", sample,
                statData <- data.frame(statData, cluster = clust_sample_count$cluster, check.names = FALSE)
            })
     
-    rownames(statData) <- paste0("cluster_", statData$cluster)
+    if(is.numeric(statData$cluster)){
+        rownames(statData) <- paste0("cluster_", statData$cluster)
+    }
     statData$cluster <- NULL  ## remove cluster column
     
     return(as.matrix(statData))
@@ -616,11 +638,6 @@ cytof_progressionPlot <- function(data, markers, clusters,
     q <- q + monocle_theme_opts() 
     
     if(addClusterLabel){
-        # edata <- data[ ,c("Pseudotime", clusterCol)]
-        # colnames(edata) <- c('x', "z")
-        # center <- aggregate(x ~ z, data = edata, median)
-        # center$y <- -0.5 ## add to the botom
-        # q <- q + geom_text_repel(data=center, aes(x=x, y=y, label=z), parse=TRUE)
         mdata$cluster <- mdata[[clusterCol]]
         center <- aggregate(cbind(Pseudotime, expression) ~ cluster + markers, data = mdata, median)
         q <- q + geom_text_repel(data=center, aes(x=Pseudotime, y=expression, label=cluster),
