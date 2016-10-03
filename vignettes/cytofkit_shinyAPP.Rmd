@@ -10,7 +10,7 @@ output:
 -->
 
 
-## Launch the Shiny APP
+# Launch the Shiny APP
 
 - cytofkit Shiny APP is integrated into the cytofkit pacakge, and can be deployed locally using the following command:
     ```{r, eval=FALSE}
@@ -20,7 +20,7 @@ output:
 
 - cytofkit Shiny APP is also hosted by shinyapps.io, and can be used through the public link: [cytofkitShinyAPP](https://chenhao.shinyapps.io/cytofkitShinyAPP/) 
 
-## Loading .RData to Shiny APP     
+# Loading .RData to Shiny APP     
 
 After the analysis was done using cytofkit, a special **RData file** will be saved with suffix of `.RData`. This **RData file** is saved for loading to the shiny APP to explore the results (The RData file used in this vignette can be found on the [github](https://github.com/JinmiaoChenLab/cytofkit_analysis_data_code) ). 
 
@@ -28,82 +28,55 @@ After the analysis was done using cytofkit, a special **RData file** will be sav
 
 Click the up-left `Choose File` button to choose **RData file**, then click the `submit` button below to load the data. 
 
-As shown in the figure above, there are one side panel and one main panel for the cytofkit shiny APP. On the side panel, there are some global control widgets like loading the data, filtering the samples, annotating the plot and saving the results. And a summary of the data information. 
+As shown in the figure above, there are one **side panel** and one **main panel** for the cytofkit shiny APP. 
 
-## Scatter Plot   
+- On the side panel, there are some global control widgets like loading the data, plot control, sample filter, a summary of the data and a button for saving the results.   
+- On the main panel, functions are categorized into four subpanels: **Cluster Panel**, **Marker Panel**, **Sample Panel** and **Progression Panel**, which are explained below:
 
-On the top of the main panel, there are three tap panels, they are **`Scatter Plot`**, **`Heat Map`** and **`Subset Progression`**. By default, the **`Scatter Plot`** will be on once the **RData file** is loaded. On the side panel, there are some control 
+# Cluster Panel   
 
-![](scatterPlot.png)
+Inside the cluster panel, there are three tab panels, they are **Cluster Plot**, **Annotate Clusters** and **Run FlowSOM**. 
 
-On the **`Scatter Plot`** main panel, you can: 
+![](cluster_panel.png)
 
-- Choose the *Plot Method*, which is your data visualization methods, like t-sne, ISOMAP or PCA.   
-- Choose the *Plot Function*, to check the clustering results, the marker expression pattern on the scatter plot.   
-- Adjust the size of the points using *Point Size*.   
-- Adjust the cluster label size using *Label Size*.
-- If you are checking the expression pattern of markers, you can change the color palette using *Color Palette*.
+1. **Cluster Plot**: visualize the clusters on the scatter plot of dimensionality reduced data. Use `Plot Data` to choose the dimensionality reduced data, and `Plot Option` to choose clustering results. Point size and label size can be adjust to fit your need.
 
-### Run FlowSOM
+2. **Annotate Clusters**: clusters can be annotated with cell population names. Once submitted, an annotated clustering option will be added to `Plot Option`.
 
-You can directly run FlowSOM clustering using the shiny APP. By selecting the *FlowSOM* to Yes, the FlowSOM clustering setup page will be shown as below:
+3. **Run FlowSOM**: if the clustering results doesn't make sense, another clustering option named FlowSOM can be tried. For FlowSOM, you need to specify the number of clusters. Once done, a FlowSOM clustering results will be added to `Plot Option`.
 
-![](run_FlowSOM.png)
+# Marker Panel
 
-After the FlowSOM was done, the results will be added to the **RData** object and can be explored on the shiny APP. 
+Marker Panel facilitates the annotation of clusters, it contains three tab panels: **Level Plot**, **Histogram** and **Heat Map**.
 
+![](marker_panel.png)
 
-## Heat Map
+1. **Level Plot**: visualize the expression level of selected marker on dimensionality reduced data, like on t-SNE. In `Plot Marker`, you can also select all markers to visualize the expression level of all markers in one plot.
 
-The second tap panel is the **`Heat Map`** panel. The mean/median expression level of markers for each cluster as well as the percentage of cells in each cluster for each sample can be visualized on this **`Heat Map`** panel.
+2. **Histogram**: check and compare the histogram of selected markers among different clusters or samples.
 
-![](heatmap.png)
+3. **Heat Map**: an overview of the expression profile of all clusters on all markers. 
 
-You can:   
+# Sample Panel
 
-- Choose the *Cluster Method* to check the result of a selected clustering method.   
-- Select the *Heatmap Type* to visualize the cluster mean, median or percentage.  
-- Choose the *Scale Data* to scale the values by row, column or none (by default).  
-- Customize the size of the labels by adjusting *Row Label Size* and *Col Label Size*.  
+Sample Panel allows checking the change of subset abundance among samples, as well as regroup the samples, it includes two tab panels: **Cell Counts** and **Group Samples**.
 
-## Progression Plot     
+![](sample_panel.png)
 
-On the third tap panel, **`Subset Progression`** panel, there are three radio buttons which represent the *Subset Relationship*, *Marker Expression Profile* and the *Run Diffusionmap*. 
+1. **Cell Counts**: check the cell counts in each cluster among each samples in a table, in a line plot or in a percentage heat map.
 
-### Subset Relationship
+2. **Group Samples**: regroup the samples.
 
-Select the *Subset Relationship*, a scatter plot showing the estimated relationship of the clusters will be displayed.
+# Progression Panel
 
-![](progressionPlot.png)
+Progression Panel helps estimate the relationship among subsets, it's targeted to detect the subset progression path automatically through diffusion map or ISOMAP. It has three tab panels: **Subset Relationship Plot**, **Marker Expression Profile** and **Run Diffusion Map**.
 
+![](progression_panel.png)
 
-### Marker Expression Profile
+1. **Subset Relationship Plot**: a scatter plot showing the estimated relationship of the clusters.
 
-Select the *Marker Expression Profile*, the selected expression trend of selected markers along a selected ordering method will be shown.
+2. **Marker Expression Profile**: show the expression trend of selected markers along a selected ordering method with a regression line.
 
-![](marker_expression_profile.png)
-
-
-Here you can choose the *Cell Order By* method, *Select Clusters* and *Select markers* to visualize. The clusters will be color-coded, and the cluster label can be added with customized size.
-
-### Run Diffusionmap
-
-You can directly run Diffusion map on the shiny APP, A setup page for runing the Diffusion map will be shown when you choose *Run Diffusionmap*.
-
-![](run_Diffusionmap.png)
-
-Here we combine the diffusion map with the clustering results to infer inter-subset relatedness, which is expected to help detection of cell differentiation trajectories. Firstly, we down-sampled the number of cells in each cluster to an equal size, thus reducing the cell subsets density heterogeneities and removing the dominance effect of large populations in the data. Then we ran diffusion map on the down-sampled dataset and overlay the clusters onto the transformed dimensions. 
-
-On the setup page:
-
-- Choose a clustering results from *Cluster Method*.    
-- Set the down-sampling size from *Cluster Sample Size*.    
-- There are four different down-sampling methods, including *ceil*, *all*, *min* and *fixed*. 
-    + *ceil* (the default option): up to a fixed number (*Cluster Sample Size*) of cells are sampled without replacement from each cluster
-    + *all*: all cells from each cluster are used.
-    +  *min*: The minimum number of cells among all the clusters are sampled from each cluster 
-    + *fixed*: a fixed num (*Cluster Sample Size*) of cells are sampled (with replacement when the total number of cell in that cluster is less than the fixe num) from each cluster.
-- Select a distance calculation method for Diffusionmap.
-- Select the output dimensionality for Diffusionmap.
+3. **Run Diffusion Map**: combine the diffusion map with the clustering results to infer inter-subset relatedness. Firstly, down-sampled the number of cells in each cluster to an equal size, thus reducing the cell subsets density heterogeneities and removing the dominance effect of large populations in the data. Then run diffusion map on the down-sampled dataset. 
 
 

@@ -19,7 +19,7 @@ shinyUI(fluidPage(
                wellPanel(
                    checkboxInput("addLabel", label = "Add Cluster Labels", value = TRUE),
                    checkboxInput("labelRepel", label = "Repel Cluster Labels", value = FALSE),
-                   checkboxInput("facetPlot", label = "Seperate Plot by Samples", value = FALSE)
+                   checkboxInput("facetPlot", label = "Separate Plot by Samples", value = FALSE)
                ),
                
                hr(),

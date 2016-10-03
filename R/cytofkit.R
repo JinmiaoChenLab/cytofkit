@@ -13,7 +13,7 @@
 #' 
 #' Using function \code{\link{cytof_exprsMerge}}, one or multiple FCS files will be loaded via the *read.FCS* 
 #' function in the *flowCore* package. Then transformation was applied to the expression value 
-#' of selected markers of each FCS file. Transformation methods include \code{cytofAsinh}, \code{autoLgcl}, 
+#' of selected markers of each FCS file. Transformation methods include \code{autoLgcl}, \code{cytofAsinh}, 
 #' \code{logicle} and \code{arcsinh}, where \code{cytofAsinh} is the default.Then mutilple FCS files are 
 #' merged using one of the merging methods \code{all}, \code{min}, \code{fixed} or \code{ceil}.
 #' 
@@ -90,7 +90,7 @@ NULL
 #' @param markers It can be either a text file where contains the makers to be used for analysis or a vector of the marker names.
 #' @param projectName A prefix that will be added to the names of all result files.
 #' @param ifCompensation Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
-#' @param transformMethod Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.
+#' @param transformMethod Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.
 #' @param mergeMethod When multiple fcs files are selected, cells can be combined using 
 #' one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. 
 #' The default option is \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled 
@@ -127,7 +127,7 @@ cytofkit <- function(fcsFiles = getwd(),
                      markers = "parameter.txt", 
                      projectName = "cytofkit", 
                      ifCompensation = FALSE, 
-                     transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"), 
+                     transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"), 
                      mergeMethod = c("ceil", "all", "min", "fixed"), 
                      fixedNum = 10000, 
                      dimReductionMethod = c("tsne", "pca", "isomap"), 
@@ -263,19 +263,12 @@ cytofkit <- function(fcsFiles = getwd(),
     
     ## save the results
     message("Analysis DONE, saving the reuslts...") 
-    if(saveObject){
-        objFile <- paste0(resultDir, .Platform$file.sep, projectName, ".RData")
-        save(analysis_results, file = objFile)
-        cat("R obejct is saved in ", objFile, "\n")
-        message("  **THIS R OBJECT IS THE INPUT OF SHINY APP!**  ")
-    }
+    cytof_writeResults(analysis_results = analysis_results,
+                       saveToRData = saveObject,
+                       saveToFCS = saveResults,
+                       saveToFiles = saveResults)
     
-    if (saveResults == TRUE) {
-        cat("Writing results\n")
-        cytof_writeResults(analysis_results = analysis_results)
-    } else {
-        return(analysis_results)
-    }
+    invisible(analysis_results)
 }
 
 

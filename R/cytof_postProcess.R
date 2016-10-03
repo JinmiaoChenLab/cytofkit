@@ -1,13 +1,16 @@
 #' Save the cytofkit analysis results
 #' 
-#' Scatter dot plot and heatmap of the cluster results, and all intermediate files will be 
-#' generated and saved in the \code{resultDir}
+#' Save analysis results from cytofkit main function to RData, csv files and PDF files and
+#' add them to a new copy of FCS files.
 #'
 #' @param analysis_results result data from output of \code{\link{cytofkit}}
 #' @param projectName a prefix that will be added to the names of result files.
+#' @param saveToRData boolean value determines if save the results object into RData file, for loading back to R and to shiny APP.
+#' @param saveToFCS boolean value determines if save the results back to the FCS files, new FCS files will be generated under folder XXX_analyzedFCS.
+#' @param saveToFiles boolean value determines if parse the results and automatically save to csv files and pdf figures.
 #' @param resultDir the directory where result files will be generated.
-#' @param saveToFCS save the results back to the FCS files, new FCS files will be generated.
 #' @param rawFCSdir the directory that contains fcs files to be analysed.
+#' @param inverseLgclTrans boolean if inverse logicle transform the cluster cor1 and cor2 channels.
 #' @return save all results in the \code{resultDir}
 #' @importFrom ggplot2 ggplot ggsave aes_string facet_wrap geom_point geom_rug theme_bw theme xlab ylab ggtitle coord_fixed guides guide_legend scale_shape_manual scale_colour_manual
 #' @importFrom reshape2 dcast
@@ -26,10 +29,13 @@
 #' #cytof_write_results(tr,projectName = 'test',resultDir=d,rawFCSdir =d)
 cytof_writeResults <- function(analysis_results, 
                                projectName, 
-                               resultDir, 
+                               saveToRData = TRUE,
                                saveToFCS = TRUE, 
-                               rawFCSdir = getwd()) {
-    
+                               saveToFiles = TRUE, 
+                               resultDir, 
+                               rawFCSdir,
+                               inverseLgclTrans = TRUE) {
+    ## check projectName parameter
     if(missing(projectName)){
         if(!is.null(analysis_results$projectName)){
             projectName <- analysis_results$projectName
@@ -38,6 +44,7 @@ cytof_writeResults <- function(analysis_results,
         }
     }
     
+    ## check resultDir parameter
     if(missing(resultDir)){
         if(!is.null(analysis_results$resultDir)){
             resultDir <- analysis_results$resultDir
@@ -45,107 +52,128 @@ cytof_writeResults <- function(analysis_results,
             resultDir <- getwd()
         }
     }
+    if(!dir.exists(resultDir)){
+        dir.create(resultDir)
+    }
     
+    ## check rawFCSdir parameter
     if(missing(rawFCSdir)){
         if(!is.null(analysis_results$rawFCSdir)){
             rawFCSdir <- analysis_results$rawFCSdir
-        }else{
-            rawFCSdir <- getwd()
+        }
+    }
+    if(!dir.exists(rawFCSdir)){
+        if(saveToFCS){
+            saveToFCS <- FALSE
+            warning("Can not find the path for original FCS files. Data cannnot be
+                    saved to new copies of FCS files. Please provide the correct path
+                    to parameter rawFCSdir.")
         }
     }
      
     curwd <- getwd()
     setwd(resultDir)
-    
-    ## save exprs
     exprs <- as.data.frame(analysis_results$expressionData)
-    ifMultiFCS <- length(unique(sub("_[0-9]*$", "", row.names(exprs)))) > 1
-    write.csv(exprs, paste0(projectName, "_markerFiltered_transformed_merged_exprssion_data.csv"))
-    
-    ## save dimReducedData
     dimReducedData <- analysis_results$dimReducedRes
-    for(i in 1:length(dimReducedData)){
-        methodi <- names(dimReducedData)[i]
-        if(!is.null(dimReducedData[[i]])){
-            write.csv(dimReducedData[[i]], paste(projectName, methodi,"dimension_reduced_data.csv", sep="_"))
-        }
+    clusterData <- analysis_results$clusterRes
+    
+    ## save analysis results to RData files
+    if(saveToRData){
+        objFile <- paste0(projectName, ".RData")
+        save(analysis_results, file = objFile)
+        cat("R obejct is saved in ", objFile, "\n")
+        message("  **THIS R OBJECT IS THE INPUT OF SHINY APP!**  ")
     }
     
-    ## save clusterData
-    clusterData <- analysis_results$clusterRes
-    if(!is.null(clusterData) && length(clusterData) > 0){
-        for(j in 1:length(clusterData)){
-            methodj <- names(clusterData)[j]
-            dataj <- clusterData[[j]]
-            if(!is.null(dataj)){
-                write.csv(dataj, paste(projectName, methodj, "clusters.csv", sep="_"))
-                
-                exprs_cluster_sample <- data.frame(exprs, cluster = dataj, check.names = FALSE)
-                ## cluster mean 
-                cluster_mean <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "mean")
-                write.csv(cluster_mean, paste(projectName, methodj, "cluster_mean_data.csv", sep = "_"))
-                pdf(paste(projectName, methodj, "cluster_mean_heatmap.pdf", sep = "_"))
-                cytof_heatmap(cluster_mean, paste(projectName, methodj, "\ncluster mean", sep = " "))
-                dev.off()
-                ## cluster median
-                cluster_median <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "median")
-                write.csv(cluster_median, paste(projectName, methodj, "cluster_median_data.csv", sep = "_"))
-                pdf(paste(projectName, methodj, "cluster_median_heatmap.pdf", sep = "_"))
-                cytof_heatmap(cluster_median, paste(projectName, methodj, "\ncluster median", sep = " "))
-                dev.off()
-                
-                ## cluster percentage
-                if (ifMultiFCS) {
-                    cluster_percentage <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "percentage")
-                    write.csv(cluster_percentage, paste(projectName, methodj, "cluster_cell_percentage.csv", sep = "_"))
-                    pdf(paste(projectName, methodj, "cluster_percentage_heatmap.pdf", sep = "_"))
-                    cytof_heatmap(cluster_percentage, paste(projectName, methodj, "cluster\ncell percentage", sep = " "))
-                    dev.off()
-                }
+    ## save analysis results to csv files and pdf figures
+    if(saveToFiles){
+        ## save exprs
+        ifMultiFCS <- length(unique(sub("_[0-9]*$", "", row.names(exprs)))) > 1
+        write.csv(exprs, paste0(projectName, "_markerFiltered_transformed_merged_exprssion_data.csv"))
+        
+        ## save dimReducedData
+        for(i in 1:length(dimReducedData)){
+            methodi <- names(dimReducedData)[i]
+            if(!is.null(dimReducedData[[i]])){
+                write.csv(dimReducedData[[i]], paste(projectName, methodi,"dimension_reduced_data.csv", sep="_"))
             }
         }
-    }  
-    
-    ## visualizationData x clusterData plot
-    visualizationData <- analysis_results$dimReducedRes[analysis_results$visualizationMethods]
-    for(i in 1:length(visualizationData)){
-        if(!is.null(visualizationData[[i]])){
-            methodi <- names(visualizationData)[i]
-            datai <- as.data.frame(visualizationData[[i]])
-            if(!is.null(clusterData) && length(clusterData) > 0){
-                for(j in 1:length(clusterData)){
-                    if(!is.null(clusterData[[j]])){
-                        methodj <- names(clusterData)[j]
-                        dataj <- clusterData[[j]]
-                        
-                        # combine datai and dataj
-                        xlab <- colnames(datai)[1]
-                        ylab <- colnames(datai)[2]
-                        dataij <- datai
-                        dataij$sample <- sub("_[0-9]*$", "", row.names(dataij))
-                        dataij$cluster <- factor(dataj)
-                        cluster <- "cluster"
-                        sample <- "sample"
-                        
-                        ## cluster plot
-                        figName <- paste(projectName, methodi, methodj, sep=" ")
-                        cluster_plot <- cytof_clusterPlot(dataij, xlab, ylab, cluster, sample, figName, 1)
-                        ggsave(filename = paste(projectName, methodi, methodj, "cluster_scatter_plot.pdf", sep = "_"), 
-                               cluster_plot, width = 12, height = 10)
-                        
-                        ## cluster grid plot if multiple files
-                        if (ifMultiFCS) {
-                            figName <- paste(projectName, methodi, methodj, sep=" ")
-                            cluster_grid_plot <- cytof_clusterPlot(dataij, xlab, ylab, cluster, sample, figName, 2)
-                            ggsave(filename = paste(projectName, methodi, methodj, "cluster_grid_scatter_plot.pdf", sep = "_"), cluster_grid_plot)
-                        }
+        
+        ## save clusterData
+        if(!is.null(clusterData) && length(clusterData) > 0){
+            for(j in 1:length(clusterData)){
+                methodj <- names(clusterData)[j]
+                dataj <- clusterData[[j]]
+                if(!is.null(dataj)){
+                    write.csv(dataj, paste(projectName, methodj, "clusters.csv", sep="_"))
+                    
+                    exprs_cluster_sample <- data.frame(exprs, cluster = dataj, check.names = FALSE)
+                    ## cluster mean 
+                    cluster_mean <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "mean")
+                    write.csv(cluster_mean, paste(projectName, methodj, "cluster_mean_data.csv", sep = "_"))
+                    pdf(paste(projectName, methodj, "cluster_mean_heatmap.pdf", sep = "_"))
+                    cytof_heatmap(cluster_mean, paste(projectName, methodj, "\ncluster mean", sep = " "))
+                    dev.off()
+                    ## cluster median
+                    cluster_median <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "median")
+                    write.csv(cluster_median, paste(projectName, methodj, "cluster_median_data.csv", sep = "_"))
+                    pdf(paste(projectName, methodj, "cluster_median_heatmap.pdf", sep = "_"))
+                    cytof_heatmap(cluster_median, paste(projectName, methodj, "\ncluster median", sep = " "))
+                    dev.off()
+                    
+                    ## cluster percentage
+                    if (ifMultiFCS) {
+                        cluster_percentage <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "percentage")
+                        write.csv(cluster_percentage, paste(projectName, methodj, "cluster_cell_percentage.csv", sep = "_"))
+                        pdf(paste(projectName, methodj, "cluster_percentage_heatmap.pdf", sep = "_"))
+                        cytof_heatmap(cluster_percentage, paste(projectName, methodj, "cluster\ncell percentage", sep = " "))
+                        dev.off()
                     }
                 }
-            }  
+            }
+        }  
+        
+        ## visualizationData x clusterData plot
+        visualizationData <- analysis_results$dimReducedRes[analysis_results$visualizationMethods]
+        for(i in 1:length(visualizationData)){
+            if(!is.null(visualizationData[[i]])){
+                methodi <- names(visualizationData)[i]
+                datai <- as.data.frame(visualizationData[[i]])
+                if(!is.null(clusterData) && length(clusterData) > 0){
+                    for(j in 1:length(clusterData)){
+                        if(!is.null(clusterData[[j]])){
+                            methodj <- names(clusterData)[j]
+                            dataj <- clusterData[[j]]
+                            
+                            # combine datai and dataj
+                            xlab <- colnames(datai)[1]
+                            ylab <- colnames(datai)[2]
+                            dataij <- datai
+                            dataij$sample <- sub("_[0-9]*$", "", row.names(dataij))
+                            dataij$cluster <- factor(dataj)
+                            cluster <- "cluster"
+                            sample <- "sample"
+                            
+                            ## cluster plot
+                            figName <- paste(projectName, methodi, methodj, sep=" ")
+                            cluster_plot <- cytof_clusterPlot(dataij, xlab, ylab, cluster, sample, figName, 1)
+                            ggsave(filename = paste(projectName, methodi, methodj, "cluster_scatter_plot.pdf", sep = "_"), 
+                                   cluster_plot, width = 12, height = 10)
+                            
+                            ## cluster grid plot if multiple files
+                            if (ifMultiFCS) {
+                                figName <- paste(projectName, methodi, methodj, sep=" ")
+                                cluster_grid_plot <- cytof_clusterPlot(dataij, xlab, ylab, cluster, sample, figName, 2)
+                                ggsave(filename = paste(projectName, methodi, methodj, "cluster_grid_scatter_plot.pdf", sep = "_"), cluster_grid_plot)
+                            }
+                        }
+                    }
+                }  
+            }
         }
     }
     
-    ## save data to FCS
+    ## save analysis results to FCS files
     if(saveToFCS == TRUE){
         tcols <- do.call(cbind, dimReducedData)
         ctols <- do.call(cbind, clusterData)
@@ -153,16 +181,19 @@ cytof_writeResults <- function(analysis_results,
         row.names(dataToAdd) <- row.names(exprs)
         trans_col_names <- colnames(tcols)
         cluster_col_names <- colnames(ctols)
-        cytof_addToFCS(dataToAdd, rawFCSdir = rawFCSdir, 
+        cytof_addToFCS(dataToAdd, 
+                       rawFCSdir = rawFCSdir, 
                        analyzedFCSdir = paste(projectName, "analyzedFCS", sep = "_"), 
-                       transformed_cols = trans_col_names, cluster_cols = cluster_col_names)
+                       transformed_cols = trans_col_names, 
+                       cluster_cols = cluster_col_names,
+                       inLgclTrans = inverseLgclTrans)
     }
     setwd(curwd)
     
     message(paste0("Writing results Done! Results are saved under path: ",
                    resultDir))
     
-    return(NULL)
+    invisible(NULL)
 }
 
 
@@ -508,6 +539,8 @@ cytof_clusterStat <- function(data, markers, cluster = "cluster", sample,
     
     if(is.numeric(statData$cluster)){
         rownames(statData) <- paste0("cluster_", statData$cluster)
+    }else{
+        rownames(statData) <- statData$cluster
     }
     statData$cluster <- NULL  ## remove cluster column
     
@@ -669,13 +702,17 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @return new fcs files stored under \code{analyzedFCSdir}
 #' @importMethodsFrom flowCore keyword
 #' @importFrom Biobase  exprs exprs<- description description<- pData pData<- 
-cytof_addToFCS <- function(data, rawFCSdir, analyzedFCSdir, transformed_cols = c("tsne_1", 
-    "tsne_2"), cluster_cols = c("cluster"), inLgclTrans = TRUE) {
+cytof_addToFCS <- function(data, 
+                           rawFCSdir, 
+                           analyzedFCSdir, 
+                           transformed_cols = c("tsne_1", "tsne_2"), 
+                           cluster_cols = c("cluster"), 
+                           inLgclTrans = TRUE) {
     
     lgcl <- logicleTransform(w = 0.1, t = 4000, m = 4.5, a = 0)
     ilgcl <- inverseLogicleTransform(trans = lgcl)
     
-    if (!file.exists(analyzedFCSdir)) {
+    if (!dir.exists(analyzedFCSdir)) {
         dir.create(analyzedFCSdir)
     }
     
@@ -736,7 +773,7 @@ cytof_addToFCS <- function(data, rawFCSdir, analyzedFCSdir, transformed_cols = c
     	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
     	if(!file.exists(fn)){
     	    ## stop the writing if cannot find the file
-    	    message(paste("rawFCSdir is not correct, can not find raw FCS file:", fn))
+    	    message(paste("Can not find raw FCS file:", fn))
     	    return(NULL)
     	}
         cat("Save to file:", fn, "\n")

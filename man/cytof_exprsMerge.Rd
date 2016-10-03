@@ -5,8 +5,9 @@
 \title{Merge the expression matrix from multiple FCS files with preprocessing}
 \usage{
 cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
-  transformMethod = "cytofAsinh", scaleTo = NULL, mergeMethod = c("ceil",
-  "all", "fixed", "min"), fixedNum = 10000, sampleSeed = 123, ...)
+  transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"),
+  scaleTo = NULL, mergeMethod = c("ceil", "all", "fixed", "min"),
+  fixedNum = 10000, sampleSeed = 123, ...)
 }
 \arguments{
 \item{fcsFiles}{A vector of FCS file names.}
@@ -15,7 +16,7 @@ cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
 
 \item{markers}{Selected markers for analysis, either marker names/descriptions or marker IDs.}
 
-\item{transformMethod}{Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.}
+\item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
 \item{scaleTo}{Scale the expression to a specified range c(a, b), default is NULL.}
 
