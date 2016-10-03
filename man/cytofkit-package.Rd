@@ -19,7 +19,7 @@ Pre-processing
 
 Using function \code{\link{cytof_exprsMerge}}, one or multiple FCS files will be loaded via the *read.FCS* 
 function in the *flowCore* package. Then transformation was applied to the expression value 
-of selected markers of each FCS file. Transformation methods include \code{cytofAsinh}, \code{autoLgcl}, 
+of selected markers of each FCS file. Transformation methods include \code{autoLgcl}, \code{cytofAsinh}, 
 \code{logicle} and \code{arcsinh}, where \code{cytofAsinh} is the default.Then mutilple FCS files are 
 merged using one of the merging methods \code{all}, \code{min}, \code{fixed} or \code{ceil}.
 

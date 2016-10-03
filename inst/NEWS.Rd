@@ -1,6 +1,17 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.5.9 (2016-10-03)}{
+  \subsection{MODIFICATION}{
+    \itemize{
+      \item debug when w is negative in autoLgcl transformation, convert to logicle transformation in this case
+      \item modify the cytof_writeResults function to make it more robust.
+      \item set autoLgcl as the default transformation method.
+      \item add cytofkit plos computational biology paper in CITATION
+    }
+  }
+}
+
 \section{Changes in version 1.5.8 (2016-08-19)}{
   \subsection{MODIFICATION}{
     \itemize{
@@ -10,6 +21,7 @@
       \item make sample filter works on subset progression panel, support plot labeld on grid plot 
       \item added "group samples" function to relabel and group samples in sample panel
       \item added subset precentage change plot in sample panel
+      \item added case checking of Nan of w in autoLgcl function
     }
   }
 }

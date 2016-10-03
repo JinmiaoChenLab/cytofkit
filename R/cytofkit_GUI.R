@@ -22,7 +22,7 @@ cytofkit_GUI <- function() {
     fcsFiles <- ""
     cur_dir <- getwd()
     mergeMethods <- c("all", "min", "ceil", "fixed")
-    transformMethods <- c("cytofAsinh", "autoLgcl", "none")
+    transformMethods <- c("autoLgcl", "cytofAsinh", "none")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
     clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
     progressionMethods <- c("diffusionmap", "isomap", "NULL")
@@ -32,9 +32,9 @@ cytofkit_GUI <- function() {
     resDir <- tclVar(cur_dir)
     projectName <- tclVar("cytofkit")
     mergeMethod <- tclVar("ceil")
-    fixedNum <- tclVar("10000")
+    fixedNum <- tclVar("5000")
     markers <- tclVar("")
-    transformMethod <- tclVar("cytofAsinh")
+    transformMethod <- tclVar("autoLgcl")
     progressionMethod <- tclVar("NULL")
     
     clusterSelect <- c()
@@ -116,7 +116,7 @@ cytofkit_GUI <- function() {
     }
     
     reset_num2any <- function() {
-        tclvalue(fixedNum) <- "1000"
+        tclvalue(fixedNum) <- "5000"
     }
     
     rawFCSdir_help <- function() {
@@ -151,7 +151,7 @@ cytofkit_GUI <- function() {
     
     
     transformMethod_help <- function() {
-        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\" (suggest for CyTOF data) and \"autoLgcl\" (suggest for FCM data).", 
+        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\" and \"autoLgcl\".", 
             icon = "info", type = "ok")
     }
     
@@ -181,9 +181,9 @@ cytofkit_GUI <- function() {
         tclvalue(resDir) = cur_dir
         tclvalue(projectName) = "cytofkit"
         tclvalue(mergeMethod) = mergeMethods[3]
-        tclvalue(fixedNum) = "10000"
+        tclvalue(fixedNum) = "5000"
         tclvalue(markers) = ""
-        tclvalue(transformMethod) = "cytofAsinh"
+        tclvalue(transformMethod) = "autoLgcl"
         tclvalue(clusterSelect[1]) = "0"
         tclvalue(clusterSelect[2]) = "1"
         tclvalue(clusterSelect[3]) = "0"

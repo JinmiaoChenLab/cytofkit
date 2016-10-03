@@ -122,11 +122,10 @@ shinyServer(function(input, output, session) {
         if (!is.null(v$data)){
             withProgress(message=paste0('Saving Results to', v$data$resultDir), value=0, {
                 analysis_results <<- v$data
-                save(analysis_results, file = paste0(v$data$resultDir, .Platform$file.sep, v$data$projectName, ".RData"))
                 cytof_writeResults(analysis_results)
+                ## open the results directory
+                opendir(v$data$resultDir)
             })
-            ## open the results directory
-            opendir(v$data$resultDir)
         }
     })
     
@@ -180,9 +179,9 @@ shinyServer(function(input, output, session) {
                                   colorPalette = input$colorPalette,
                                   labelRepel = input$labelRepel,
                                   removeOutlier = TRUE)
+                plot(gp)
             })
         }
-        plot(gp)
     }, height = 700, width = 750)
     
     ## annotate clusters
@@ -254,13 +253,14 @@ shinyServer(function(input, output, session) {
                 FlowSOM_cluster <- cytof_cluster(xdata = obj$expressionData[ ,input$c_markerSelect],
                                                  method = "FlowSOM",
                                                  FlowSOM_k = input$S_FlowSOM_k)
+                
+                ## update FlowSOM cluster results
+                obj$clusterRes[["FlowSOM"]] <- FlowSOM_cluster
+                ## update the project name
+                obj$projectName <- paste0(obj$projectName, "_cytofkit_ShinyApp_Output")
+                v$data <- obj
             })
             
-            ## update FlowSOM cluster results
-            obj$clusterRes[["FlowSOM"]] <- FlowSOM_cluster
-            ## update the project name
-            obj$projectName <- paste0(obj$projectName, "_cytofkit_ShinyApp_Output")
-            v$data <- obj
             ## jump to C_panel1
             updateTabsetPanel(session, "C_clusterTabs", selected = "C_panel1")
         }
@@ -308,9 +308,10 @@ shinyServer(function(input, output, session) {
                                   labelRepel = input$labelRepel,
                                   removeOutlier = TRUE)
                 
+                plot(gp)
             })
         }
-        plot(gp)
+        
     }, height = 800, width = 850)
     
     ## histogram plot
@@ -370,9 +371,8 @@ shinyServer(function(input, output, session) {
                                            legend_text_size = input$M_legendTextSize, 
                                            legendRow = input$M_legendRow,
                                            legend_title = input$m_stackFactor)
-                    
+                    plot(gp)
                 })
-                plot(gp)
             }
         }, height = 800, width = 850)
     })
@@ -625,9 +625,9 @@ shinyServer(function(input, output, session) {
                                         sampleLabel = FALSE, 
                                         labelRepel = input$labelRepel,
                                         fixCoord = FALSE)
+                plot(gp)
             })
         }
-        plot(gp)
     }, height = 700, width = 750)
     
     ## marker expression profile
@@ -707,8 +707,8 @@ shinyServer(function(input, output, session) {
                                                 segmentSize = 0.5,
                                                 min_expr = NULL) 
                 }
+                plot(pp)
             })
-            plot(pp)
             
         }, height = 800, width = 850)  
     })
@@ -764,11 +764,11 @@ shinyServer(function(input, output, session) {
                                                 out_dim = input$P_outDim,
                                                 clusterSampleMethod = input$P_sampleMethod,
                                                 clusterSampleSize = input$P_clusterSampleSize)
+                ## update progressionRes results
+                obj$progressionRes <- diffmapRes
+                v$data <- obj
             })
             
-            ## update progressionRes results
-            obj$progressionRes <- diffmapRes
-            v$data <- obj
             ## jump to P_panel1
             updateTabsetPanel(session, "P_progressionTabs", selected = "P_panel1")
         }

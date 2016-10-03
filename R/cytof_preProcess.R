@@ -7,7 +7,7 @@
 #' @param fcsFiles A vector of FCS file names.
 #' @param comp Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
 #' @param markers Selected markers for analysis, either marker names/descriptions or marker IDs.
-#' @param transformMethod Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.
+#' @param transformMethod Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.
 #' @param scaleTo Scale the expression to a specified range c(a, b), default is NULL.
 #' @param mergeMethod Merge method for mutiple FCS expression data. cells can be combined using one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
 #' \code{ceil}, up to a fixed number (specified by \code{fixedNum}) of cells are sampled without replacement from each fcs file and combined for analysis.
@@ -30,19 +30,22 @@
 cytof_exprsMerge <- function(fcsFiles, 
                              comp = FALSE, 
                              markers = NULL, 
-                             transformMethod = "cytofAsinh", 
+                             transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"), 
                              scaleTo = NULL, 
                              mergeMethod = c("ceil", "all", "fixed", "min"), 
                              fixedNum = 10000, 
                              sampleSeed = 123, ...) {
     
+    transformMethod <- match.arg(transformMethod)
+    mergeMethod <- match.arg(mergeMethod)
+    
     exprsL <- mapply(cytof_exprsExtract, fcsFiles, 
-                     MoreArgs = list(comp = comp, markers = markers, 
+                     MoreArgs = list(comp = comp, 
+                                     markers = markers, 
                                      transformMethod = transformMethod, 
                                      scaleTo = scaleTo, ...), 
                      SIMPLIFY = FALSE)
 
-    mergeMethod <- match.arg(mergeMethod)
     if(is.numeric(sampleSeed))
         set.seed(sampleSeed)
     switch(mergeMethod,
@@ -80,14 +83,14 @@ cytof_exprsMerge <- function(fcsFiles,
 #' Extract the expression data from a FCS file with preprocessing
 #' 
 #' Extract the FCS expresssion data with preprocessing of compensation (for FCM data only)
-#' and transformation. Transformtion methods includes \code{cytofAsinh} (suggest for CyTOF data), 
-#' \code{autoLgcl} (suggest for FCM data), \code{logicle} (customizable) and \code{arcsinh} (customizable).
+#' and transformation. Transformtion methods includes \code{autoLgcl}, \code{cytofAsinh}, 
+#' \code{logicle} (customizable) and \code{arcsinh} (customizable).
 #' 
 #' @param fcsFile The name of the FCS file.
 #' @param verbose Boolean value detecides if print the massage details of FCS loading.
 #' @param comp Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
 #' @param markers Selected markers for analysis, either marker names/descriptions or marker IDs.
-#' @param transformMethod Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.
+#' @param transformMethod Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.
 #' @param scaleTo Scale the expression to a specified range c(a, b), default is NULL.
 #' @param q quantile of negative values removed for auto w estimation, default is 0.05, parameter for autoLgcl transformation.
 #' @param l_w Linearization width in asymptotic decades, parameter for logicle transformation.
@@ -113,14 +116,16 @@ cytof_exprsExtract <- function(fcsFile,
                                verbose = FALSE, 
                                comp = FALSE, 
                                markers = NULL, 
-                               transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"), 
+                               transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"), 
                                scaleTo = NULL, 
                                q = 0.05,
                                l_w = 0.1, l_t = 4000, l_m = 4.5, l_a = 0,
                                a_a = 1, a_b = 1, a_c =0) {
     
+    transformMethod <- match.arg(transformMethod)
+    
     ## load FCS files
-    name <- sub(".fcs", "", basename(fcsFile))
+    name <- sub(".fcs$", "", basename(fcsFile))
     if (verbose) {
         fcs <- read.FCS(fcsFile, transformation = FALSE)
     } else {
@@ -128,7 +133,7 @@ cytof_exprsExtract <- function(fcsFile,
     }
     
     ## compensation
-    if(is.matrix(comp)){
+    if(is.matrix(comp) || is.data.frame(comp)){
         fcs <- applyComp(fcs, comp)
         cat("    Compensation is applied on", fcsFile, "\n")
     }else if(isTRUE(comp)) {
@@ -182,7 +187,6 @@ cytof_exprsExtract <- function(fcsFile,
     transMarker_id <- setdiff(marker_id, noTrans_channels)
    
     ## exprs transformation
-    transformMethod <- match.arg(transformMethod)
     switch(transformMethod,
            cytofAsinh = {
                data <- fcs@exprs
@@ -306,8 +310,11 @@ autoLgcl <- function(x, channels, m = 4.5, q = 0.05) {
                 w <- 0  
             } else {
                 w <- (m - log10(t/abs(r)))/2
-                if(w>2) {
-                    w <- 0.5
+                if(is.nan(w) || w>2) {
+                    warning(paste0("autoLgcl failed for channel: ", p, "; come to use logicle transformation!"))
+                    w <- 0.1
+                    t <- 4000 
+                    m <- 4.5 
                 }
             }
         }

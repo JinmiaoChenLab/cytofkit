@@ -53,14 +53,8 @@ cytofkit_GUI()
 
 The interface will appear like below, you can click the information button **!** to check the explanation for each entry and customize your own analysis.
 
-<u>On Windows:</u>       
+![cytofkit GUI](cytofkit_GUI.png)
 
-![cytofkit GUI](cytofkit_GUI_windows.png)
-
-<u>On Mac:</u>     
-
-![cytofkit GUI](cytofkit_GUI_mac.png)
-               
 Start your analysis as simply as following:   
 
 - Choose the input fcs files from the directory where you store FCS data; 

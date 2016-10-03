@@ -5,7 +5,7 @@
 \title{Extract the expression data from a FCS file with preprocessing}
 \usage{
 cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE, markers = NULL,
-  transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"),
+  transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"),
   scaleTo = NULL, q = 0.05, l_w = 0.1, l_t = 4000, l_m = 4.5,
   l_a = 0, a_a = 1, a_b = 1, a_c = 0)
 }
@@ -18,7 +18,7 @@ cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE, markers = NULL,
 
 \item{markers}{Selected markers for analysis, either marker names/descriptions or marker IDs.}
 
-\item{transformMethod}{Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.}
+\item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
 \item{scaleTo}{Scale the expression to a specified range c(a, b), default is NULL.}
 
@@ -43,8 +43,8 @@ A transformend expression data matrix with selected markers, row names added as 
 }
 \description{
 Extract the FCS expresssion data with preprocessing of compensation (for FCM data only)
-and transformation. Transformtion methods includes \code{cytofAsinh} (suggest for CyTOF data), 
-\code{autoLgcl} (suggest for FCM data), \code{logicle} (customizable) and \code{arcsinh} (customizable).
+and transformation. Transformtion methods includes \code{autoLgcl}, \code{cytofAsinh}, 
+\code{logicle} (customizable) and \code{arcsinh} (customizable).
 }
 \examples{
 d <- system.file('extdata',package='cytofkit')

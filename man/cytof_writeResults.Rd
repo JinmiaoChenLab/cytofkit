@@ -4,26 +4,33 @@
 \alias{cytof_writeResults}
 \title{Save the cytofkit analysis results}
 \usage{
-cytof_writeResults(analysis_results, projectName, resultDir, saveToFCS = TRUE,
-  rawFCSdir = getwd())
+cytof_writeResults(analysis_results, projectName, saveToRData = TRUE,
+  saveToFCS = TRUE, saveToFiles = TRUE, resultDir, rawFCSdir,
+  inverseLgclTrans = TRUE)
 }
 \arguments{
 \item{analysis_results}{result data from output of \code{\link{cytofkit}}}
 
 \item{projectName}{a prefix that will be added to the names of result files.}
 
+\item{saveToRData}{boolean value determines if save the results object into RData file, for loading back to R and to shiny APP.}
+
+\item{saveToFCS}{boolean value determines if save the results back to the FCS files, new FCS files will be generated under folder XXX_analyzedFCS.}
+
+\item{saveToFiles}{boolean value determines if parse the results and automatically save to csv files and pdf figures.}
+
 \item{resultDir}{the directory where result files will be generated.}
 
-\item{saveToFCS}{save the results back to the FCS files, new FCS files will be generated.}
-
 \item{rawFCSdir}{the directory that contains fcs files to be analysed.}
+
+\item{inverseLgclTrans}{boolean if inverse logicle transform the cluster cor1 and cor2 channels.}
 }
 \value{
 save all results in the \code{resultDir}
 }
 \description{
-Scatter dot plot and heatmap of the cluster results, and all intermediate files will be 
-generated and saved in the \code{resultDir}
+Save analysis results from cytofkit main function to RData, csv files and PDF files and
+add them to a new copy of FCS files.
 }
 \examples{
 d <- system.file('extdata',package='cytofkit')

@@ -6,7 +6,7 @@
 \usage{
 cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   projectName = "cytofkit", ifCompensation = FALSE,
-  transformMethod = c("cytofAsinh", "autoLgcl", "logicle", "arcsinh", "none"),
+  transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"),
   mergeMethod = c("ceil", "all", "min", "fixed"), fixedNum = 10000,
   dimReductionMethod = c("tsne", "pca", "isomap"),
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
@@ -24,7 +24,7 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
 
 \item{ifCompensation}{Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.}
 
-\item{transformMethod}{Data Transformation method, including \code{cytofAsinh} (suggest for CyTOF data), \code{autoLgcl} (suggest for FCM data), \code{logicle} and \code{arcsinh}.}
+\item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
 \item{mergeMethod}{When multiple fcs files are selected, cells can be combined using 
 one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. 
