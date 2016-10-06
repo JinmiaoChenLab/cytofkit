@@ -183,17 +183,21 @@ shinyUI(fluidPage(
                                                         ),
                                                         column(6, 
                                                                selectInput('S_viewOption', strong('View Option:'), 
-                                                                           choices = c("Count Table", "Percentage Heat Map", 
-                                                                                       "Percentage Change Plot"), 
-                                                                           selected = "Count Table", width = "100%")
+                                                                           choices = c("Percentage Heat Map", 
+                                                                                       "Percentage Change Plot",
+                                                                                       "Count Table"), 
+                                                                           selected = "Percentage Heat Map", width = "100%")
                                                         )
                                                     ),
-                                                    hr(),
                                                     conditionalPanel(" input.S_viewOption == 'Count Table' ",
+                                                                     hr(),
                                                                      tableOutput('S_clusterTable')),
                                                     conditionalPanel(" input.S_viewOption == 'Percentage Heat Map' ",
+                                                                     hr(),
                                                                      plotOutput("S_heatmapPlot", width = "100%")),
                                                     conditionalPanel(" input.S_viewOption == 'Percentage Change Plot' ",
+                                                                     uiOutput("S_clusterFilter"),
+                                                                     hr(),
                                                                      plotOutput("S_rateChangePlot", width = "100%"))
                                                     ),
                                            

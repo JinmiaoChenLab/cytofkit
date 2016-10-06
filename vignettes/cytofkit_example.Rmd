@@ -24,7 +24,7 @@ biocLite("cytofkit")
 
 * Download the disk image (dmg) file for [XQuartz](https://dl.bintray.com/xquartz/downloads/XQuartz-2.7.9.dmg).
 * Double-clicking on the file to start the installation, you can do it safely by clicking through all the defaults.
-* After the installer runs, you'll have to log out and back on to your Mac OS X account.
+* After the installation, you'll have to log out and back on to your Mac OS X account.
 
 Load the Package:
 
@@ -35,7 +35,7 @@ library("cytofkit")
 Read the package description:
 
 ```{r, eval=FALSE}
-?cytofkit-package
+?"cytofkit-package"
 ```
 
 

@@ -1,6 +1,19 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.5.10 (2016-10-05)}{
+  \subsection{MODIFICATION}{
+    \itemize{
+      \item corrected the citation title
+      \item added cluster filter in rateChange line plot in ShinyAPP
+      \item debugged the error of loading back exported RData file
+      \item updated the saving button, make it more robust. If cannot find FCS path, then doesn't save new FCS files
+      \item added progression indicator in shinyAPP
+    }
+  }
+}
+
+
 \section{Changes in version 1.5.9 (2016-10-03)}{
   \subsection{MODIFICATION}{
     \itemize{

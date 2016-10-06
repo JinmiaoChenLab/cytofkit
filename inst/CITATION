@@ -1,5 +1,5 @@
 citEntry(entry="article",
-         title = "High-dimensional analysis of the murine myeloid cell system",
+         title = "Cytofkit: A Bioconductor Package for an Integrated Mass Cytometry Data Analysis Pipeline",
          author = personList( as.person("Hao Chen"), 
                               as.person("Mai Chan Lau"),
                               as.person("Michael T. Wong"),
