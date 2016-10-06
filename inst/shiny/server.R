@@ -59,26 +59,16 @@ shinyServer(function(input, output, session) {
             load(cytofkitObj$datapath)
             v$data <- analysis_results
             
-            if(is.null(v$data$sampleInfo)){
-                ## creat v$sampleInfo
-                v$sampleInfo <- data.frame(cellID = row.names(v$data$expressionData),
-                                           cellSample = factor(sub("_[0-9]*$", "", row.names(v$data$expressionData))),
-                                           stringsAsFactors = FALSE)
-                v$data$sampleInfo <- v$sampleInfo
-            }else{
-                v$sampleInfo <- v$data$sampleInfo
-            }
-            
-            
-            if(is.null(v$data$resultDir)){
-                v$data$resultDir <- path.expand("~")  ## default save to home if not specified
-            }
-            if(is.null(v$data$rawFCSdir)){
-                v$data$rawFCSdir <- path.expand("~")  ## default to be home if not specified
-            }
             if(is.null(v$data$projectName)){
                 v$data$projectName <- "cytofkit_shinyAPP_output"
             }
+            
+            # Need modification later
+            # currently doesn't update sampleInfo with v$data$sampleInfo
+            v$sampleInfo <- data.frame(cellID = row.names(v$data$expressionData),
+                                       cellSample = factor(sub("_[0-9]*$", "", row.names(v$data$expressionData))),
+                                       stringsAsFactors = FALSE)
+            v$data$sampleInfo <- v$sampleInfo
         }
     })
 
@@ -120,9 +110,27 @@ shinyServer(function(input, output, session) {
     ## Save and parse cytofkit RData object
     observeEvent(input$saveButton, {
         if (!is.null(v$data)){
-            withProgress(message=paste0('Saving Results to', v$data$resultDir), value=0, {
+            withProgress(message='Saving Results ', value=0, {
+                ## check results saving path
+                if(is.null(v$data$resultDir) || !dir.exists(v$data$resultDir)){
+                    v$data$resultDir <- path.expand("~")  ## default save to home if not specified
+                }
+                saveToFCS <- TRUE
+                if(is.null(v$data$rawFCSdir)){
+                    saveToFCS <- FALSE
+                    warning("Path for original FCS files is not provided, 
+                            data cannnot be saved to new copies of FCS files.")
+                }else if(!dir.exists(v$data$rawFCSdir)){
+                    saveToFCS <- FALSE
+                    warning(paste0("Path for original FCS files doesn't exits, 
+                                   data cannnot be saved to new copies of FCS files.", 
+                                   "Please check path: ", v$data$rawFCSdir))
+                }
+                incProgress(1/2, message = paste0("To ", v$data$resultDir))
                 analysis_results <<- v$data
-                cytof_writeResults(analysis_results)
+                cytof_writeResults(analysis_results,
+                                   saveToFCS = saveToFCS)
+                incProgress(1/2)
                 ## open the results directory
                 opendir(v$data$resultDir)
             })
@@ -179,7 +187,9 @@ shinyServer(function(input, output, session) {
                                   colorPalette = input$colorPalette,
                                   labelRepel = input$labelRepel,
                                   removeOutlier = TRUE)
+                incProgress(1/2)
                 plot(gp)
+                incProgress(1/2)
             })
         }
     }, height = 700, width = 750)
@@ -239,7 +249,12 @@ shinyServer(function(input, output, session) {
                                 clusterMethod,
                                 paste0("Annotated_", clusterMethod))
             obj$clusterRes[[labelName]] <- clusterLabels
+            
+            ## update the project name
+            obj$projectName <- paste0(obj$projectName, "_annotated_", clusterMethod)
+            
             v$data <- obj
+            
             ## jump to C_panel1
             updateTabsetPanel(session, "C_clusterTabs", selected = "C_panel1")
         }
@@ -253,12 +268,13 @@ shinyServer(function(input, output, session) {
                 FlowSOM_cluster <- cytof_cluster(xdata = obj$expressionData[ ,input$c_markerSelect],
                                                  method = "FlowSOM",
                                                  FlowSOM_k = input$S_FlowSOM_k)
-                
+                incProgress(1/2)
                 ## update FlowSOM cluster results
                 obj$clusterRes[["FlowSOM"]] <- FlowSOM_cluster
                 ## update the project name
-                obj$projectName <- paste0(obj$projectName, "_cytofkit_ShinyApp_Output")
+                obj$projectName <- paste0(obj$projectName, "_add_FlowSOM")
                 v$data <- obj
+                incProgress(1/2)
             })
             
             ## jump to C_panel1
@@ -307,8 +323,9 @@ shinyServer(function(input, output, session) {
                                   colorPalette = input$colorPalette,
                                   labelRepel = input$labelRepel,
                                   removeOutlier = TRUE)
-                
+                incProgress(1/2)
                 plot(gp)
+                incProgress(1/2)
             })
         }
         
@@ -357,7 +374,7 @@ shinyServer(function(input, output, session) {
                                            check.names = FALSE)
                     data <- data[mySamples, ,drop=FALSE]
                     stackFactor <- sfactors[mySamples, input$m_stackFactor]
-                    
+                    incProgress(1/3)
                     gp <- stackDenistyPlot(data = data, 
                                            densityCols=m_markerSelect, 
                                            stackFactor = stackFactor,
@@ -371,7 +388,9 @@ shinyServer(function(input, output, session) {
                                            legend_text_size = input$M_legendTextSize, 
                                            legendRow = input$M_legendRow,
                                            legend_title = input$m_stackFactor)
+                    incProgress(1/3)
                     plot(gp)
+                    incProgress(1/3)
                 })
             }
         }, height = 800, width = 850)
@@ -414,6 +433,16 @@ shinyServer(function(input, output, session) {
         }   
     })
     
+    output$S_clusterFilter <- renderUI({
+        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod)){
+            return(NULL)
+        }else{
+            clusterIDs <- sort(unique(v$data$clusterRes[[input$s_clusterMethod]]))
+            selectizeInput('s_clusterFilter', 'Filter Clusters:', 
+                           choices = clusterIDs, selected = clusterIDs, 
+                           multiple = TRUE, width = "100%")
+        }   
+    })
     
     output$S_heatmapPlot <- renderPlot({
         if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod))
@@ -434,6 +463,7 @@ shinyServer(function(input, output, session) {
             data <- data.frame(sample = v$sampleInfo$cellSample,
                                cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
                                counts = 1)
+            
             statData1 <- aggregate(counts ~ ., data = data, sum)
             statData2 <- aggregate(counts ~ sample, data = data, sum)
             statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
@@ -446,9 +476,10 @@ shinyServer(function(input, output, session) {
     }) 
     
     output$S_rateChangePlot <- renderPlot({
-        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod))
+        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod) || is.null(input$s_clusterFilter))
             return(NULL)
         withProgress(message="Generating Rate Change Plot", value=0, {
+            ## percentage stat
             data <- data.frame(sample = v$sampleInfo$cellSample,
                                cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
                                counts = 1)
@@ -456,14 +487,21 @@ shinyServer(function(input, output, session) {
             statData2 <- aggregate(counts ~ sample, data = data, sum)
             statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
             statData$percentageInSample <- statData$countsInAll/statData$countsInSample
-            
-            ggplot(data = statData, aes_string(x="sample", 
+            incProgress(1/3)
+            ## filter clusters
+            usedClusters <- input$s_clusterFilter
+            clusterCheck <- as.character(statData$cluster) %in% usedClusters
+            statData <- statData[clusterCheck, ,drop=FALSE]
+            incProgress(1/3)
+            gp <- ggplot(data = statData, aes_string(x="sample", 
                                                y="percentageInSample", 
                                                color = "cluster",
                                                group = "cluster")) + 
                 geom_point(size = 2) + geom_line(size = 1.5) + 
                 xlab("Cell Group") + ylab("Percentage of Cells in Group") + theme_bw() + 
                 theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+            incProgress(1/3)
+            plot(gp)
         })
     }, height = 800, width = 850)
     
@@ -538,6 +576,9 @@ shinyServer(function(input, output, session) {
             expressionData <- v$data$expressionData
             row.names(expressionData) <- v$sampleInfo$newCellID
             v$data$expressionData <- expressionData
+            
+            ## update the project name
+            v$data$projectName <- paste0(v$data$projectName, "_grouped_samples")
 
             ## update reactive object v$sampleInfo
             if(!is.null(v$data$progressionRes)){
@@ -563,6 +604,9 @@ shinyServer(function(input, output, session) {
                 expressionData <- v$data$expressionData
                 row.names(expressionData) <- v$sampleInfo$cellID
                 v$data$expressionData <- expressionData
+                
+                ## update the project name
+                v$data$projectName <- sub("_grouped_samples", "", v$data$projectName)
                 
                 ## update reactive object v$sampleInfo
                 if(!is.null(v$data$progressionRes)){
@@ -610,7 +654,7 @@ shinyServer(function(input, output, session) {
                 data <- data.frame(obj$progressionData, 
                                    cluster = obj$sampleCluster,
                                    sample = sub("_[0-9]*$", "", row.names(obj$sampleData)))
-                
+                incProgress(1/3)
                 data <- data[data$sample %in% input$samples, ,drop=FALSE]
                 gp <- cytof_clusterPlot(data = data, 
                                         xlab = input$p_xlab, 
@@ -625,7 +669,9 @@ shinyServer(function(input, output, session) {
                                         sampleLabel = FALSE, 
                                         labelRepel = input$labelRepel,
                                         fixCoord = FALSE)
+                incProgress(1/3)
                 plot(gp)
+                incProgress(1/3)
             })
         }
     }, height = 700, width = 750)
@@ -683,7 +729,7 @@ shinyServer(function(input, output, session) {
                 
                 sampleNames <- sub("_[0-9]*$", "", row.names(v$data$progressionRes$sampleData))
                 data <- data[sampleNames %in% input$samples, ,drop=FALSE]
-                
+                incProgress(1/3)
                 if(input$P_combineTrends){
                     pp <- cytof_expressionTrends(data, 
                                                  markers = p_markerSelect, 
@@ -707,7 +753,9 @@ shinyServer(function(input, output, session) {
                                                 segmentSize = 0.5,
                                                 min_expr = NULL) 
                 }
+                incProgress(1/3)
                 plot(pp)
+                incProgress(1/3)
             })
             
         }, height = 800, width = 850)  
@@ -764,9 +812,15 @@ shinyServer(function(input, output, session) {
                                                 out_dim = input$P_outDim,
                                                 clusterSampleMethod = input$P_sampleMethod,
                                                 clusterSampleSize = input$P_clusterSampleSize)
+                incProgress(1/2)
                 ## update progressionRes results
                 obj$progressionRes <- diffmapRes
+                
+                ## update the project name
+                obj$projectName <- paste0(obj$projectName, "_added_diffusionmap")
+                
                 v$data <- obj
+                incProgress(1/2)
             })
             
             ## jump to P_panel1
