@@ -1,0 +1,58 @@
+citEntry(entry="article",
+         title = "Cytofkit: A Bioconductor Package for an Integrated Mass Cytometry Data Analysis Pipeline",
+         author = personList( as.person("Hao Chen"), 
+                              as.person("Mai Chan Lau"),
+                              as.person("Michael T. Wong"),
+                              as.person("Evan W Newell"),
+                              as.person("Michael Poidinger"),
+                              as.person("Jinmiao Chen") ),
+         year = 2016,
+         volume = "12(9)",
+         journal = "PLOS Computational Biology",
+         textVersion = 
+         paste("Chen H, Lau MC, Wong MT, Newell EW, Poidinger M, et al. (2016):", 
+               "Cytofkit: A Bioconductor Package for an Integrated Mass Cytometry Data Analysis Pipeline.",
+                "PLoS Comput Biol 12(9): e1005112. doi: 10.1371/journal.pcbi.1005112" ))
+
+
+citEntry(entry="article",
+         title = "High-dimensional analysis of the murine myeloid cell system",
+         author = personList( as.person("Burkhard Becher"), 
+                              as.person("Andreas Schlitzer"),
+                              as.person("Jinmiao Chen"),
+                              as.person("Hermi R Sumatoh"),
+                              as.person("Karen Wei Weng Teng"),
+                              as.person("Donovan Low"),
+                              as.person("Christiane Ruedl"),
+                              as.person("Paola Riccardi-Castagnoli"),
+                              as.person("Michael Poidinger"),
+                              as.person("Melanie Greter"),
+                              as.person("Florent Ginhoux"),
+                              as.person("Evan W Newell") ),
+         year = 2014,
+         volume = "15",
+         pages = "1181--1189",
+         journal = "Nature Immunology",
+         textVersion = 
+         paste("Becher B, Schlitzer A and Chen J et al. (2014):", 
+               "High-dimensional analysis of the murine myeloid cell system.",
+                "Nature Immunology 14, 1181-1189" ) )
+                
+                
+citEntry(
+	entry="article",
+	title = "Mapping the Diversity of Follicular Helper T Cells in Human Blood and Tonsils Using High-Dimensional Mass Cytometry Analysis", 
+	author = personList( as.person("Michael T. Wong"), 
+	                     as.person("Jinmiao Chen"),
+                         as.person("Sriram Narayanan"),
+                         as.person("Wenyu Lin"),
+                         as.person("Rosslyn Anicete"),
+                         as.person("Henry Tan Kun Kiaang"),
+                         as.person("Maria Alicia Curotto De Lafaille"),
+                         as.person("Michael Poidinger"),
+                         as.person("Evan W. Newell") ),
+	year = "2015",
+	journal = "Cell Reports",
+	volume = "11",
+	pages = "1822--1833",
+	textVersion = "Wong M, Chen J, Narayanan S, Lin W, Anicete R, Kiaang H, Lafaille M, Poidinger M and Newell E (2015). Mapping the Diversity of Follicular Helper T Cells in Human Blood and Tonsils Using High-Dimensional Mass Cytometry Analysis. Cell Reports 11, 1822-1833")
