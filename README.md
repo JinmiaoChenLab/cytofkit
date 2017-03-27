@@ -1,5 +1,5 @@
 
-cytofkit: an integrated mass cytometry data analysis pipeline
+cytofkit: an integrated flow/mass cytometry data analysis pipeline
 ============
 
 ### cytofkit
