@@ -34,4 +34,3 @@ xdata <- cytof_exprsMerge(fcsFile, markers = markers, mergeMethod = 'fixed', fix
 ydata <- cytof_dimReduction(xdata, method = "tsne")
 clusters <- cytof_cluster(ydata, xdata, method = "ClusterX")
 }
-

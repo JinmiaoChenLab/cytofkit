@@ -47,4 +47,3 @@ prog <- cytof_progression(data = xdata, cluster = clusters, clusterSampleSize = 
 d <- as.data.frame(cbind(prog$progressionData, cluster = factor(prog$sampleCluster)))
 cytof_clusterPlot(data =d, xlab = "diffusionmap_1", ylab="diffusionmap_2", cluster = "cluster", sampleLabel = FALSE)
 }
-

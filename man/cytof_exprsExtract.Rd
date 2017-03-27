@@ -53,4 +53,3 @@ parameters <- list.files(d, pattern='.txt$', full=TRUE)
 markers <- as.character(read.table(parameters, sep = "\\t", header = TRUE)[, 1])
 transformed <- cytof_exprsExtract(fcsFile, markers = markers)
 }
-

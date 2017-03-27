@@ -4,8 +4,8 @@
 \alias{cytof_colorPlot}
 \title{Plot the data with color-coded marker values}
 \usage{
-cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered", "topo",
-  "heat", "terrain", "cm"), pointSize = 1, removeOutlier = TRUE)
+cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
+  "spectral1", "spectral2", "heat"), pointSize = 1, removeOutlier = TRUE)
 }
 \arguments{
 \item{data}{A dataframe containing the xlab, ylab and zlab.}
@@ -35,4 +35,3 @@ c <- rnorm(300, 10, 5)
 data <- data.frame(dim1 = x, dim2 = y, marker = c)
 cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 }
-

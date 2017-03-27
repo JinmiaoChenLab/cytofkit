@@ -18,7 +18,7 @@ cytof_addToFCS(data, rawFCSdir, analyzedFCSdir, transformed_cols = c("tsne_1",
 
 \item{cluster_cols}{the column name of the cluster data in \code{data}.}
 
-\item{inLgclTrans}{Boolean value decides if apply the inverse lgcl transformation to the data before saving}
+\item{inLgclTrans}{Boolean value decides if apply the inverse lgcl transformation to the the cluster data before saving}
 }
 \value{
 new fcs files stored under \code{analyzedFCSdir}
@@ -27,4 +27,3 @@ new fcs files stored under \code{analyzedFCSdir}
 Store the new dimension transformed data and cluster data into the exprs 
 matrix in new fcs files under \code{analyzedFCSdir}
 }
-

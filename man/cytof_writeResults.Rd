@@ -42,4 +42,3 @@ p <- list.files(d, pattern='.txt$', full=TRUE)
 \seealso{
 \code{\link{cytofkit}}
 }
-

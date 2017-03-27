@@ -38,4 +38,3 @@ exprs_cluster <- data.frame(cluster = c, m1 = m1, m2 = m2, m3 = m3, m4 = m4, m5 
 row.names(exprs_cluster) <- rnames
 cytof_clusterStat(data = exprs_cluster, cluster = "cluster", statMethod = "mean")
 }
-

@@ -6,10 +6,12 @@ shinyServer(function(input, output, session) {
     ##------------------Reactive Values and Reactive Objects-------------------
     
     v <- reactiveValues(data = NULL, sampleInfo = NULL)
+    c <- reactiveValues(clusterCol = list())
+    p <- reactiveValues(progressionCluster = NULL)
     
     ## Scatter plot methods
     visualizationMethods <- reactive({
-        if(is.null(v$data)){
+        if(is.null(v$data) || is.null(v$data$visualizationMethods)){
             return(NULL)
         }else{
             return(v$data$visualizationMethods)
@@ -18,13 +20,13 @@ shinyServer(function(input, output, session) {
     
     ## Scatter plot functions
     visualizationFunctions <- reactive({
-        if(is.null(v$data)){
+        if(is.null(v$data) || is.null(v$data$clusterRes)){
             return(NULL)
         }else{
             return(c(names(v$data$clusterRes), 
-                     "ColorBySample",
-                     "DensityPlot",
-                     "DotPlot"))
+                     "Sample",
+                     "Density",
+                     "None"))
         }
     })
     
@@ -63,6 +65,12 @@ shinyServer(function(input, output, session) {
                 v$data$projectName <- "cytofkit_shinyAPP_output"
             }
             
+            if(!is.null(v$data$progressionRes)){
+                ## default the first cluster results are used for progression analysis
+                p$progressionCluster <- names(v$data$clusterRes)[1]
+            }
+            
+            
             # Need modification later
             # currently doesn't update sampleInfo with v$data$sampleInfo
             v$sampleInfo <- data.frame(cellID = row.names(v$data$expressionData),
@@ -85,7 +93,7 @@ shinyServer(function(input, output, session) {
     output$summaryText1 <- renderText({
         if(is.null(v$data))
             return(NULL)
-        paste0("-- ", nrow(v$data[[1]]), "cells x ", ncol(v$data[[1]]), "markers")
+        paste0("-- ", nrow(v$data[[1]]), " cells x ", ncol(v$data[[1]]), " markers")
     })
     
     output$summaryText2 <- renderText({
@@ -126,10 +134,14 @@ shinyServer(function(input, output, session) {
                                    data cannnot be saved to new copies of FCS files.", 
                                    "Please check path: ", v$data$rawFCSdir))
                 }
+                
+                ## NOTE: if samples are regrouped, then new FCS file cannot be saved
                 incProgress(1/2, message = paste0("To ", v$data$resultDir))
                 analysis_results <<- v$data
                 cytof_writeResults(analysis_results,
-                                   saveToFCS = saveToFCS)
+                                   saveToRData = TRUE,
+                                   saveToFCS = saveToFCS,
+                                   saveToFiles = FALSE)
                 incProgress(1/2)
                 ## open the results directory
                 opendir(v$data$resultDir)
@@ -139,13 +151,12 @@ shinyServer(function(input, output, session) {
     
     ##------------------------------Cluster Panel------------------------------
     
-    ## cluster plot
-    
+    ##-----cluster plot-----
     output$C_PlotMethod <- renderUI({
         if(is.null(v$data) || is.null(visualizationMethods())){
             return(NULL)
         }else{
-            selectInput('c_PlotMethod', 'Plot Data:', choices = visualizationMethods(), 
+            selectInput('c_PlotMethod', 'Visualization Method:', choices = visualizationMethods(), 
                         selected = visualizationMethods()[1], width = "100%")
         }   
     })
@@ -154,7 +165,7 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data) || is.null(visualizationFunctions())){
             return(NULL)
         }else{
-            selectInput('c_PlotFunction', 'Plot Option:', choices = visualizationFunctions(), 
+            selectInput('c_PlotFunction', 'Cluster By:', choices = visualizationFunctions(), 
                         selected = visualizationFunctions()[1], width = "100%")
         }   
     })
@@ -169,33 +180,156 @@ shinyServer(function(input, output, session) {
         }   
     })
     
-    output$C_ScatterPlot <- renderPlot({
-        if(is.null(v$data) || is.null(input$c_PlotMethod) || is.null(input$c_PlotFunction)){
+    output$C_clusterSelect <- renderUI({
+        if(is.null(v$data) || is.null(v$data$clusterRes) || is.null(input$c_PlotFunction))
+            return(NULL)
+        if(input$c_PlotFunction %in% c("Sample", "Density","None")){
             return(NULL)
         }else{
+            clusterMethod <- input$c_PlotFunction
+            clusterIDs <- sort(unique(v$data$clusterRes[[clusterMethod]]))
+            selectizeInput('c_clusterSelect', 'Clusters Filter:', 
+                           choices = clusterIDs, selected = clusterIDs, 
+                           multiple = TRUE, width = "100%")
+            # checkboxGroupInput('p_clusterSelect', strong('Select Clusters:'), 
+            #                    clusterIDs, selected = clusterIDs, inline = TRUE)
+        }   
+    })
+    
+    ## Complex dependencies here: --> (depends on)
+    ## C_ScatterPlotInput --> c_PlotMethod + c_clusterSelect 
+    ## c_clusterSelect --> c_PlotMethod
+    ## carefull checkings are applied to solve concurrency conflicts
+    C_ScatterPlotInput <- function(){
+        if(is.null(v$data) || is.null(input$c_PlotMethod) || 
+           is.null(input$c_PlotFunction) || is.null(input$c_clusterSelect)){
+            return(NULL)
+        }else if(!all(input$c_clusterSelect %in% v$data$clusterRes[[input$c_PlotFunction]]) &&
+                 !(input$c_PlotFunction %in% c("Sample", "Density","None"))){
+            return(NULL)
+        }else{
+           
             withProgress(message="Generating Cluster Scatter Plot", value=0, {
+                if(input$c_PlotFunction %in% c("Sample", "Density", "None")){
+                    clusterSelect <- NULL
+                    clusterColor <- NULL
+                }else{
+                    clusterSelect <- input$c_clusterSelect
+                    clusterMethod <- input$c_PlotFunction
+                    if(!is.null(c$clusterCol[[clusterMethod]])){
+                        clusterColor <- c$clusterCol[[clusterMethod]]
+                    }else{
+                        cluster_num <- length(unique(v$data$clusterRes[[clusterMethod]]))
+                        clusterColor <- rainbow(cluster_num)
+                    }
+                }
                 gp <- scatterPlot(obj = v$data,
                                   plotMethod = input$c_PlotMethod,
                                   plotFunction = input$c_PlotFunction,
-                                  pointSize = input$S_PointSize,
-                                  addLabel = input$addLabel,
-                                  labelSize = input$S_LabelSize,
+                                  pointSize = input$C_PointSize,
+                                  addLabel = input$C_addLabel,
+                                  labelSize = input$C_LabelSize,
                                   sampleLabel = FALSE,
-                                  FlowSOM_k = input$S_FlowSOM_k, 
+                                  FlowSOM_k = input$C_FlowSOM_k, 
+                                  selectCluster = clusterSelect,
                                   selectSamples = input$samples, 
-                                  facetPlot = input$facetPlot,
-                                  colorPalette = input$colorPalette,
-                                  labelRepel = input$labelRepel,
-                                  removeOutlier = TRUE)
+                                  facetPlot = input$C_facetPlot,
+                                  labelRepel = input$C_labelRepel,
+                                  removeOutlier = TRUE,
+                                  clusterColor = clusterColor)
                 incProgress(1/2)
                 plot(gp)
                 incProgress(1/2)
             })
         }
-    }, height = 700, width = 750)
+    }
     
-    ## annotate clusters
+    output$C_ScatterPlot <- renderPlot({
+        C_ScatterPlotInput()
+    }, height = 900, width = 950)
     
+    output$C_download_cluster_plot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_cluster_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = C_ScatterPlotInput(), 
+                   width=as.numeric(input$C_tab1_w), 
+                   height=as.numeric(input$C_tab1_h))
+        }
+    )
+    
+    ##----- change cluster colour -----
+    output$C_colourCluster <- renderUI({
+        if(is.null(v$data) || is.null(v$data$clusterRes)){
+            return(NULL)
+        }else{
+            clusterMethods <- c(names(v$data$clusterRes)) 
+            #clusterMethods <- clusterMethods[!grepl("Subset", clusterMethods)]
+            selectInput('c_colourCluster', 'Choose Cluster to Change the Colour :', 
+                        choices = clusterMethods, 
+                        selected = clusterMethods[1], width = "50%")
+        }   
+    })
+    
+    ## currently use 100 as a limit for cluster numbers 
+    ## --- TODO: use reactiveValues to automatically retrive cluster numbers --- ## 
+    lapply(1:100, function(i) {
+        output[[paste0('Cluster_', i, "_col")]] <- renderUI({
+            if(is.null(v$data) || is.null(v$data$clusterRes) || is.null(input$c_colourCluster)){
+                return(NULL)
+            }
+            
+            clusters <- v$data$clusterRes[[input$c_colourCluster]]
+            clusterLabel <- levels(as.factor(clusters))
+            if(is.null(c$clusterCol[[input$c_colourCluster]])){
+                clusterColor <- rainbow(length(unique(clusters)))
+            }else{
+                clusterColor <- c$clusterCol[[input$c_colourCluster]]
+            }
+            
+            if (i <= length(clusterLabel)){
+                x <- clusterLabel[i]
+                colourInput(inputId=paste0('cluster_', i, '_col'), 
+                            label=paste0('Cluster ', x," Colour :"), 
+                            value = clusterColor[i], showColour = "both", 
+                            palette = "square")
+            }
+        })
+    })
+    
+    ## update cluster color
+    observeEvent(input$C_updateClusterColor, {
+        if(!is.null(v$data) && !is.null(input$c_colourCluster)){
+            clusterMethod <- input$c_colourCluster
+            clusterVec<- v$data$clusterRes[[clusterMethod]]
+            clusters <- levels(as.factor(clusterVec))
+            clusterCols <- NULL
+            for (i in 1:length(clusters)){
+                clusteri <- clusters[i]
+                iCol <- input[[paste0('cluster_', i, '_col')]]
+                clusterCols <- c(clusterCols, iCol)
+            }
+
+            ## update new cluster colours
+            c$clusterCol[[clusterMethod]] <- clusterCols
+
+            ## jump to C_tab1
+            updateTabsetPanel(session, "C_clusterTabs", selected = "C_tab1")
+        }
+    })
+    
+    ## revert default cluster colors
+    observeEvent(input$C_revertClusterColor, {
+        if(!is.null(v$data) && !is.null(input$c_colourCluster)){
+            clusterMethod <- input$c_colourCluster
+            c$clusterCol[[clusterMethod]] <- NULL
+            
+            ## jump to C_tab1
+            updateTabsetPanel(session, "C_clusterTabs", selected = "C_tab1")
+        }
+    })
+    
+    
+    ## ------annotate clusters-----
     output$C_labelCluster <- renderUI({
         if(is.null(v$data) || is.null(v$data$clusterRes)){
             return(NULL)
@@ -204,9 +338,19 @@ shinyServer(function(input, output, session) {
             #clusterMethods <- clusterMethods[!grepl("Subset", clusterMethods)]
             selectInput('c_labelCluster', 'Choose Cluster Results to Annotate:', 
                         choices = clusterMethods, 
-                        selected = clusterMethods[1], width = "30%")
+                        selected = clusterMethods[1], width = "50%")
         }   
     })
+    
+    output$C_labelCluster_name <- renderUI({
+        if(is.null(v$data) || is.null(v$data$clusterRes) || is.null(input$c_labelCluster)){
+            return(NULL)
+        }else{
+            textInput("c_labelCluster_name", label = "Type In Your Name for Annotated Cluster", 
+                      value = paste0("Annotated_", input$c_labelCluster), width = "50%")
+        }
+    })
+
     
     ## currently use 100 as a limit for cluster numbers 
     ## --- TODO: use reactiveValues to automatically retrive cluster numbers --- ## 
@@ -227,7 +371,7 @@ shinyServer(function(input, output, session) {
     
     ## update cluster labels
     observeEvent(input$updatelabel, {
-        if(!is.null(v$data) && !is.null(input$c_labelCluster)){
+        if(!is.null(v$data) && !is.null(input$c_labelCluster) && !is.null(input$c_labelCluster_name)){
             obj <- v$data
             clusterMethod <- input$c_labelCluster
             clusterVec<- obj$clusterRes[[clusterMethod]]
@@ -243,11 +387,9 @@ shinyServer(function(input, output, session) {
                     clusterLabels[clusterLabels==clusteri] <- ilabel
                 }
             }
-            ## either add new cluste or update
-            labelName <- clusterMethod
-            labelName <- ifelse(grepl("Annotated_", labelName),
-                                clusterMethod,
-                                paste0("Annotated_", clusterMethod))
+            
+            ## update new cluster results
+            labelName <- input$c_labelCluster_name
             obj$clusterRes[[labelName]] <- clusterLabels
             
             ## update the project name
@@ -255,19 +397,22 @@ shinyServer(function(input, output, session) {
             
             v$data <- obj
             
-            ## jump to C_panel1
-            updateTabsetPanel(session, "C_clusterTabs", selected = "C_panel1")
+            ## jump to C_tab1
+            updateTabsetPanel(session, "C_clusterTabs", selected = "C_tab1")
         }
     })
     
+    
+    
+    ##-----RUN flowSOM-----
     ## result object which will be updated by C_runFlowSOM
     observeEvent(input$C_runFlowSOM, {
         if(!is.null(v$data) && !is.null(input$c_markerSelect)){
             obj <- v$data
-            withProgress(message=paste0('Runing FlowSOM using k=', input$S_FlowSOM_k), value=0, {
+            withProgress(message=paste0('Runing FlowSOM using k=', input$C_FlowSOM_k), value=0, {
                 FlowSOM_cluster <- cytof_cluster(xdata = obj$expressionData[ ,input$c_markerSelect],
                                                  method = "FlowSOM",
-                                                 FlowSOM_k = input$S_FlowSOM_k)
+                                                 FlowSOM_k = input$C_FlowSOM_k)
                 incProgress(1/2)
                 ## update FlowSOM cluster results
                 obj$clusterRes[["FlowSOM"]] <- FlowSOM_cluster
@@ -277,20 +422,61 @@ shinyServer(function(input, output, session) {
                 incProgress(1/2)
             })
             
-            ## jump to C_panel1
-            updateTabsetPanel(session, "C_clusterTabs", selected = "C_panel1")
+            ## jump to C_tab1
+            updateTabsetPanel(session, "C_clusterTabs", selected = "C_tab1")
         }
     })
     
+    
     ##------------------------------Marker Panel-------------------------------
     
-    ## level plot
+    ##-----heat map plot-----
+    output$M_plotCluster <- renderUI({
+        if(is.null(v$data) || is.null(clusterMethods())){
+            return(NULL)
+        }else{
+            selectInput('m_plotCluster', 'Cluster Method:', choices = clusterMethods(), 
+                        selected = clusterMethods()[1], width = "100%")
+        }   
+    })
     
+    
+    M_heatmapPlotInput <- reactive({
+        if(is.null(v$data) || is.null(input$m_plotCluster))
+            return(NULL)
+        heatMap(data = v$data, 
+                clusterMethod = input$m_plotCluster, 
+                type = input$M_plotMethod, 
+                dendrogram = input$M_heatmap_dendrogram,
+                colPalette = input$M_heatmap_colorPalette,
+                selectSamples = input$samples,
+                cex_row_label= input$M_rowLabelSize, 
+                cex_col_label= input$M_colLabelSize, 
+                scaleMethod = input$M_scaleMethod)
+        
+        dev.copy2pdf(file = "cytofkit_shinyAPP_marker_heatmap_plot.pdf",
+                     width=as.numeric(input$M_tab3_w), 
+                     height=as.numeric(input$M_tab3_h))
+    })
+    
+    output$M_heatmapPlot <- renderPlot({
+        M_heatmapPlotInput()
+    }, height = 900, width = 950)
+    
+    output$M_download_heatmapPlot = downloadHandler(
+        filename = "cytofkit_shinyAPP_marker_heatmap_plot.pdf",
+        content = function(file) {
+            file.copy("cytofkit_shinyAPP_marker_heatmap_plot.pdf", file)
+        }
+    )
+    
+    
+    ##-----level plot-----
     output$M_PlotMethod <- renderUI({
         if(is.null(v$data) || is.null(visualizationMethods())){
             return(NULL)
         }else{
-            selectInput('m_PlotMethod', 'Plot Method:', choices = visualizationMethods(), 
+            selectInput('m_PlotMethod', 'Visualization Method:', choices = visualizationMethods(), 
                         selected = visualizationMethods()[1], width = "100%")
         }   
     })
@@ -305,7 +491,7 @@ shinyServer(function(input, output, session) {
         }   
     })
     
-    output$M_markerExpressionPlot <- renderPlot({
+    M_markerExpressionPlotInput <- function(){
         if(is.null(v$data) || is.null(input$m_PlotMethod) || is.null(input$m_PlotMarker)){
             return(NULL)
         }else{
@@ -314,25 +500,37 @@ shinyServer(function(input, output, session) {
                                   plotMethod = input$m_PlotMethod,
                                   plotFunction = input$m_PlotMarker,
                                   pointSize = input$M_PointSize,
-                                  addLabel = input$addLabel,
+                                  addLabel = FALSE,
                                   labelSize = input$S_LabelSize,
                                   sampleLabel = FALSE,
-                                  FlowSOM_k = input$S_FlowSOM_k, 
+                                  FlowSOM_k = input$C_FlowSOM_k, 
                                   selectSamples = input$samples, 
-                                  facetPlot = input$facetPlot,
-                                  colorPalette = input$colorPalette,
-                                  labelRepel = input$labelRepel,
+                                  facetPlot = FALSE,
+                                  colorPalette = input$M_colorPalette,
+                                  labelRepel = FALSE,
                                   removeOutlier = TRUE)
                 incProgress(1/2)
                 plot(gp)
                 incProgress(1/2)
             })
         }
-        
-    }, height = 800, width = 850)
+    }
     
-    ## histogram plot
+    output$M_markerExpressionPlot <- renderPlot({
+        M_markerExpressionPlotInput()
+    }, height = 900, width = 950)
     
+    output$M_download_expression_plot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_marker_expression_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = M_markerExpressionPlotInput(), 
+                   width=as.numeric(input$M_tab1_w), 
+                   height=as.numeric(input$M_tab1_h))
+        }
+    )
+    
+    
+    ##-----histogram plot-----
     output$M_stackFactor <- renderUI({
         if(is.null(v$data)){
             return(NULL)
@@ -352,136 +550,187 @@ shinyServer(function(input, output, session) {
             selectizeInput('m_markerSelect', 'Select Markers:', 
                            choices = markerNames, selected = markerNames[1:initNum], 
                            multiple = TRUE, width = "100%")
-            
-            # checkboxGroupInput('m_markerSelect', strong('Select Markers:'),
-            #                    markerNames, selected = markerNames[initNum], inline = TRUE)
         }   
     })
     
-    observeEvent(input$M_updateDensityPlot, {
+    M_stackDensityPlotInput <- function(){
         m_markerSelect <- isolate(input$m_markerSelect)
-        output$M_stackDensityPlot <- renderPlot({
-            if(is.null(v$data) || is.null(input$m_stackFactor) || is.null(m_markerSelect)){
-                return(NULL)
-            }else{
-                withProgress(message="Generating Stack Density Plot", value=0, {
-                    data <- data.frame(v$data$expressionData, check.names = FALSE)
-                    samples <- as.character(v$sampleInfo$cellSample)
-                    mySamples <- samples %in% input$samples
-                    sfactors <- data.frame(do.call(cbind, v$data$clusterRes), 
-                                           sample = samples, 
-                                           stringsAsFactors = FALSE, 
-                                           check.names = FALSE)
-                    data <- data[mySamples, ,drop=FALSE]
-                    stackFactor <- sfactors[mySamples, input$m_stackFactor]
-                    incProgress(1/3)
-                    gp <- stackDenistyPlot(data = data, 
-                                           densityCols=m_markerSelect, 
-                                           stackFactor = stackFactor,
-                                           kernel = "gaussian",
-                                           bw = "nrd0", 
-                                           adjust = 1,
-                                           stackRotation = 0, 
-                                           stackSeperation = "auto",
-                                           x_text_size = input$M_xlab_size, 
-                                           strip_text_size = input$M_markerTextSize,
-                                           legend_text_size = input$M_legendTextSize, 
-                                           legendRow = input$M_legendRow,
-                                           legend_title = input$m_stackFactor)
-                    incProgress(1/3)
-                    plot(gp)
-                    incProgress(1/3)
-                })
-            }
-        }, height = 800, width = 850)
-    })
-    
-    ## heat map plot
-    
-    output$H_plotCluster <- renderUI({
-        if(is.null(v$data) || is.null(clusterMethods())){
+        if(is.null(v$data) || is.null(input$m_stackFactor) || is.null(m_markerSelect)){
             return(NULL)
         }else{
-            selectInput('h_plotCluster', 'Cluster Method:', choices = clusterMethods(), 
-                        selected = clusterMethods()[1], width = "100%")
-        }   
+            withProgress(message="Generating Stack Density Plot", value=0, {
+                data <- data.frame(v$data$expressionData, check.names = FALSE)
+                samples <- as.character(v$sampleInfo$cellSample)
+                mySamples <- samples %in% input$samples
+                sfactors <- data.frame(do.call(cbind, v$data$clusterRes), 
+                                       sample = samples, 
+                                       stringsAsFactors = FALSE, 
+                                       check.names = FALSE)
+                data <- data[mySamples, ,drop=FALSE]
+                stackFactor <- sfactors[mySamples, input$m_stackFactor]
+                
+                if(input$m_stackFactor == "sample"){
+                    stackFactorColours <- NULL
+                }else{
+                    clusterMethod <- input$m_stackFactor
+                    clusterVec <- v$data$clusterRes[[clusterMethod]]
+                    cluster_num <- length(unique(clusterVec))
+                    selectColors <- match(levels(as.factor(stackFactor)), levels(as.factor(clusterVec)))
+                    if(!is.null(c$clusterCol[[clusterMethod]])){
+                        stackFactorColours <- c$clusterCol[[clusterMethod]][selectColors]
+                    }else{
+                        stackFactorColours <- rainbow(cluster_num)[selectColors]
+                    }
+                }
+                
+                incProgress(1/3)
+                gp <- stackDenistyPlot(data = data, 
+                                       densityCols=m_markerSelect, 
+                                       stackFactor = stackFactor,
+                                       kernel = "gaussian",
+                                       bw = "nrd0", 
+                                       adjust = 1,
+                                       stackRotation = 0, 
+                                       stackSeperation = "auto",
+                                       x_text_size = input$M_xlab_size, 
+                                       strip_text_size = input$M_markerTextSize,
+                                       legend_text_size = input$M_legendTextSize, 
+                                       legendRow = input$M_legendRow,
+                                       legend_title = input$m_stackFactor,
+                                       stackFactorColours = stackFactorColours)
+                incProgress(1/3)
+                plot(gp)
+                incProgress(1/3)
+            })
+        }
+    }
+    
+    observeEvent(input$M_updateDensityPlot, {
+        output$M_stackDensityPlot <- renderPlot({
+            M_stackDensityPlotInput()
+        }, height = 900, width = 950)
     })
     
-    output$H_heatmapPlot <- renderPlot({
-        if(is.null(v$data) || is.null(input$h_plotCluster))
-            return(NULL)
-        heatMap(data = v$data, 
-                clusterMethod = input$h_plotCluster, 
-                type = input$H_plotMethod, 
-                selectSamples = input$samples,
-                cex_row_label= input$H_rowLabelSize, 
-                cex_col_label= input$H_colLabelSize, 
-                scaleMethod = input$H_scaleMethod)
-    }, height = 800, width = 850)
+    output$M_download_stackDensityPlot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_marker_stackDensity_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = M_stackDensityPlotInput(), 
+                   width=as.numeric(input$M_tab2_w), 
+                   height=as.numeric(input$M_tab2_h))
+        }
+    )
+    
+    
+    ##----- update marker names -----
+
+    ## currently use 100 as a limit for marker number
+    ## --- TODO: use reactiveValues to automatically retrive marker numbers --- ## 
+    lapply(1:100, function(i) {
+        output[[paste0('Marker_', i, "_name")]] <- renderUI({
+            if(is.null(v$data)){
+                return(NULL)
+            }
+            markerNames <- colnames(v$data$expressionData)
+            
+            if (i <= length(markerNames)){
+                markeri <- markerNames[i]
+                textInput(inputId = paste0('marker_', i, "_name"), 
+                          label = markeri, value = markeri, width = "30%", 
+                          placeholder = "Type in your new name for this marker")
+            }
+        })
+    })
+    
+    
+    ## update cluster labels
+    observeEvent(input$C_updateMarkerNames, {
+        if(!is.null(v$data)){
+            markerNames <- colnames(v$data$expressionData)
+            newMarkerNames <- NULL
+            for (i in 1:length(markerNames)){
+                iName <- input[[paste0('marker_', i, '_name')]]
+                newMarkerNames <- c(newMarkerNames, iName)
+            }
+            ## update new cluster colours
+            colnames(v$data$expressionData) <- newMarkerNames
+            ## jump to C_tab1
+            updateTabsetPanel(session, "M_markerTabs", selected = "M_tab1")
+        }
+    })
     
     
     ##------------------------------Sample Panel-------------------------------
     
-    ## cell counts
-    
-    output$S_clusterMethod <- renderUI({
+    ##-----cell percentage heatmap-----
+    output$S_plotCluster <- renderUI({
         if(is.null(v$data) || is.null(clusterMethods())){
             return(NULL)
         }else{
-            selectInput('s_clusterMethod', 'Cluster Method:', choices = clusterMethods(), 
+            selectInput('s_plotCluster', 'Cluster Method:', choices = clusterMethods(), 
+                        selected = clusterMethods()[1], width = "100%")
+        }   
+    })
+    
+    S_heatmapPlotInput <- reactive({
+        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_plotCluster))
+            return(NULL)
+        
+        heatMap(data = v$data, 
+                clusterMethod = input$s_plotCluster, 
+                type = input$S_plotMethod, 
+                dendrogram = input$S_heatmap_dendrogram,
+                colPalette = input$S_heatmap_colorPalette,
+                selectSamples = input$samples,
+                cex_row_label= input$S_rowLabelSize, 
+                cex_col_label= input$S_colLabelSize, 
+                scaleMethod = input$S_scaleMethod)
+        
+        dev.copy2pdf(file = "cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf",
+                     width=as.numeric(input$S_tab1_w), 
+                     height=as.numeric(input$S_tab1_h))
+    })
+    
+    output$S_heatmapPlot <- renderPlot({
+        S_heatmapPlotInput()
+    }, height = 900, width = 950)
+    
+    
+    output$S_download_heatmapPlot = downloadHandler(
+        filename = "cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf",
+        content = function(file) {
+            file.copy("cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf", file)
+        }
+    )
+    
+    
+    ##-----cell percentage line chart-----
+    output$S_clusterMethod2 <- renderUI({
+        if(is.null(v$data) || is.null(clusterMethods())){
+            return(NULL)
+        }else{
+            selectInput('s_clusterMethod2', 'Cluster Method:', choices = clusterMethods(), 
                         selected = clusterMethods()[1], width = "100%")
         }   
     })
     
     output$S_clusterFilter <- renderUI({
-        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod)){
+        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod2)){
             return(NULL)
         }else{
-            clusterIDs <- sort(unique(v$data$clusterRes[[input$s_clusterMethod]]))
+            clusterIDs <- sort(unique(v$data$clusterRes[[input$s_clusterMethod2]]))
             selectizeInput('s_clusterFilter', 'Filter Clusters:', 
                            choices = clusterIDs, selected = clusterIDs, 
                            multiple = TRUE, width = "100%")
         }   
     })
     
-    output$S_heatmapPlot <- renderPlot({
-        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod))
-            return(NULL)
-        heatMap(data = v$data, 
-                clusterMethod = input$s_clusterMethod, 
-                type = "percentage", 
-                selectSamples = input$samples,
-                cex_row_label= input$H_rowLabelSize, 
-                cex_col_label= input$H_colLabelSize, 
-                scaleMethod = input$H_scaleMethod)
-    }, height = 800, width = 850)
-    
-    output$S_clusterTable <- renderTable({
-        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod)){
-            return(NULL)
-        }else{
-            data <- data.frame(sample = v$sampleInfo$cellSample,
-                               cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
-                               counts = 1)
-            
-            statData1 <- aggregate(counts ~ ., data = data, sum)
-            statData2 <- aggregate(counts ~ sample, data = data, sum)
-            statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
-            if(is.numeric(statData$cluster)) statData$cluster <- as.integer(statData$cluster)
-            statData$counts <- as.integer(statData$countsInAll)
-            statData$percentageInAll <- round(statData$countsInAll/nrow(data), 4)
-            statData$percentageInSample <- round(statData$countsInAll/statData$countsInSample, 2)
-            statData[, c("sample", "cluster", "counts", "percentageInSample", "percentageInAll")]
-        }   
-    }) 
-    
-    output$S_rateChangePlot <- renderPlot({
-        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod) || is.null(input$s_clusterFilter))
+    S_rateChangePlotInput <- function(){
+        if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod2) || is.null(input$s_clusterFilter))
             return(NULL)
         withProgress(message="Generating Rate Change Plot", value=0, {
             ## percentage stat
             data <- data.frame(sample = v$sampleInfo$cellSample,
-                               cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
+                               cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod2]]),
                                counts = 1)
             statData1 <- aggregate(counts ~ ., data = data, sum)
             statData2 <- aggregate(counts ~ sample, data = data, sum)
@@ -494,20 +743,52 @@ shinyServer(function(input, output, session) {
             statData <- statData[clusterCheck, ,drop=FALSE]
             incProgress(1/3)
             gp <- ggplot(data = statData, aes_string(x="sample", 
-                                               y="percentageInSample", 
-                                               color = "cluster",
-                                               group = "cluster")) + 
+                                                     y="percentageInSample", 
+                                                     color = "cluster",
+                                                     group = "cluster")) + 
                 geom_point(size = 2) + geom_line(size = 1.5) + 
                 xlab("Cell Group") + ylab("Percentage of Cells in Group") + theme_bw() + 
                 theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
             incProgress(1/3)
             plot(gp)
         })
-    }, height = 800, width = 850)
+    }
+    
+    output$S_rateChangePlot <- renderPlot({
+        S_rateChangePlotInput()
+    }, height = 500, width = 950)
+    
+    output$S_download_rateChangePlot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_cells_lineChart_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = S_rateChangePlotInput(), 
+                   width=as.numeric(input$S_tab2_w), 
+                   height=as.numeric(input$S_tab2_h))
+        }
+    )
     
     
-    ## group samples
+    # output$S_clusterTable <- renderTable({
+    #     if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod2)){
+    #         return(NULL)
+    #     }else{
+    #         data <- data.frame(sample = v$sampleInfo$cellSample,
+    #                            cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod2]]),
+    #                            counts = 1)
+    #         
+    #         statData1 <- aggregate(counts ~ ., data = data, sum)
+    #         statData2 <- aggregate(counts ~ sample, data = data, sum)
+    #         statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
+    #         if(is.numeric(statData$cluster)) statData$cluster <- as.integer(statData$cluster)
+    #         statData$counts <- as.integer(statData$countsInAll)
+    #         statData$percentageInAll <- round(statData$countsInAll/nrow(data), 4)
+    #         statData$percentageInSample <- round(statData$countsInAll/statData$countsInSample, 2)
+    #         statData[, c("sample", "cluster", "counts", "percentageInSample", "percentageInAll")]
+    #     }   
+    # }) 
     
+
+    ##-----Regroup samples-----
     output$S_groupSamples <- renderUI({
         if(is.null(v$data) || is.null(v$data$clusterRes)){
             return(NULL)
@@ -563,12 +844,13 @@ shinyServer(function(input, output, session) {
                 v$sampleInfo$cellSample <- factor(sampleGroupNames[sampleMatchID])
             }
             
-            cellID_number <- do.call(c, regmatches(v$sampleInfo$cellID, 
+            cellID_number <- do.call(base::c, regmatches(v$sampleInfo$cellID,
                                                    gregexpr("_[0-9]*$", v$sampleInfo$cellID, perl=T)))
             
+            ## update reactive object v$sampleInfo
             ## newCellID = "sampleGroup" + "_cellID" + "globalID" to avoid dumplicates
             v$sampleInfo$newCellID <- paste0(as.character(v$sampleInfo$cellSample), 
-                                             cellID_number,
+                                             "_",
                                              1:length(cellID_number))
             
             
@@ -580,7 +862,7 @@ shinyServer(function(input, output, session) {
             ## update the project name
             v$data$projectName <- paste0(v$data$projectName, "_grouped_samples")
 
-            ## update reactive object v$sampleInfo
+            ## update v$data$progressionRes
             if(!is.null(v$data$progressionRes)){
                 sampleExpressData <- v$data$progressionRes$sampleData
                 row.names(sampleExpressData) <- v$sampleInfo$newCellID[match(row.names(sampleExpressData),
@@ -588,8 +870,8 @@ shinyServer(function(input, output, session) {
                 v$data$progressionRes$sampleData <- sampleExpressData
             }
             
-            ## jump to S_panel1
-            updateTabsetPanel(session, "S_sampleTabs", selected = "S_panel1")
+            ## jump to S_tab1
+            updateTabsetPanel(session, "S_sampleTabs", selected = "S_tab1")
         }
     })
     
@@ -616,8 +898,8 @@ shinyServer(function(input, output, session) {
                     v$data$progressionRes$sampleData <- sampleExpressData
                 }
             }
-            ## jump to S_panel1
-            updateTabsetPanel(session, "S_sampleTabs", selected = "S_panel1")
+            ## jump to S_tab1
+            updateTabsetPanel(session, "S_sampleTabs", selected = "S_tab1")
         }
     })
     
@@ -625,7 +907,7 @@ shinyServer(function(input, output, session) {
     
     ##---------------------------Progression Panel------------------------------
     
-    ## subset relationship plot
+    ##-----subset relationship plot-----
     
     output$P_xlab <- renderUI({
         if(is.null(v$data) || is.null(progressionLabs())){
@@ -645,7 +927,7 @@ shinyServer(function(input, output, session) {
         }   
     })
     
-    output$P_scatterPlot <- renderPlot({
+    P_scatterPlotInput <- function(){
         if(is.null(v$data) || is.null(v$data$progressionRes) || is.null(input$p_xlab) || is.null(input$p_ylab)){
             return(NULL)
         }else{
@@ -656,27 +938,54 @@ shinyServer(function(input, output, session) {
                                    sample = sub("_[0-9]*$", "", row.names(obj$sampleData)))
                 incProgress(1/3)
                 data <- data[data$sample %in% input$samples, ,drop=FALSE]
+                
+                clusterMethod <- p$progressionCluster
+                clusterVec <- v$data$clusterRes[[clusterMethod]]
+                cluster_num <- length(unique(clusterVec))
+                selectColors <- match(levels(as.factor(data$cluster)), levels(as.factor(clusterVec)))
+                
+                if(!is.null(c$clusterCol[[clusterMethod]])){
+                    clusterColor <- c$clusterCol[[clusterMethod]][selectColors]
+                }else{
+                    clusterColor <- rainbow(cluster_num)[selectColors]
+                }
+                
                 gp <- cytof_clusterPlot(data = data, 
                                         xlab = input$p_xlab, 
                                         ylab = input$p_ylab, 
                                         cluster = "cluster", 
                                         sample = "sample",
                                         title = "Subset Relationship", 
-                                        type = ifelse(input$facetPlot, 2, 1),
+                                        type = ifelse(input$P_facetPlot, 2, 1),
                                         point_size = input$P_PointSize, 
-                                        addLabel = input$addLabel, 
+                                        addLabel = input$P_addLabel, 
                                         labelSize = input$P_LabelSize, 
                                         sampleLabel = FALSE, 
-                                        labelRepel = input$labelRepel,
-                                        fixCoord = FALSE)
+                                        labelRepel = input$P_labelRepel,
+                                        fixCoord = FALSE,
+                                        clusterColor = clusterColor)
                 incProgress(1/3)
                 plot(gp)
                 incProgress(1/3)
             })
         }
-    }, height = 700, width = 750)
+    }
     
-    ## marker expression profile
+    output$P_scatterPlot <- renderPlot({
+        P_scatterPlotInput()
+    }, height = 900, width = 950)
+    
+    output$P_download_scatterPlot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_progression_scatter_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = P_scatterPlotInput(), 
+                   width=as.numeric(input$P_tab1_w), 
+                   height=as.numeric(input$P_tab1_h))
+        }
+    )
+    
+    
+    ##-----marker expression profile-----
     
     output$P_orderBy <- renderUI({
         if(is.null(v$data) || is.null(progressionLabs())){
@@ -714,54 +1023,66 @@ shinyServer(function(input, output, session) {
         }   
     })
     
-    observeEvent(input$P_updateRegressionPlot, {
+    P_markerPlotInput <- function(){
         p_markerSelect <- isolate(input$p_markerSelect)
         p_clusterSelect <- isolate(input$p_clusterSelect)
+        if(is.null(v$data) || is.null(v$data$progressionRes) || is.null(p_markerSelect) || is.null(p_clusterSelect) || is.null(input$p_orderBy))
+            return(NULL)
+        
+        withProgress(message="Generating Marker Expression Profile", value=0, {
+            data <- data.frame(v$data$progressionRes$sampleData,
+                               cluster = v$data$progressionRes$sampleCluster, 
+                               v$data$progressionRes$progressionData,
+                               check.names = FALSE)
+            
+            sampleNames <- sub("_[0-9]*$", "", row.names(v$data$progressionRes$sampleData))
+            data <- data[sampleNames %in% input$samples, ,drop=FALSE]
+            incProgress(1/3)
+            if(input$P_combineTrends){
+                pp <- cytof_expressionTrends(data, 
+                                             markers = p_markerSelect, 
+                                             clusters = p_clusterSelect, 
+                                             orderCol = input$p_orderBy, 
+                                             clusterCol = "cluster", 
+                                             reverseOrder = input$P_reverseOrder,
+                                             addClusterLabel = input$P_addLabel2,
+                                             clusterLabelSize = input$P_LabelSize2,
+                                             segmentSize = 0.5,
+                                             min_expr = NULL) 
+            }else{
+                pp <- cytof_progressionPlot(data, 
+                                            markers = p_markerSelect, 
+                                            clusters = p_clusterSelect, 
+                                            orderCol = input$p_orderBy, 
+                                            clusterCol = "cluster", 
+                                            reverseOrder = input$P_reverseOrder,
+                                            addClusterLabel = input$P_addLabel2,
+                                            clusterLabelSize = input$P_LabelSize2,
+                                            segmentSize = 0.5,
+                                            min_expr = NULL) 
+            }
+            incProgress(1/3)
+            plot(pp)
+            incProgress(1/3)
+        })
+    }
+    
+    observeEvent(input$P_updateRegressionPlot, {
         output$P_markerPlot <- renderPlot({
-            if(is.null(v$data) || is.null(v$data$progressionRes) || is.null(p_markerSelect) || is.null(p_clusterSelect) || is.null(input$p_orderBy))
-                return(NULL)
-            
-            withProgress(message="Generating Marker Expression Profile", value=0, {
-                data <- data.frame(v$data$progressionRes$sampleData,
-                                   cluster = v$data$progressionRes$sampleCluster, 
-                                   v$data$progressionRes$progressionData,
-                                   check.names = FALSE)
-                
-                sampleNames <- sub("_[0-9]*$", "", row.names(v$data$progressionRes$sampleData))
-                data <- data[sampleNames %in% input$samples, ,drop=FALSE]
-                incProgress(1/3)
-                if(input$P_combineTrends){
-                    pp <- cytof_expressionTrends(data, 
-                                                 markers = p_markerSelect, 
-                                                 clusters = p_clusterSelect, 
-                                                 orderCol = input$p_orderBy, 
-                                                 clusterCol = "cluster", 
-                                                 reverseOrder = input$P_reverseOrder,
-                                                 addClusterLabel = input$addLabel,
-                                                 clusterLabelSize = input$P_LabelSize2,
-                                                 segmentSize = 0.5,
-                                                 min_expr = NULL) 
-                }else{
-                    pp <- cytof_progressionPlot(data, 
-                                                markers = p_markerSelect, 
-                                                clusters = p_clusterSelect, 
-                                                orderCol = input$p_orderBy, 
-                                                clusterCol = "cluster", 
-                                                reverseOrder = input$P_reverseOrder,
-                                                addClusterLabel = input$addLabel,
-                                                clusterLabelSize = input$P_LabelSize2,
-                                                segmentSize = 0.5,
-                                                min_expr = NULL) 
-                }
-                incProgress(1/3)
-                plot(pp)
-                incProgress(1/3)
-            })
-            
-        }, height = 800, width = 850)  
+            P_markerPlotInput()
+        }, height = 900, width = 950)  
     })
     
-    ## Run Diffusionmap
+    output$P_download_markerPlot = downloadHandler(
+        filename = function() { paste("cytofkit_shinyAPP_progression_marker_plot", '.pdf', sep='') },
+        content = function(file) {
+            ggsave(file, plot = P_markerPlotInput(), 
+                   width=as.numeric(input$P_tab2_w), 
+                   height=as.numeric(input$P_tab2_h))
+        }
+    )
+    
+    ##-----Run Diffusionmap-----
     
     output$P_clusterTable <- renderTable({
         if(is.null(v$data) || is.null(clusterMethods())){
@@ -822,9 +1143,9 @@ shinyServer(function(input, output, session) {
                 v$data <- obj
                 incProgress(1/2)
             })
-            
-            ## jump to P_panel1
-            updateTabsetPanel(session, "P_progressionTabs", selected = "P_panel1")
+            p$progressionCluster <- input$p_clusterMethod
+            ## jump to P_tab1
+            updateTabsetPanel(session, "P_progressionTabs", selected = "P_tab1")
         }
     })
 })

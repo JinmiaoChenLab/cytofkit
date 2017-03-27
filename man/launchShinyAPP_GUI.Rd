@@ -17,4 +17,3 @@ A shiny APP for interactive exploration of the analysis results
 \examples{
 # launchShinyAPP_GUI()
 }
-

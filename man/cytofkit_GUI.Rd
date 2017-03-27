@@ -18,13 +18,12 @@ and each parameter has a help button to show the instruction.
 \examples{
 #cytofkit_GUI()  # remove the hash symbol to run
 }
-\author{
-Hao Chen
-}
 \references{
 \url{http://signbioinfo.github.io/cytofkit/}
 }
 \seealso{
 \code{\link{cytofkit-package}}, \code{\link{cytofkit}}
 }
-
+\author{
+Hao Chen
+}

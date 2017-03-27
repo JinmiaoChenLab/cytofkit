@@ -15,4 +15,3 @@ if (interactive()) cytofkit::cytofkitShinyAPP()
 \author{
 Hao Chen
 }
-

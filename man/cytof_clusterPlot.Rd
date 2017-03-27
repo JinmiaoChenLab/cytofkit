@@ -6,7 +6,7 @@
 \usage{
 cytof_clusterPlot(data, xlab, ylab, cluster, sample, title = "cluster",
   type = 1, point_size = NULL, addLabel = TRUE, labelSize = 10,
-  sampleLabel = TRUE, labelRepel = FALSE, fixCoord = TRUE)
+  sampleLabel = TRUE, labelRepel = FALSE, fixCoord = TRUE, clusterColor)
 }
 \arguments{
 \item{data}{The data frame of cluster results, which should contains at least xlab, ylab and cluster.}
@@ -34,6 +34,8 @@ cytof_clusterPlot(data, xlab, ylab, cluster, sample, title = "cluster",
 \item{labelRepel}{If repel the cluste labels to avoid label overlapping.}
 
 \item{fixCoord}{If fix the Cartesian coordinates.}
+
+\item{clusterColor}{Manually specify the colour of each cluster (mainly for ShinyAPP usage).}
 }
 \value{
 the ggplot object of the scatter cluster plot.
@@ -52,4 +54,3 @@ rownames(data) <- rnames
 data$sample <- "data"
 cytof_clusterPlot(data, xlab="dim1", ylab="dim2", cluster="cluster", sample = "sample")
 }
-

@@ -67,13 +67,12 @@ parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 if(interactive()) browseVignettes(package = 'cytofkit')
 
 }
-\author{
-Hao Chen, Jinmiao Chen
-}
 \references{
 \url{http://signbioinfo.github.io/cytofkit/}
 }
 \seealso{
 \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}
 }
-
+\author{
+Hao Chen, Jinmiao Chen
+}
