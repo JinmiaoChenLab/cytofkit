@@ -49,4 +49,3 @@ ClusterXRes <- ClusterX(data)
 \author{
 Chen Hao
 }
-

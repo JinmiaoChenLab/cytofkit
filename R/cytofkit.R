@@ -235,7 +235,8 @@ cytofkit <- function(fcsFiles = getwd(),
     message("Run clustering...")
     cluster_res <- lapply(clusterMethods, cytof_cluster, 
                           ydata = allDimReducedList[[dimReductionMethod]], 
-                          xdata = exprs_data)
+                          xdata = exprs_data,
+                          FlowSOM_k = FlowSOM_k)
     names(cluster_res) <- clusterMethods
     
     

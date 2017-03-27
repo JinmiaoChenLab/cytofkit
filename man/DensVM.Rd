@@ -27,4 +27,3 @@ ydata <- cytof_dimReduction(xdata)
 \author{
 Chen Jinmiao
 }
-

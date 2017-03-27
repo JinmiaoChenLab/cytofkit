@@ -50,4 +50,3 @@ merged <- cytof_exprsMerge(fcsFiles, markers = markers)
 \seealso{
 \code{\link{cytof_exprsExtract}}
 }
-

@@ -82,13 +82,12 @@ parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 ## remove the hash symbol to run the following command
 #cytofkit(fcsFile = file, markers = parameters)   
 }
-\author{
-Hao Chen, Jinmiao Chen
-}
 \references{
 \url{http://signbioinfo.github.io/cytofkit/}
 }
 \seealso{
 \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}, \code{\link{cytofkitShinyAPP}}
 }
-
+\author{
+Hao Chen, Jinmiao Chen
+}

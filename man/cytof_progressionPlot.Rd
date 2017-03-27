@@ -51,4 +51,3 @@ exprs_cluster <- data.frame(cluster = c, m1 = m1, m2 = m2, m3 = m3, m4 = m4, iso
 row.names(exprs_cluster) <- sample(rnames, 1000)
 cytof_progressionPlot(exprs_cluster, markers = c("m1","m2","m3","m4"))
 }
-

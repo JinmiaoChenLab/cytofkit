@@ -18,6 +18,7 @@
 #' @importFrom flowCore write.FCS flowFrame inverseLogicleTransform
 #' @importFrom grDevices dev.off pdf rainbow
 #' @importFrom graphics par
+#' @importFrom colourpicker colourInput
 #' @importFrom utils read.table write.csv
 #' @export
 #' @seealso \code{\link{cytofkit}}
@@ -215,6 +216,7 @@ cytof_writeResults <- function(analysis_results,
 #' @param sampleLabel If use point shapes to represent different samples.
 #' @param labelRepel If repel the cluste labels to avoid label overlapping.
 #' @param fixCoord If fix the Cartesian coordinates.
+#' @param clusterColor Manually specify the colour of each cluster (mainly for ShinyAPP usage).
 #' @return the ggplot object of the scatter cluster plot.
 #' @export
 #' @importFrom ggplot2 element_text element_rect element_blank element_line element_text annotate
@@ -230,7 +232,7 @@ cytof_writeResults <- function(analysis_results,
 cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluster", 
                               type = 1, point_size = NULL, addLabel=TRUE, 
                               labelSize=10, sampleLabel=TRUE, 
-                              labelRepel = FALSE, fixCoord=TRUE) {
+                              labelRepel = FALSE, fixCoord=TRUE, clusterColor) {
     
     if(!is.data.frame(data))
         data <- as.data.frame(data)
@@ -262,11 +264,17 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
         point_size <- ifelse(nrow(data) > 10000, 1, 1.5)
     }
     
+    if(missing(clusterColor) || is.null(clusterColor)){
+        clusterColor <- rainbow(cluster_num)
+    }else if(length(clusterColor) == 0 || length(clusterColor) != cluster_num){
+        clusterColor <- rainbow(cluster_num)
+    }
+    
     if(type == 1){
         if(sampleLabel){
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster, shape = sample)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
-                scale_colour_manual(values = rainbow(cluster_num)) + 
+                scale_colour_manual(values = clusterColor) + 
                 xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Scatter Plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
@@ -275,7 +283,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
         }else{
             cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) + 
                 geom_point(size = point_size) + scale_shape_manual(values = shape_value) + 
-                scale_colour_manual(values = rainbow(cluster_num)) + 
+                scale_colour_manual(values = clusterColor) + 
                 xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Scatter Plot", sep = " ")) + 
                 theme_bw() + theme(legend.position = "bottom") + 
                 theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
@@ -305,7 +313,7 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
         cp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = cluster)) +
             facet_wrap(~sample, nrow = grid_row_num, scales = "fixed") + 
             geom_point(size = point_size - 0.05 * sample_num) + 
-            scale_colour_manual(values = rainbow(cluster_num)) + 
+            scale_colour_manual(values = clusterColor) + 
             xlab(xlab) + ylab(ylab) + ggtitle(paste(title, "Grid Plot", sep = " ")) + 
             theme_bw() + theme(legend.position = "bottom") + 
             theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold")) +
@@ -349,6 +357,8 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
 #' @param data a matrix with rownames and colnames
 #' @param baseName The name as a prefix in the title of the heatmap.
 #' @param scaleMethod Method indicating if the values should be centered and scaled in either the row direction or the column direction, or none. The default is 'none'.
+#' @param dendrogram Control the dengrogram on row or column, selection includes 'both', 'row', 'column', 'none'.
+#' @param colPalette Using selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.
 #' @param cex_row_label Text size for row labels.
 #' @param cex_col_label Text size for column labels.
 #' @param key.par graphical parameters for the color key. 
@@ -374,12 +384,16 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
 #' rownames(cluster_mean) <- paste("cluster_", cluster_mean$cluster, sep = "")
 #' cytof_heatmap(cluster_mean[, -which(colnames(cluster_mean) == "cluster")])
 cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
+                          dendrogram = c("both","row","column","none"),
+                          colPalette = c("bluered", "greenred", "spectral1", "spectral2"),
                           cex_row_label = NULL, cex_col_label = NULL, 
-                          key.par = list(mgp=c(1.5, 0.5, 0), mar=c(2.5, 2.5, 3, 1.5)), 
+                          key.par = list(mgp=c(1.5, 0.5, 0), mar=c(3, 2.5, 3.5, 1)), 
                           keysize = 1.4,
-                          margins = c(5, 5)) {
+                          margins = c(5, 5)){
     
     data <- as.matrix(data)
+    dendrogram <- match.arg(dendrogram)
+    colPalette <- match.arg(colPalette)
     
     if(is.null(cex_row_label)){
         cex_row_label <- (11 - ceiling(nrow(data)/10))/10
@@ -388,8 +402,25 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
         cex_col_label <- (11 - ceiling(ncol(data)/10))/10
     }
     
+    if(dendrogram == "row"){
+        dendrogramRowv <- TRUE
+        dendrogramColv <- FALSE
+    }else if (dendrogram == "column"){
+        dendrogramRowv <- FALSE
+        dendrogramColv <- TRUE
+    }else if(dendrogram == "none"){
+        dendrogramRowv <- FALSE
+        dendrogramColv <- FALSE
+    }else{
+        dendrogramRowv <- TRUE
+        dendrogramColv <- TRUE
+    }
+    
     heatmap.2(x = data, 
-              col = bluered, 
+              Rowv = dendrogramRowv,
+              Colv= dendrogramColv,
+              dendrogram = dendrogram,
+              col = colPalette, 
               trace = "none", 
               symbreaks = FALSE, 
               scale = scaleMethod, 
@@ -401,6 +432,37 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
               keysize = keysize,
               main = paste(baseName, "Heat Map"))
 }
+
+#' First Function for spectral color palette
+#'
+#' @param n Number of colors.
+#'
+#' @return hex colour values
+#' @export
+#'
+#' @examples
+#' spectral1(2)
+spectral1 <- function(n){
+    spectralPalette <- colorRampPalette(c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4",
+                                          "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61",
+                                          "#F46D43", "#D53E4F", "#9E0142"))
+    return(spectralPalette(n))
+}
+
+#' Second Function for spectral color palette
+#'
+#' @param n Number of colors.
+#'
+#' @return hex colour values
+#' @export
+#'
+#' @examples
+#' spectral2(2)
+spectral2 <- function(n){
+    spectralPalette <- colorRampPalette(rev(c("#7F0000","red","#FF7F00","yellow","white", 
+                                              "cyan", "#007FFF", "blue","#00007F")))
+    return(spectralPalette(n))
+    }
 
 
 #' Plot the data with color-coded marker values
@@ -425,7 +487,7 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
 #' data <- data.frame(dim1 = x, dim2 = y, marker = c)
 #' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 cytof_colorPlot <- function(data, xlab, ylab, zlab, 
-                            colorPalette = c("bluered", "topo", "heat", "terrain", "cm"), 
+                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"), 
                             pointSize=1, 
                             removeOutlier = TRUE){
     
@@ -450,17 +512,17 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
            bluered = {
                myPalette <- colorRampPalette(c("blue", "white", "red"))
            },
-           topo = {
-               myPalette <- colorRampPalette(topo.colors(50))
+           spectral1 = {
+               myPalette <- colorRampPalette(c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4",
+                                               "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61",
+                                               "#F46D43", "#D53E4F", "#9E0142"))
+           },
+           spectral2 = {
+               myPalette <- colorRampPalette(rev(c("#7F0000","red","#FF7F00","yellow","white", 
+                                                   "cyan", "#007FFF", "blue","#00007F")))
            },
            heat = {
                myPalette <- colorRampPalette(heat.colors(50))
-           },
-           terrain = {
-               myPalette <- colorRampPalette(terrain.colors(50))
-           },
-           cm = {
-               myPalette <- colorRampPalette(cm.colors(50))
            }
     )
     zlength <- nrow(data)
@@ -695,7 +757,7 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @param analyzedFCSdir The directory to store the new fcs files.
 #' @param transformed_cols the column name of the dimension transformend data in \code{data}.
 #' @param cluster_cols the column name of the cluster data in \code{data}.
-#' @param inLgclTrans Boolean value decides if apply the inverse lgcl transformation to the data before saving
+#' @param inLgclTrans Boolean value decides if apply the inverse lgcl transformation to the the cluster data before saving
 #' 
 #' @export
 #' 
@@ -719,15 +781,16 @@ cytof_addToFCS <- function(data,
     ## transform transformed_cols
     if (!is.null(transformed_cols)) {
         transformed <- data[, transformed_cols, drop=FALSE]
-        # if(inLgclTrans){
-        #     N_transformed <- apply(transformed, 2, function(x)
-        #         ((x-min(x))/(max(x)-min(x)))*4.4) 
-        #     R_N_transformed <- apply(N_transformed,2,ilgcl)
-        # }else{
-        #     R_N_transformed <- apply(transformed, 2, function(x) (x - min(x)) + 0.1)
-        # }
         
-        R_N_transformed <- apply(transformed, 2, function(x) (x - min(x)) + 0.1)  ## no inLgclTrans
+        ## ilgcl transformation of t-SNE
+        N_transformed <- apply(transformed, 2, function(x) ((x-min(x))/(max(x)-min(x)))*4.4)
+        R_N_transformed <- apply(N_transformed,2,ilgcl)
+        ## linear transformation of tSNE
+        R_N_transformed_l <- apply(transformed, 2, function(x) (x - min(x)) + 0.1)  
+        colnames(R_N_transformed_l) <- paste0(colnames(R_N_transformed_l), "_linear", sep = "")
+        
+        ## output both ilgcl and linear transformaton of tSNE for visualization on flowJo
+        R_N_transformed <- cbind(R_N_transformed, R_N_transformed_l)
         row.names(R_N_transformed) <- row.names(data)
     }
     

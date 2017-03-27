@@ -5,8 +5,10 @@
 \title{Heatmap plot of cluster mean value results}
 \usage{
 cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
-  cex_row_label = NULL, cex_col_label = NULL, key.par = list(mgp = c(1.5,
-  0.5, 0), mar = c(2.5, 2.5, 3, 1.5)), keysize = 1.4, margins = c(5, 5))
+  dendrogram = c("both", "row", "column", "none"), colPalette = c("bluered",
+  "greenred", "spectral1", "spectral2"), cex_row_label = NULL,
+  cex_col_label = NULL, key.par = list(mgp = c(1.5, 0.5, 0), mar = c(3, 2.5,
+  3.5, 1)), keysize = 1.4, margins = c(5, 5))
 }
 \arguments{
 \item{data}{a matrix with rownames and colnames}
@@ -14,6 +16,10 @@ cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
 \item{baseName}{The name as a prefix in the title of the heatmap.}
 
 \item{scaleMethod}{Method indicating if the values should be centered and scaled in either the row direction or the column direction, or none. The default is 'none'.}
+
+\item{dendrogram}{Control the dengrogram on row or column, selection includes 'both', 'row', 'column', 'none'.}
+
+\item{colPalette}{Using selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.}
 
 \item{cex_row_label}{Text size for row labels.}
 
@@ -46,4 +52,3 @@ cluster_mean <- aggregate(. ~ cluster, data = exprs_cluster, mean)
 rownames(cluster_mean) <- paste("cluster_", cluster_mean$cluster, sep = "")
 cytof_heatmap(cluster_mean[, -which(colnames(cluster_mean) == "cluster")])
 }
-

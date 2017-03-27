@@ -4,29 +4,35 @@ require(ggplot2)
 require(reshape2)
 require(plyr)
 require(VGAM)
+require(colourpicker)
+require(gplots)
 
 
 ## Main function for scatter plot
 scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1, 
                       addLabel=TRUE, labelSize=1, sampleLabel = TRUE,
-                      FlowSOM_k = 40, selectSamples, facetPlot = FALSE, 
-                      colorPalette = "bluered", labelRepel = FALSE, removeOutlier = TRUE){
+                      FlowSOM_k = 40, selectCluster=NULL, selectSamples, 
+                      facetPlot = FALSE, colorPalette = "bluered", labelRepel = FALSE, 
+                      removeOutlier = TRUE, clusterColor){
     
     data <- data.frame(obj$expressionData, 
                        obj$dimReducedRes[[plotMethod]], 
-                       do.call(cbind, obj$clusterRes), check.names = FALSE)
+                       do.call(cbind, obj$clusterRes), 
+                       check.names = FALSE,
+                       stringsAsFactors = FALSE)
+    
     xlab <- colnames(obj$dimReducedRes[[plotMethod]])[1]
     ylab <- colnames(obj$dimReducedRes[[plotMethod]])[2]
     row.names(data) <- row.names(obj$expressionData)
     
     clusterMethods <- names(obj$clusterRes)
     samples <- sub("_[0-9]*$", "", row.names(obj$expressionData))
-    data <- data[samples %in% selectSamples, ]
+    data <- data[samples %in% selectSamples, ,drop=FALSE]
     nsamples <- samples[samples %in% selectSamples]
     data$sample <- nsamples
     sample_num <- length(unique(nsamples))
-
-    if(plotFunction == "DensityPlot"){
+    
+    if(plotFunction == "Density"){
         colPalette <- colorRampPalette(c("blue", "turquoise", "green", 
                                          "yellow", "orange", "red"))
         densCol <- densCols(data[, c(xlab, ylab)], colramp = colPalette)
@@ -36,13 +42,13 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
             theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + theme_bw() + 
             theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
             theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold"))
-    }else if(plotFunction == "DotPlot"){
+    }else if(plotFunction == "None"){
         gp <- ggplot(data, aes_string(x=xlab, y=ylab)) + 
             geom_point(size = pointSize) + ggtitle("Dot Plot") +
             xlab(xlab) + ylab(ylab) + theme_bw() + 
             theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
             theme(axis.text=element_text(size=14), axis.title=element_text(size=18,face="bold"))
-    }else if(plotFunction == "ColorBySample"){
+    }else if(plotFunction == "Sample"){
         size_legend_row <- ceiling(sample_num/4)
         sample <- "sample"
         gp <- ggplot(data, aes_string(x=xlab, y=ylab, colour = sample)) +
@@ -71,6 +77,17 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                    removeOutlier = TRUE)
         
     }else if(plotFunction %in% clusterMethods){
+        
+        if(!is.null(selectCluster)){
+            clusterIDs <- as.character(data[,plotFunction])
+            selectCluster <- as.character(selectCluster)
+            data <- data[clusterIDs %in% selectCluster, ,drop=FALSE]
+        }
+        clusterVec <- obj$clusterRes[[plotFunction]]
+        ## make sure they are not factors before transforming to factors
+        selectColors <- match(levels(as.factor(data[,plotFunction])), levels(as.factor(clusterVec)))
+        clusterColor <- clusterColor[selectColors]
+        
         gp <- cytof_clusterPlot(data = data, 
                                 xlab = xlab, 
                                 ylab = ylab, 
@@ -83,7 +100,8 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                 labelSize = labelSize, 
                                 sampleLabel = sampleLabel,
                                 labelRepel = labelRepel,
-                                fixCoord = FALSE)
+                                fixCoord = FALSE,
+                                clusterColor = clusterColor)
     }else{
         gp <- cytof_colorPlot(data = data, 
                               xlab = xlab, 
@@ -99,7 +117,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
 
 ## Facet wrap plot of marker exporession
 cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
-                            colorPalette = c("bluered", "topo", "heat", "terrain", "cm"), 
+                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"), 
                             pointSize=1, 
                             removeOutlier = TRUE){
     
@@ -143,17 +161,17 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
            bluered = {
                myPalette <- colorRampPalette(c("blue", "white", "red"))
            },
-           topo = {
-               myPalette <- colorRampPalette(topo.colors(50))
+           spectral1 = {
+               myPalette <- colorRampPalette(c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4",
+                                               "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61",
+                                               "#F46D43", "#D53E4F", "#9E0142"))
+           },
+           spectral2 = {
+               myPalette <- colorRampPalette(rev(c("#7F0000","red","#FF7F00","yellow","white", 
+                                                   "cyan", "#007FFF", "blue","#00007F")))
            },
            heat = {
                myPalette <- colorRampPalette(heat.colors(50))
-           },
-           terrain = {
-               myPalette <- colorRampPalette(terrain.colors(50))
-           },
-           cm = {
-               myPalette <- colorRampPalette(cm.colors(50))
            }
     )
     zlength <- nrow(data)
@@ -170,7 +188,8 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
 }
 
 ## Heat Map
-heatMap <- function(data, clusterMethod = "DensVM", type = "mean", selectSamples,
+heatMap <- function(data, clusterMethod = "DensVM", type = "mean", 
+                    dendrogram = "both", colPalette = "bluered", selectSamples,
                     cex_row_label = 1, cex_col_label = 1, scaleMethod = "none") {
     exprs <- data$expressionData
     samples <- sub("_[0-9]*$", "", row.names(exprs))
@@ -186,11 +205,13 @@ heatMap <- function(data, clusterMethod = "DensVM", type = "mean", selectSamples
     cytof_heatmap(data = as.matrix(cluster_stat), 
                   baseName = paste(clusterMethod, type), 
                   scaleMethod = scaleMethod, 
+                  dendrogram = dendrogram,
+                  colPalette = colPalette,
                   cex_row_label = cex_row_label, 
                   cex_col_label = cex_col_label,
                   margins = c(8, 8), 
                   keysize = 1, 
-                  key.par=list(mgp=c(2, 1, 0), mar=c(4, 3, 4, 0))) 
+                  key.par=list(mgp=c(1.5, 0.5, 0), mar=c(3, 2.5, 3.5, 1))) 
 }
 
 ## density plot
@@ -214,7 +235,8 @@ stackDenistyPlot <- function(data, densityCols, stackFactor,
                              strip_text_size = 7,
                              legend_text_size = 0.5, 
                              legendRow = 1,
-                             legend_title = "stackName"){
+                             legend_title = "stackName",
+                             stackFactorColours = NULL){
     
     if(!is.numeric(stackRotation)){
         stop("stackRotation must be a numeric number")
@@ -238,6 +260,12 @@ stackDenistyPlot <- function(data, densityCols, stackFactor,
     
     stackCount <- length(unique(stackFactor))
     densityCount <- length(densityCols)
+    
+    if(missing(stackFactorColours) || is.null(stackFactorColours)){
+        stackFactorColours <- rainbow(stackCount)
+    }else if(length(stackFactorColours) == 0 || length(stackFactorColours) != stackCount){
+        stackFactorColours <- rainbow(stackCount)
+    }
     
     data <- data.frame(data[ ,densityCols, drop=FALSE], stackFactor = stackFactor, check.names = FALSE)
     
@@ -297,7 +325,9 @@ stackDenistyPlot <- function(data, densityCols, stackFactor,
                      color = "grey20", size=0.3) +
         geom_text(data = alignSegments, aes(x = x, y = textY, label = tickText),
                   hjust = 0.3, vjust = 1.1, size = x_text_size) +
-        geom_polygon(aes(fill=stackName, color=stackName), alpha = 0.15) +
+        geom_polygon(aes(fill=stackName, color=stackName), alpha = 0.15) + 
+        scale_colour_manual(values = stackFactorColours) + 
+        scale_fill_manual(values = stackFactorColours) +
         facet_wrap(~densityName, scale = "free") +
         xlab("") + ylab("") +
         guides(col = guide_legend(title = legend_title, nrow = legendRow, byrow = TRUE),

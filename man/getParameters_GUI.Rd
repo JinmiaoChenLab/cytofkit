@@ -17,4 +17,3 @@ Extract the markers from the fcsfiles
 \examples{
 #getParameters_GUI()
 }
-

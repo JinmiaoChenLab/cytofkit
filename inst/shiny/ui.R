@@ -1,9 +1,10 @@
 library(shiny)
 
 shinyUI(fluidPage(
-    titlePanel("Interactive Visualization of cytofkit Results"),
+    titlePanel("Interactive Exploration of cytofkit Analysis Results"),
     hr(),
     fluidRow(
+        ## side panel--take 1/4 space
         column(3,
                h4('Load cytofkit RData:'),
                wellPanel(
@@ -15,12 +16,164 @@ shinyUI(fluidPage(
                ),
                
                hr(),
-               h4("Plot Control:"),
-               wellPanel(
-                   checkboxInput("addLabel", label = "Add Cluster Labels", value = TRUE),
-                   checkboxInput("labelRepel", label = "Repel Cluster Labels", value = FALSE),
-                   checkboxInput("facetPlot", label = "Separate Plot by Samples", value = FALSE)
-               ),
+               
+               conditionalPanel(" input.main_panel == 'C_panel' && input.C_clusterTabs == 'C_tab1' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    checkboxInput(inputId = "C_addLabel", label = "Add Cluster Labels", value = TRUE),
+                                    checkboxInput(inputId = "C_labelRepel", label = "Repel Cluster Labels", value = FALSE),
+                                    checkboxInput(inputId = "C_facetPlot", label = "Separate Plot by Samples", value = FALSE)
+                                ),
+                                wellPanel(
+                                    downloadButton(outputId='C_download_cluster_plot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="C_tab1_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="C_tab1_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab1' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    selectInput('M_heatmap_dendrogram', strong('Heatmap Dendrogram:'), 
+                                                choices = c("both","row","column","none"), 
+                                                selected = "both", width = "100%"),  
+                                    selectInput('M_heatmap_colorPalette', strong('Color Palette:'), 
+                                                choices = c("bluered", "greenred", "spectral1", "spectral2"), 
+                                                selected = "bluered", width = "100%")
+                                ),
+                                wellPanel(
+                                    downloadButton(outputId='M_download_heatmapPlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="M_tab3_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="M_tab3_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab2' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    downloadButton(outputId='M_download_expression_plot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="M_tab1_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="M_tab1_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab3' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    downloadButton(outputId='M_download_stackDensityPlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="M_tab2_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="M_tab2_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'S_panel' && input.S_sampleTabs == 'S_tab1' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    selectInput('S_heatmap_dendrogram', strong('Heatmap Dendrogram:'), 
+                                                choices = c("both","row","column","none"), 
+                                                selected = "both", width = "100%"),  
+                                    selectInput('S_heatmap_colorPalette', strong('Color Palette:'), 
+                                                choices = c("bluered", "greenred", "spectral1", "spectral2"), 
+                                                selected = "bluered", width = "100%")
+                                ),
+                                wellPanel(
+                                    downloadButton(outputId='S_download_heatmapPlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="S_tab1_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="S_tab1_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'S_panel' && input.S_sampleTabs == 'S_tab2' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    downloadButton(outputId='S_download_rateChangePlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="S_tab2_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="S_tab2_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'P_panel' && input.P_progressionTabs == 'P_tab1' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    checkboxInput(inputId = "P_addLabel", label = "Add Cluster Labels", value = TRUE),
+                                    checkboxInput(inputId = "P_labelRepel", label = "Repel Cluster Labels", value = FALSE),
+                                    checkboxInput(inputId = "P_facetPlot", label = "Separate Plot by Samples", value = FALSE)
+                                ),
+                                wellPanel(
+                                    downloadButton(outputId='P_download_scatterPlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="P_tab1_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="P_tab1_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
+               conditionalPanel(" input.main_panel == 'P_panel' && input.P_progressionTabs == 'P_tab2' ",
+                                h4("Plot Control:"),
+                                wellPanel(
+                                    checkboxInput(inputId = "P_addLabel2", label = "Add Cluster Labels", value = TRUE)
+                                ),
+                                wellPanel(
+                                    downloadButton(outputId='P_download_markerPlot', 
+                                                   label = "Download Figure in PDF Format"),
+                                    hr(),
+                                    fluidRow(
+                                        column(6,
+                                               sliderInput(inputId="P_tab2_w", label = "PDF width(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ),
+                                        column(6, 
+                                               sliderInput(inputId="P_tab2_h", label = "PDF height(in):", 
+                                                           min=3, max=20, value=8, width=100, ticks=F)
+                                        ))
+                                )),
                
                hr(),
                h4("Sample Filter:"),
@@ -40,19 +193,21 @@ shinyUI(fluidPage(
                ),
                
                hr(),
-               actionButton("saveButton", "Save Results", icon = icon("download")),
+               actionButton("saveButton", "Save Data", icon = icon("download")),
                
                hr(),
-               div(style = "margin-top: 30px; width: 200px; ", HTML("Developed by")),
+               h4(tags$a(href="mailto:chen_hao@immunol.a-star.edu.sg,Chen_Jinmiao@immunol.a-star.edu.sg?subject=[cytofkit-question]", 
+                         "Contact Us")),
                div(style = "margin-top: 10px; ", 
                    HTML("<img style='width: 150px;' src='http://archild.sign.a-star.edu.sg/images/logo.png'>"))
         ),
+        ## main panel--take 3/4 space
         column(9,
-               tabsetPanel(type = "pills",
-                           tabPanel("Cluster Panel", fluidPage(
+               tabsetPanel(id="main_panel", type = "pills",
+                           tabPanel(title="Cluster Panel", value="C_panel", fluidPage(
                                hr(),
-                               tabsetPanel(id="C_clusterTabs",
-                                           tabPanel(title="Cluster Plot", value="C_panel1", 
+                               tabsetPanel(id="C_clusterTabs", type = "tabs",
+                                           tabPanel(title="Cluster Plot", value="C_tab1", 
                                                     br(),
                                                     fluidRow(
                                                         column(3,
@@ -62,18 +217,44 @@ shinyUI(fluidPage(
                                                                uiOutput("C_PlotFunction")
                                                         ),
                                                         column(3,
-                                                               numericInput("S_PointSize", "Point Size:", value = 1)
+                                                               numericInput("C_PointSize", "Point Size:", value = 1)
                                                         ),
                                                         column(3, 
-                                                               numericInput("S_LabelSize", "Label Size:", value = 12)
+                                                               numericInput("C_LabelSize", "Label Size:", value = 12)
                                                         )
                                                     ),
+                                                    uiOutput("C_clusterSelect"),
                                                     hr(),
-                                                    plotOutput("C_ScatterPlot", width = "80%")
+                                                    plotOutput("C_ScatterPlot", width = "100%")
                                                     ),
-                                           tabPanel(title="Annotate Clusters", value="C_panel2",
+                                           tabPanel(title="Change Cluster Color", value="C_tab2",
                                                     br(),
-                                                    uiOutput("C_labelCluster"),
+                                                    wellPanel(
+                                                        uiOutput("C_colourCluster")
+                                                    ),
+                                                    hr(),
+                                                    lapply(1:100, function(i) {
+                                                        uiOutput(paste0('Cluster_', i, '_col'))
+                                                    }),
+                                                    hr(),
+                                                    fluidRow(
+                                                        column(3,
+                                                               actionButton("C_updateClusterColor", "Update Cluster Color", 
+                                                                            icon = icon("hand-o-right"), width = "100%")
+                                                        ),
+                                                        column(3, 
+                                                               actionButton("C_revertClusterColor", "Revert to default", 
+                                                                            icon = icon("hand-o-right"), width = "100%")
+                                                        ),
+                                                        column(6)
+                                                    ),
+                                                    hr()),
+                                           tabPanel(title="Annotate Clusters", value="C_tab3",
+                                                    br(),
+                                                    wellPanel(
+                                                        uiOutput("C_labelCluster"),
+                                                        uiOutput("C_labelCluster_name")
+                                                    ),
                                                     hr(),
                                                     lapply(1:100, function(i) {
                                                         uiOutput(paste0('Cluster', i))
@@ -81,12 +262,12 @@ shinyUI(fluidPage(
                                                     hr(),
                                                     actionButton("updatelabel", "Submit Cluster Label", icon = icon("hand-o-right")),
                                                     hr()),
-                                           tabPanel(title="Run FlowSOM", value="C_panel3",
+                                           tabPanel(title="Run FlowSOM", value="C_tab4",
                                                     br(),
                                                     h4("FlowSOM Clustering Setup:"),
                                                     hr(),
                                                     wellPanel(
-                                                        numericInput("S_FlowSOM_k", "Cluster k", value = 10, width = "30%"),
+                                                        numericInput("C_FlowSOM_k", "Cluster k", value = 10, width = "30%"),
                                                         uiOutput("C_markerSelect")
                                                     ),
                                                     hr(),
@@ -94,10 +275,36 @@ shinyUI(fluidPage(
                                            )
                            )),
                            
-                           tabPanel("Marker Panel", fluidPage(
+                           tabPanel(title = "Marker Panel", value = "M_panel", fluidPage(
                                hr(),
-                               tabsetPanel(id="M_markerTabs",
-                                   tabPanel(title="Level Plot", value="M_panel1",
+                               
+                               tabsetPanel(id="M_markerTabs", type = "tabs",
+                                   tabPanel(title="Expression Heat Map", value="M_tab1", 
+                                            br(),
+                                            fluidRow(
+                                                column(4, 
+                                                       uiOutput("M_plotCluster")
+                                                ),
+                                                column(2,
+                                                       selectInput('M_plotMethod', strong('Heatmap Type:'), 
+                                                                   choices = c("mean", "median"), 
+                                                                   selected = "mean", width = "100%")
+                                                ),
+                                                column(2,
+                                                       selectInput('M_scaleMethod', strong('Scale Data:'), 
+                                                                   choices = c("none", "row", "column"), 
+                                                                   selected = "none", width = "100%")
+                                                ),
+                                                column(2,
+                                                       numericInput("M_rowLabelSize", "Row Label Size:", value = 1, step = 0.5)
+                                                ),
+                                                column(2, 
+                                                       numericInput("M_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
+                                                )
+                                            ),
+                                            hr(),
+                                            plotOutput("M_heatmapPlot", width = "100%")),
+                                   tabPanel(title="Expression Level Plot", value="M_tab2",
                                             br(),
                                             fluidRow(
                                                 column(3,
@@ -110,14 +317,14 @@ shinyUI(fluidPage(
                                                        numericInput("M_PointSize", "Point Size:", value = 1)
                                                 ),
                                                 column(3,
-                                                       selectInput('colorPalette', label = "Color Palette:", 
-                                                                   choices = c("bluered", "topo", "heat", "terrain", "cm"), 
+                                                       selectInput('M_colorPalette', label = "Color Palette:", 
+                                                                   choices = c("bluered", "spectral1", "spectral2", "heat"), 
                                                                    selected = "bluered", width = "100%")
                                                 )
                                             ),
                                             hr(),
                                             plotOutput("M_markerExpressionPlot", width = "100%")), 
-                                   tabPanel(title="Histogram", value="M_panel2", 
+                                   tabPanel(title="Expression Histogram", value="M_tab3", 
                                             br(),
                                             fluidRow(
                                                 column(4,
@@ -144,64 +351,54 @@ shinyUI(fluidPage(
                                             hr(),
                                             actionButton("M_updateDensityPlot", "Update Plot", icon = icon("hand-pointer-o")),
                                             plotOutput("M_stackDensityPlot", width = "100%")),
-                                   tabPanel(title="Heat Map", value="M_panel3", 
-                                            br(),
-                                            fluidRow(
-                                                column(4, 
-                                                       uiOutput("H_plotCluster")
-                                                ),
-                                                column(2,
-                                                       selectInput('H_plotMethod', strong('Heatmap Type:'), 
-                                                                   choices = c("mean", "median"), 
-                                                                   selected = "mean", width = "100%")
-                                                ),
-                                                column(2,
-                                                       selectInput('H_scaleMethod', strong('Scale Data:'), 
-                                                                   choices = c("none", "row", "column"), 
-                                                                   selected = "none", width = "100%")
-                                                ),
-                                                column(2,
-                                                       numericInput("H_rowLabelSize", "Row Label Size:", value = 1, step = 0.5)
-                                                ),
-                                                column(2, 
-                                                       numericInput("H_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
-                                                )
-                                            ),
+                                   tabPanel(title="Update Marker Names", value="M_tab4", 
+                                            h5('Type in Your New Name for Each Marker:'),
                                             hr(),
-                                            plotOutput("H_heatmapPlot", width = "100%"))
-                                   )
+                                            lapply(1:100, function(i) {
+                                                uiOutput(paste0('Marker_', i, "_name"))
+                                            }),
+                                            hr(),
+                                            actionButton("C_updateMarkerNames", "Update Marker Name", icon = icon("hand-pointer-o")))
+                               )
                            )),
                            
-                           tabPanel("Sample Panel", fluidPage(
+                           tabPanel(title = "Sample Panel", value = "S_panel", fluidPage(
                                hr(),
-                               tabsetPanel(id="S_sampleTabs",
-                                           tabPanel(title="Cell Counts", value="S_panel1", 
+                               tabsetPanel(id="S_sampleTabs", type = "tabs",
+                                           tabPanel(title="Cell Percentage Heatmap", value="S_tab1", 
                                                     br(),
                                                     fluidRow(
-                                                        column(6,
-                                                               uiOutput("S_clusterMethod")
+                                                        column(4, 
+                                                               uiOutput("S_plotCluster")
                                                         ),
-                                                        column(6, 
-                                                               selectInput('S_viewOption', strong('View Option:'), 
-                                                                           choices = c("Percentage Heat Map", 
-                                                                                       "Percentage Change Plot",
-                                                                                       "Count Table"), 
-                                                                           selected = "Percentage Heat Map", width = "100%")
+                                                        column(2,
+                                                               selectInput('S_plotMethod', strong('Heatmap Type:'), 
+                                                                           choices = c("percentage"), 
+                                                                           selected = "percentage", width = "100%")
+                                                        ),
+                                                        column(2,
+                                                               selectInput('S_scaleMethod', strong('Scale Data:'), 
+                                                                           choices = c("none", "row", "column"), 
+                                                                           selected = "none", width = "100%")
+                                                        ),
+                                                        column(2,
+                                                               numericInput("S_rowLabelSize", "Row Label Size:", value = 1, step = 0.5)
+                                                        ),
+                                                        column(2, 
+                                                               numericInput("S_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
                                                         )
                                                     ),
-                                                    conditionalPanel(" input.S_viewOption == 'Count Table' ",
-                                                                     hr(),
-                                                                     tableOutput('S_clusterTable')),
-                                                    conditionalPanel(" input.S_viewOption == 'Percentage Heat Map' ",
-                                                                     hr(),
-                                                                     plotOutput("S_heatmapPlot", width = "100%")),
-                                                    conditionalPanel(" input.S_viewOption == 'Percentage Change Plot' ",
-                                                                     uiOutput("S_clusterFilter"),
-                                                                     hr(),
-                                                                     plotOutput("S_rateChangePlot", width = "100%"))
+                                                    hr(),
+                                                    plotOutput("S_heatmapPlot", width = "100%")
                                                     ),
-                                           
-                                           tabPanel(title="Group Samples", value="S_panel2",
+                                           tabPanel(title="Cell Percentage Line Chart", value="S_tab2", 
+                                                    br(),
+                                                    uiOutput("S_clusterMethod2"),
+                                                    uiOutput("S_clusterFilter"),
+                                                    hr(),
+                                                    plotOutput("S_rateChangePlot", width = "100%")
+                                                    ),
+                                           tabPanel(title="Regroup Samples", value="S_tab3",
                                                     br(),
                                                     h4("Type in the Group Name for Each Sample:"),
                                                     lapply(1:100, function(i) {
@@ -225,10 +422,10 @@ shinyUI(fluidPage(
                                )
                            )),
                            
-                           tabPanel("Progression Panel", fluidPage(
+                           tabPanel(title="Progression Panel", value = "P_panel", fluidPage(
                                hr(),
-                               tabsetPanel(id="P_progressionTabs",
-                                   tabPanel(title="Subset Relationship Plot", value="P_panel1", 
+                               tabsetPanel(id="P_progressionTabs", type = "tabs",
+                                   tabPanel(title="Subset Relationship Plot", value="P_tab1", 
                                             br(),
                                             fluidRow(
                                                 column(3,
@@ -245,7 +442,7 @@ shinyUI(fluidPage(
                                                 )
                                             ),
                                             plotOutput("P_scatterPlot", width = "80%")), 
-                                   tabPanel(title="Marker Expression Profile", value="P_panel2", 
+                                   tabPanel(title="Marker Expression Profile", value="P_tab2", 
                                             br(),
                                             fluidRow(
                                                 column(3,
@@ -275,7 +472,7 @@ shinyUI(fluidPage(
                                                 
                                             ),
                                             plotOutput("P_markerPlot", width = "100%")), 
-                                   tabPanel(title="Run Diffusion Map", value="P_panel3",
+                                   tabPanel(title="Run Diffusion Map", value="P_tab3",
                                             br(),
                                             h4("Diffusionmap Setup:"),
                                             
