@@ -2,7 +2,7 @@
 % Please edit documentation in R/cytofkit.R
 \name{cytofkitShinyAPP}
 \alias{cytofkitShinyAPP}
-\title{A Shiny app to interactively visualize the analysis results}
+\title{A Shiny APP to interactively visualize the analysis results}
 \usage{
 cytofkitShinyAPP()
 }

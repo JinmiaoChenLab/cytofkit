@@ -2,6 +2,17 @@
 \title{News for Package \pkg{cytofkit}}
 
 
+\section{Changes in version 1.6.6 (2017-04-11)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item add fixedLogicle transformation option on the GUI, with window popup to allow specifing the w, t, m, a parameters for logicle transformation.
+      \item add openShinyAPP (boolean parameter) option in cytofkit main function, which can open shinyAPP once the analysis was done and automatically load the result object into the shinyAPP for exploration.
+      \item add cytofkitShinyAPP2 function which can take cytofkit analysis_results (either file name of R object) as input and automatically load to shinyAPP once launched.
+    }
+  }
+}
+
+
 \section{Changes in version 1.6.5 (2017-03-27)}{
   \subsection{MODIFICATION}{
     \itemize{
