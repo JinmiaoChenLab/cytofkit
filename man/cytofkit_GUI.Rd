@@ -2,7 +2,7 @@
 % Please edit documentation in R/cytofkit_GUI.R
 \name{cytofkit_GUI}
 \alias{cytofkit_GUI}
-\title{The user friendly GUI client for \code{cytofkit-package}}
+\title{Function for launching the user friendly GUI client for \code{cytofkit-package}}
 \usage{
 cytofkit_GUI()
 }
@@ -10,10 +10,10 @@ cytofkit_GUI()
 the GUI for \code{cytofkit-package}
 }
 \description{
-This GUI provides an easy way for CyToF data analysis using \code{cytofkit} package. 
-Main parameters for running 'cytofkit' were integrated in this GUI, 
+This GUI provides an easy way to apply \code{cytofkit} package. 
+Main parameters for running 'cytofkit' main function were integrated in this GUI, 
 and each parameter has a help button to show the instruction. 
-\code{cytofkit} analysis will be launched after submitting.
+The \code{cytofkit} analysis will be automatically started after submitting.
 }
 \examples{
 #cytofkit_GUI()  # remove the hash symbol to run
