@@ -13,7 +13,7 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   visualizationMethods = c("tsne", "pca", "isomap", "NULL"),
   progressionMethod = c("NULL", "diffusionmap", "isomap"), FlowSOM_k = 40,
   clusterSampleSize = 500, resultDir = getwd(), saveResults = TRUE,
-  saveObject = TRUE, ...)
+  saveObject = TRUE, openShinyAPP = FALSE, ...)
 }
 \arguments{
 \item{fcsFiles}{It can be either the path where stores your FCS files or a vector of FCS file names.}
@@ -55,6 +55,8 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{saveObject}{Save the resutls into RData objects for loading back to R for further analysis}
 
+\item{openShinyAPP}{If open the shinyAPP automatically when the analysis was done, default FALSE.}
+
 \item{...}{Other arguments passed to \code{cytof_exprsExtract}}
 }
 \value{
@@ -80,7 +82,7 @@ dir <- system.file('extdata',package='cytofkit')
 file <- list.files(dir, pattern='.fcs$', full=TRUE)
 parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 ## remove the hash symbol to run the following command
-#cytofkit(fcsFile = file, markers = parameters)   
+#cytofkit(fcsFile = file, markers = parameters) 
 }
 \references{
 \url{http://signbioinfo.github.io/cytofkit/}

@@ -1,9 +1,9 @@
-#' The user friendly GUI client for \code{cytofkit-package}
+#' Function for launching the user friendly GUI client for \code{cytofkit-package}
 #' 
-#' This GUI provides an easy way for CyToF data analysis using \code{cytofkit} package. 
-#' Main parameters for running 'cytofkit' were integrated in this GUI, 
+#' This GUI provides an easy way to apply \code{cytofkit} package. 
+#' Main parameters for running 'cytofkit' main function were integrated in this GUI, 
 #' and each parameter has a help button to show the instruction. 
-#' \code{cytofkit} analysis will be launched after submitting.
+#' The \code{cytofkit} analysis will be automatically started after submitting.
 #' 
 #' @author Hao Chen
 #' @return the GUI for \code{cytofkit-package}
@@ -22,10 +22,11 @@ cytofkit_GUI <- function() {
     fcsFiles <- ""
     cur_dir <- getwd()
     mergeMethods <- c("all", "min", "ceil", "fixed")
-    transformMethods <- c("autoLgcl", "cytofAsinh", "none")
+    transformMethods <- c("autoLgcl", "cytofAsinh", "fixedLogicle", "none")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
     clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
     progressionMethods <- c("diffusionmap", "isomap", "NULL")
+    fixedLgclParas = c(l_w = 0.5, l_t = 500000, l_m = 4.5, l_a = 0)
     
     rawFCSdir <- tclVar(cur_dir)
     fcsFile <- tclVar("")
@@ -36,6 +37,12 @@ cytofkit_GUI <- function() {
     markers <- tclVar("")
     transformMethod <- tclVar("autoLgcl")
     progressionMethod <- tclVar("NULL")
+    
+    # logicle parameters
+    l_w <- tclVar(fixedLgclParas[1])
+    l_t <- tclVar(fixedLgclParas[2])
+    l_m <- tclVar(fixedLgclParas[3])
+    l_a <- tclVar(fixedLgclParas[4])
     
     clusterSelect <- c()
     i <- 1
@@ -151,7 +158,7 @@ cytofkit_GUI <- function() {
     
     
     transformMethod_help <- function() {
-        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\" and \"autoLgcl\".", 
+        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\"(Customized Asinh transformation for CyTOF data), \"autoLgcl\"(automatic logicle transformation for CyTOF data), \"fixedLogicle\"(customize your own parameters for logicle transformation) and \"none\"(if your data is already transformed).", 
             icon = "info", type = "ok")
     }
     
@@ -306,7 +313,16 @@ cytofkit_GUI <- function() {
     tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[2],
         variable = transformMethod, value = transformMethods[2]), side = "left")
     tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[3],
+        command = function(){ 
+            fixedLgclParas <- fixedLogicleParameters_GUI(fixedLgclParas) 
+            tclvalue(l_w) <- fixedLgclParas[1] 
+            tclvalue(l_t) <- fixedLgclParas[2] 
+            tclvalue(l_m) <- fixedLgclParas[3] 
+            tclvalue(l_a) <- fixedLgclParas[4] 
+            },
         variable = transformMethod, value = transformMethods[3]), side = "left")
+    tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[4],
+        variable = transformMethod, value = transformMethods[4]), side = "left")
     
     ## cluster method
     cluster_label <- tklabel(tt, text = "Cluster Method(s) :")
@@ -461,22 +477,31 @@ cytofkit_GUI <- function() {
         inputs[["projectName"]] <- tclvalue(projectName)
         inputs[["resultDir"]] <- tclvalue(resDir)
         
+        inputs[["l_w"]] <- tclvalue(l_w)
+        inputs[["l_t"]] <- tclvalue(l_t)
+        inputs[["l_m"]] <- tclvalue(l_m)
+        inputs[["l_a"]] <- tclvalue(l_a)
         
-        ## pass the parameters and run the cytofkit function
-        cytofkit(fcsFiles = inputs[["fcsFiles"]], 
+        
+        # pass the parameters and run the cytofkit function
+        cytofkit(fcsFiles = inputs[["fcsFiles"]],
                  markers = inputs[["markers"]],
-                 projectName = inputs[["projectName"]], 
-                 mergeMethod = inputs[["mergeMethod"]], 
-                 fixedNum = inputs[["fixedNum"]], 
-                 transformMethod = inputs[["transformMethod"]], 
-                 dimReductionMethod = inputs[["dimReductionMethod"]], 
-                 clusterMethods = inputs[["clusterMethods"]], 
-                 visualizationMethods = inputs[["visualizationMethods"]], 
-                 progressionMethod = inputs[["progressionMethod"]], 
+                 projectName = inputs[["projectName"]],
+                 mergeMethod = inputs[["mergeMethod"]],
+                 fixedNum = inputs[["fixedNum"]],
+                 transformMethod = inputs[["transformMethod"]],
+                 dimReductionMethod = inputs[["dimReductionMethod"]],
+                 clusterMethods = inputs[["clusterMethods"]],
+                 visualizationMethods = inputs[["visualizationMethods"]],
+                 progressionMethod = inputs[["progressionMethod"]],
                  clusterSampleSize = 500,
-                 resultDir = inputs[["resultDir"]], 
-                 saveResults = TRUE, 
-                 saveObject = TRUE)
+                 resultDir = inputs[["resultDir"]],
+                 saveResults = TRUE,
+                 saveObject = TRUE,
+                 l_w = as.numeric(inputs[["l_w"]]), 
+                 l_t = as.numeric(inputs[["l_t"]]), 
+                 l_m = as.numeric(inputs[["l_m"]]), 
+                 l_a = as.numeric(inputs[["l_a"]]))
         
         okMessage <- paste0("Analysis Done, results are saved under ",
                             inputs[["resultDir"]])
@@ -497,43 +522,43 @@ cytofkit_GUI <- function() {
 #' @examples
 #' # launchShinyAPP_GUI()
 launchShinyAPP_GUI <- function(message="cytofkit", dir = getwd()){
-    ifAPP <- tclVar("n")
-    ss <- tktoplevel(borderwidth = 10)
-    tkwm.title(ss, "cytofkit: Analysis Done")
     
-    onYes <- function() {
-        tclvalue(ifAPP) <- "y"
-        tkdestroy(ss)
-    }
-    
-    onNo <- function() {
-        tclvalue(ifAPP) <- "n"
-        tkdestroy(ss)
-    }
-    yesBut <- tkbutton(ss, text = " YES ", command = onYes)
-    noBut <- tkbutton(ss, text = " NO ", command = onNo)
-    openDirBut <- tkbutton(ss, text = "Open", command = function(){opendir(dir)})
-    okBut <- tkbutton(ss, text = "OK", command = function(){tkdestroy(ss)})
-    tkgrid(tklabel(ss, text = message))
-    
-    if(message != "Analysis is cancelled."){
+    if(message == "Analysis is cancelled."){
+        message("Analysis is cancelled!")
+    }else{
+        ifAPP <- tclVar("n")
+        ss <- tktoplevel(borderwidth = 10)
+        tkwm.title(ss, "cytofkit: Analysis Done")
+        
+        onYes <- function() {
+            tclvalue(ifAPP) <- "y"
+            tkdestroy(ss)
+        }
+        
+        onNo <- function() {
+            tclvalue(ifAPP) <- "n"
+            tkdestroy(ss)
+        }
+        yesBut <- tkbutton(ss, text = " YES ", command = onYes)
+        noBut <- tkbutton(ss, text = " NO ", command = onNo)
+        openDirBut <- tkbutton(ss, text = "Open", command = function(){opendir(dir)})
+        okBut <- tkbutton(ss, text = "OK", command = function(){tkdestroy(ss)})
+        tkgrid(tklabel(ss, text = message))
+        
         tkgrid(openDirBut)
         tkgrid(tklabel(ss, text = "\n"))
         tkgrid(tklabel(ss, text = "Launch Shiny APP to check your reuslts:"))
         tkgrid(noBut, tklabel(ss, text = "    "), yesBut)
         tkgrid.configure(noBut, sticky = "e")
         tkgrid.configure(yesBut, sticky = "e")
-    }else{
-        tkgrid(tklabel(ss, text = "\n"))
-        tkgrid(okBut)
-    }
-    
-    tkwait.window(ss)
-    
-    if(tclvalue(ifAPP) == "y"){
-        cytofkitShinyAPP()
+        tkwait.window(ss)
+        
+        if(tclvalue(ifAPP) == "y"){
+            cytofkitShinyAPP()
+        }
     }
 }
+
 
 ## function for opening the results directory
 opendir <- function(dir = getwd()){
@@ -594,5 +619,78 @@ getParameters_GUI <- function(fcsFile, rawFCSdir) {
     # return parameters
     paras <- strsplit(tclvalue(markerChoice), "}{", fixed = TRUE)[[1]]
     paras <- channels[match(paras, markers)]
+    return(paras)
+} 
+
+
+#' GUI for gettting parameter for logicle transformaiton
+#' 
+#' Extract the parameter for fixed logicle transformation
+#' 
+#' @param fixedLgclParas parameters vector containing w, t, m, a
+#' @examples 
+#' #fixedLogicleParameters_GUI
+fixedLogicleParameters_GUI <- function(fixedLgclParas=c(0.5, 500000, 4.5, 0)) {
+    
+    # logicle parameters
+    l_w <- tclVar(fixedLgclParas[1])
+    l_t <- tclVar(fixedLgclParas[2])
+    l_m <- tclVar(fixedLgclParas[3])
+    l_a <- tclVar(fixedLgclParas[4])
+    
+    cell_width <- 3
+    box_length <- 10
+    
+    # GUI
+    mm <- tktoplevel(borderwidth = 20)
+    tkwm.title(mm, "Parameters for fixed logicle transformation")
+    
+    w_label <- tklabel(mm, text = "w :")
+    w_entry <- tkentry(mm, textvariable = l_w, width = box_length)
+    
+    t_label <- tklabel(mm, text = "t :")
+    t_entry <- tkentry(mm, textvariable = l_t, width = box_length)
+    
+    m_label <- tklabel(mm, text = "m :")
+    m_entry <- tkentry(mm, textvariable = l_m, width = box_length)
+    
+    a_label <- tklabel(mm, text = "a :")
+    a_entry <- tkentry(mm, textvariable = l_a, width = box_length)
+    
+    OnOK <- function(){
+        tkdestroy(mm)
+    }
+    
+    OK.but <- tkbutton(mm, text = " OK ", command = OnOK)
+    
+    tkgrid(tklabel(mm, text = "Specify your parameters\nfor logical transformation:"), columnspan=2)
+    
+    tkgrid(tklabel(mm, text = "\n"), padx = cell_width)  # leave blank line
+    
+    tkgrid(w_label, w_entry, padx = cell_width)
+    tkgrid.configure(w_label, sticky = "e")
+    tkgrid.configure(w_entry, sticky = "w")
+    
+    tkgrid(t_label, t_entry, padx = cell_width)
+    tkgrid.configure(t_label, sticky = "e")
+    tkgrid.configure(t_entry, sticky = "w")
+    
+    tkgrid(m_label, m_entry, padx = cell_width)
+    tkgrid.configure(m_label, sticky = "e")
+    tkgrid.configure(m_entry, sticky = "w")
+    
+    tkgrid(a_label, a_entry, padx = cell_width)
+    tkgrid.configure(a_label, sticky = "e")
+    tkgrid.configure(a_entry, sticky = "w")
+
+    tkgrid(tklabel(mm, text = "\n"), padx = cell_width)  # leave blank line
+    
+    tkgrid(tklabel(mm, text = ""), OK.but, padx = cell_width)
+    tkgrid.configure(OK.but, sticky = "w")
+    tkwait.window(mm)
+    
+    # return parameters
+    paras <- c(tclvalue(l_w), tclvalue(l_t), tclvalue(l_m), tclvalue(l_a))
+    paras <- as.numeric(paras)
     return(paras)
 } 

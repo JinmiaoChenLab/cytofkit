@@ -1,10 +1,10 @@
 Package: cytofkit
 Type: Package
 Title: cytofkit: an integrated mass cytometry data analysis pipeline
-Version: 1.7.1
-Date: 2017-03-27
+Version: 1.7.2
+Date: 2017-04-11
 Author: Jinmiao Chen, Hao Chen
-Description: An integrated flow/mass cytometry data analysis pipeline that enables
+Description: An integrated mass cytometry data analysis pipeline that enables
     simultaneous illustration of cellular diversity and progression.
 License: Artistic-2.0
 Maintainer: Jinmiao Chen <Chen_Jinmiao@immunol.a-star.edu.sg>, Hao Chen <chen_hao@immunol.a-star.edu.sg>

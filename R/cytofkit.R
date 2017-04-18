@@ -109,6 +109,7 @@ NULL
 #' @param resultDir The directory where result files will be generated.
 #' @param saveResults If save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
 #' @param saveObject Save the resutls into RData objects for loading back to R for further analysis
+#' @param openShinyAPP If open the shinyAPP automatically when the analysis was done, default FALSE.
 #' @param ... Other arguments passed to \code{cytof_exprsExtract}
 #' 
 #' @return a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes}, \code{projectName}, \code{rawFCSdir} and \code{resultDir}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
@@ -122,7 +123,7 @@ NULL
 #' file <- list.files(dir, pattern='.fcs$', full=TRUE)
 #' parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 #' ## remove the hash symbol to run the following command
-#' #cytofkit(fcsFile = file, markers = parameters)   
+#' #cytofkit(fcsFile = file, markers = parameters) 
 cytofkit <- function(fcsFiles = getwd(), 
                      markers = "parameter.txt", 
                      projectName = "cytofkit", 
@@ -138,7 +139,8 @@ cytofkit <- function(fcsFiles = getwd(),
                      clusterSampleSize = 500,
                      resultDir = getwd(), 
                      saveResults = TRUE, 
-                     saveObject = TRUE, ...) {
+                     saveObject = TRUE, 
+                     openShinyAPP = FALSE, ...) {
     
     ## arguments checking
     if (is.null(fcsFiles) || is.na(fcsFiles) || is.nan(fcsFiles)){
@@ -269,12 +271,16 @@ cytofkit <- function(fcsFiles = getwd(),
                        saveToFCS = saveResults,
                        saveToFiles = saveResults)
     
+    if(openShinyAPP){
+        cytofkitShinyAPP2(obj = analysis_results)
+    }
+    
     invisible(analysis_results)
 }
 
 
 
-#' A Shiny app to interactively visualize the analysis results 
+#' A Shiny APP to interactively visualize the analysis results 
 #' 
 #' Load the RData object saved by cytofkit, explore the analysis results with interactive control
 #'
