@@ -21,16 +21,16 @@ a vector of the clusters assigned for each row of the ydata
 }
 \description{
 Apply clustering algorithms to detect cell subsets. \code{DensVM} and \code{ClusterX} 
-clustering is based on the transformend ydata and use xdata to train the model. 
-While \code{Rphenograph} directly works on the high dimemnional xdata. \code{FlowSOM} is 
+clustering is based on the transformed ydata and uses xdata to train the model. 
+\code{Rphenograph} directly works on high dimensional xdata. \code{FlowSOM} is 
 integrated from FlowSOM pacakge (https://bioconductor.org/packages/release/bioc/html/FlowSOM.html).
 }
 \examples{
 d<-system.file('extdata', package='cytofkit')
 fcsFile <- list.files(d, pattern='.fcs$', full=TRUE)
 parameters <- list.files(d, pattern='.txt$', full=TRUE)
-markers <- as.character(read.table(parameters, sep = "\\t", header = TRUE)[, 1])
-xdata <- cytof_exprsMerge(fcsFile, markers = markers, mergeMethod = 'fixed', fixedNum = 100)
-ydata <- cytof_dimReduction(xdata, method = "tsne")
+markers <- as.character(read.table(parameters, header = FALSE)[, 1])
+xdata <- cytof_exprsMerge(fcsFile, mergeMethod = 'fixed', fixedNum = 100)
+ydata <- cytof_dimReduction(xdata, markers = markers, method = "tsne")
 clusters <- cytof_cluster(ydata, xdata, method = "ClusterX")
 }

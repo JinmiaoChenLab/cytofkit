@@ -12,7 +12,7 @@ the GUI for \code{cytofkit-package}
 \description{
 This GUI provides an easy way to apply \code{cytofkit} package. 
 Main parameters for running 'cytofkit' main function were integrated in this GUI, 
-and each parameter has a help button to show the instruction. 
+and each parameter has a help button to show the instructions. 
 The \code{cytofkit} analysis will be automatically started after submitting.
 }
 \examples{

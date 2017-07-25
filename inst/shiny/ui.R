@@ -1,4 +1,5 @@
 library(shiny)
+#currently unused
 
 shinyUI(fluidPage(
     titlePanel("Interactive Exploration of cytofkit Analysis Results"),
@@ -12,7 +13,14 @@ shinyUI(fluidPage(
                              label = NULL,
                              multiple = FALSE,
                              accept = c('text/RData', '.RData')),
-                   actionButton("goButton", "Submit", icon = icon("hand-o-right"))
+                   fluidRow(
+                     column(6,
+                            actionButton("goButton", "Submit", icon = icon("hand-o-right"))
+                     ),
+                     column(6,
+                            actionButton("reset", "Reset Data", icon = icon("repeat"))
+                     )
+                   )
                ),
                
                hr(),
@@ -25,8 +33,9 @@ shinyUI(fluidPage(
                                     checkboxInput(inputId = "C_facetPlot", label = "Separate Plot by Samples", value = FALSE)
                                 ),
                                 wellPanel(
-                                    downloadButton(outputId='C_download_cluster_plot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFClusterPlot", "Download Cluster Plot in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='C_download_cluster_plot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -49,8 +58,9 @@ shinyUI(fluidPage(
                                                 selected = "bluered", width = "100%")
                                 ),
                                 wellPanel(
-                                    downloadButton(outputId='M_download_heatmapPlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFHeatmap", "Download Marker Heatmap in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='M_download_heatmapPlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -65,8 +75,9 @@ shinyUI(fluidPage(
                conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab2' ",
                                 h4("Plot Control:"),
                                 wellPanel(
-                                    downloadButton(outputId='M_download_expression_plot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFExpPlot", "Download Exp Plot in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='M_download_expression_plot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -81,8 +92,9 @@ shinyUI(fluidPage(
                conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab3' ",
                                 h4("Plot Control:"),
                                 wellPanel(
-                                    downloadButton(outputId='M_download_stackDensityPlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFHistogram", "Download Histogram in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='M_download_stackDensityPlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -105,8 +117,9 @@ shinyUI(fluidPage(
                                                 selected = "bluered", width = "100%")
                                 ),
                                 wellPanel(
-                                    downloadButton(outputId='S_download_heatmapPlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFSamHeat", "Download Sample Heatmap in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='S_download_heatmapPlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -121,8 +134,9 @@ shinyUI(fluidPage(
                conditionalPanel(" input.main_panel == 'S_panel' && input.S_sampleTabs == 'S_tab2' ",
                                 h4("Plot Control:"),
                                 wellPanel(
-                                    downloadButton(outputId='S_download_rateChangePlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFrateChange", "Download Rate Change Plot in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='S_download_rateChangePlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -142,8 +156,9 @@ shinyUI(fluidPage(
                                     checkboxInput(inputId = "P_facetPlot", label = "Separate Plot by Samples", value = FALSE)
                                 ),
                                 wellPanel(
-                                    downloadButton(outputId='P_download_scatterPlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFScatter", "Download Scatterplot in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='P_download_scatterPlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -161,8 +176,9 @@ shinyUI(fluidPage(
                                     checkboxInput(inputId = "P_addLabel2", label = "Add Cluster Labels", value = TRUE)
                                 ),
                                 wellPanel(
-                                    downloadButton(outputId='P_download_markerPlot', 
-                                                   label = "Download Figure in PDF Format"),
+                                    actionButton("PDFmarkerPlot", "Download Marker Plot in PDF", icon = icon("download")),
+                                    #downloadButton(outputId='P_download_markerPlot', 
+                                    #               label = "Download Figure in PDF Format"),
                                     hr(),
                                     fluidRow(
                                         column(6,
@@ -175,6 +191,8 @@ shinyUI(fluidPage(
                                         ))
                                 )),
                
+               actionButton("OpenDir", "Open download folder", icon = icon("folder")),
+               
                hr(),
                h4("Sample Filter:"),
                wellPanel(uiOutput("sampleSelect")),
@@ -184,6 +202,8 @@ shinyUI(fluidPage(
                wellPanel(
                    h5("Expression Data:"),
                    textOutput("summaryText1"),
+                   h5("Markers used for dimension reduction and clustering:"),
+                   textOutput("summaryText5"),
                    h5("Cluster Method(s):"),
                    textOutput("summaryText2"),
                    h5("Visualization Method(s):"),
@@ -302,6 +322,7 @@ shinyUI(fluidPage(
                                                        numericInput("M_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
                                                 )
                                             ),
+                                            uiOutput("M_heatmapmarkerSelect"),
                                             hr(),
                                             plotOutput("M_heatmapPlot", width = "100%")),
                                    tabPanel(title="Expression Level Plot", value="M_tab2",

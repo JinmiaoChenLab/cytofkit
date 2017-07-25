@@ -2,7 +2,7 @@
 #' 
 #' This GUI provides an easy way to apply \code{cytofkit} package. 
 #' Main parameters for running 'cytofkit' main function were integrated in this GUI, 
-#' and each parameter has a help button to show the instruction. 
+#' and each parameter has a help button to show the instructions. 
 #' The \code{cytofkit} analysis will be automatically started after submitting.
 #' 
 #' @author Hao Chen
@@ -103,7 +103,7 @@ cytofkit_GUI <- function() {
     reset_para_data <- function() {
         
         if (tclvalue(fcsFile) == "" && tclvalue(rawFCSdir) == "") {
-            tkmessageBox(title = "cytofkit: an integrated mass cytometry data analysis pipeline", 
+            tkmessageBox(title = "cytofkit: an Integrated Mass Cytometry Data Analysis Pipeline", 
                 message = "Please input your \"rawFCSdirectory\" or \"fcsFile\".", 
                 icon = "info", type = "ok")
         }
@@ -204,7 +204,7 @@ cytofkit_GUI <- function() {
     submit <- function() {
         has_error = FALSE
         if (tclvalue(markers) == "") {
-            tkmessageBox(title = "cytofkit: an integrated analysis pipeline for mass cytometry data", 
+            tkmessageBox(title = "cytofkit: an Integrated Analysis Pipeline for Mass Cytometry Data", 
                 message = "Please select the markers for your analysis.", 
                 icon = "info", type = "ok")
             has_error = TRUE
@@ -227,7 +227,7 @@ cytofkit_GUI <- function() {
     
     ## head line
     tt <- tktoplevel(borderwidth = 20)
-    tkwm.title(tt, "cytofkit: an integrated analysis pipeline for mass cytometry data")
+    tkwm.title(tt, "cytofkit: an Integrated Analysis Pipeline for Mass Cytometry Data")
     
     if(.Platform$OS.type == "windows"){
         box_length <- 63
@@ -238,7 +238,7 @@ cytofkit_GUI <- function() {
     bt_width <- 8
     #hb_width <- 8
     
-    imgfile <- system.file("extdata", "help.gif", package = "cytofkit")
+    imgfile <- system.file("extdata", "help.png", package = "cytofkit")
     image1 <- tclVar()
     tkimage.create("photo", image1, file = imgfile)
     image2 <- tclVar()
@@ -503,25 +503,28 @@ cytofkit_GUI <- function() {
                  l_m = as.numeric(inputs[["l_m"]]), 
                  l_a = as.numeric(inputs[["l_a"]]))
         
-        okMessage <- paste0("Analysis Done, results are saved under ",
+        okMessage <- paste0("Analysis done, results are saved under ",
                             inputs[["resultDir"]])
+        RData_path <- paste0(inputs[["resultDir"]], .Platform$file.sep, inputs[["projectName"]], ".RData")
     }
     
-    launchShinyAPP_GUI(message = okMessage, dir = inputs[["resultDir"]])
+    launchShinyAPP_GUI(message = okMessage, dir = inputs[["resultDir"]], obj = RData_path)
 }
 
 
 #' GUI for launching shiny APP
 #' 
-#' A shiny APP for interactive exploration of the analysis results
+#' A shiny APP for interactive exploration of analysis results
 #' 
-#' @param message A message to determine if open the shiny APP
-#' @param dir Result direcroty.
+#' @param message Message when asking if user wants to open the shiny APP
+#' @param dir Result directory.
+#' @param obj The RData piped from cytofkit function to the Shiny App
 #' 
+#' @return Window asking user if they wish to open shinyApp directly
 #' @export
 #' @examples
 #' # launchShinyAPP_GUI()
-launchShinyAPP_GUI <- function(message="cytofkit", dir = getwd()){
+launchShinyAPP_GUI <- function(message="cytofkit", dir = getwd(), obj = NULL){
     
     if(message == "Analysis is cancelled."){
         message("Analysis is cancelled!")
@@ -539,22 +542,22 @@ launchShinyAPP_GUI <- function(message="cytofkit", dir = getwd()){
             tclvalue(ifAPP) <- "n"
             tkdestroy(ss)
         }
-        yesBut <- tkbutton(ss, text = " YES ", command = onYes)
-        noBut <- tkbutton(ss, text = " NO ", command = onNo)
+        yesBut <- tkbutton(ss, text = " Yes ", command = onYes)
+        noBut <- tkbutton(ss, text = " No ", command = onNo)
         openDirBut <- tkbutton(ss, text = "Open", command = function(){opendir(dir)})
         okBut <- tkbutton(ss, text = "OK", command = function(){tkdestroy(ss)})
         tkgrid(tklabel(ss, text = message))
         
         tkgrid(openDirBut)
         tkgrid(tklabel(ss, text = "\n"))
-        tkgrid(tklabel(ss, text = "Launch Shiny APP to check your reuslts:"))
+        tkgrid(tklabel(ss, text = "Launch Shiny APP to check your results:"))
         tkgrid(noBut, tklabel(ss, text = "    "), yesBut)
         tkgrid.configure(noBut, sticky = "e")
         tkgrid.configure(yesBut, sticky = "e")
         tkwait.window(ss)
         
         if(tclvalue(ifAPP) == "y"){
-            cytofkitShinyAPP()
+            cytofkitShinyAPP(obj)
         }
     }
 }
@@ -576,6 +579,7 @@ opendir <- function(dir = getwd()){
 #' 
 #' @param fcsFile The name of the FCS file
 #' @param rawFCSdir The path of the FCS file
+#' @return List of markers for ddimension reduction and clustering
 #' @examples 
 #' #getParameters_GUI()
 getParameters_GUI <- function(fcsFile, rawFCSdir) {
@@ -586,8 +590,8 @@ getParameters_GUI <- function(fcsFile, rawFCSdir) {
     
     fcs <- suppressWarnings(read.FCS(fcsFile[1]))
     pd <- fcs@parameters@data
-    markers <- paste("<", pd$name, ">:", pd$desc, sep = "")
-    channels <- pd$name
+    markers <- paste(pd$name, "<", pd$desc, ">", sep = "")
+    channels <- paste(pd$name, "<", pd$desc, ">", sep = "")
     
     if (length(markers) == 0) {
         stop("No markers found in the FCS file!")
@@ -596,7 +600,7 @@ getParameters_GUI <- function(fcsFile, rawFCSdir) {
     # GUI
     markerChoice <- tclVar("")
     mm <- tktoplevel()
-    tkwm.title(mm, "cytofkit: marker selection")
+    tkwm.title(mm, "cytofkit: Marker Selection")
     scr <- tkscrollbar(mm, repeatinterval = 5, command = function(...) tkyview(tl, 
         ...))
     tl <- tklistbox(mm, height = 30, width = 40, selectmode = "multiple", yscrollcommand = function(...) tkset(scr, 
@@ -623,11 +627,12 @@ getParameters_GUI <- function(fcsFile, rawFCSdir) {
 } 
 
 
-#' GUI for gettting parameter for logicle transformaiton
+#' GUI for gettting parameter for logicle transformation
 #' 
 #' Extract the parameter for fixed logicle transformation
 #' 
 #' @param fixedLgclParas parameters vector containing w, t, m, a
+#' @return Parameters for fixed logicle transformation
 #' @examples 
 #' #fixedLogicleParameters_GUI
 fixedLogicleParameters_GUI <- function(fixedLgclParas=c(0.5, 500000, 4.5, 0)) {

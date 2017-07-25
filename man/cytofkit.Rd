@@ -16,13 +16,13 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   saveObject = TRUE, openShinyAPP = FALSE, ...)
 }
 \arguments{
-\item{fcsFiles}{It can be either the path where stores your FCS files or a vector of FCS file names.}
+\item{fcsFiles}{It can be either the path where your FCS files are stored or a vector of FCS file names.}
 
-\item{markers}{It can be either a text file where contains the makers to be used for analysis or a vector of the marker names.}
+\item{markers}{It can be either a text file that containing markers to be used for analysis or a vector of the marker names.}
 
 \item{projectName}{A prefix that will be added to the names of all result files.}
 
-\item{ifCompensation}{Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.}
+\item{ifCompensation}{Boolean value, to apply compensation contained in FCS, or a compensation matrix.}
 
 \item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
@@ -39,11 +39,11 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{dimReductionMethod}{The method used for dimensionality reduction, including \code{tsne}, \code{pca} and \code{isomap}.}
 
-\item{clusterMethods}{The clustering method(s) used for subpopulation detection, including \code{DensVM}, \code{ClusterX}, \code{Rphenograph} and \code{FlowSOM}. Multiple selection are accepted.}
+\item{clusterMethods}{The clustering method(s) used for subpopulation detection, including \code{DensVM}, \code{ClusterX}, \code{Rphenograph} and \code{FlowSOM}. Multiple selections are accepted.}
 
-\item{visualizationMethods}{The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selection are accepted.}
+\item{visualizationMethods}{The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selections are accepted.}
 
-\item{progressionMethod}{Use the first ordination score of \code{isomap} to estimated the preogression order of cells, choose \code{NULL} to ignore.}
+\item{progressionMethod}{Use the first ordination score of \code{isomap} to estimated the progression order of cells, choose \code{NULL} to ignore.}
 
 \item{FlowSOM_k}{Number of clusters for meta clustering in FlowSOM.}
 
@@ -51,11 +51,11 @@ fixedNum) from each fcs file and combined for analysis.}
 
 \item{resultDir}{The directory where result files will be generated.}
 
-\item{saveResults}{If save the results, and the post-processing results including scatter plot, heatmap, and statistical results.}
+\item{saveResults}{Save the results, and the post-processing results including scatter plot, heatmap, and statistical results.}
 
-\item{saveObject}{Save the resutls into RData objects for loading back to R for further analysis}
+\item{saveObject}{Save the results into RData objects for loading back to R for further analysis}
 
-\item{openShinyAPP}{If open the shinyAPP automatically when the analysis was done, default FALSE.}
+\item{openShinyAPP}{Opens the shinyAPP automatically when the analysis was done, default FALSE.}
 
 \item{...}{Other arguments passed to \code{cytof_exprsExtract}}
 }

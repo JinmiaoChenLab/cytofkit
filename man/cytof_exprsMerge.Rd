@@ -4,17 +4,15 @@
 \alias{cytof_exprsMerge}
 \title{Merge the expression matrix from multiple FCS files with preprocessing}
 \usage{
-cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
-  transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"),
-  scaleTo = NULL, mergeMethod = c("ceil", "all", "fixed", "min"),
-  fixedNum = 10000, sampleSeed = 123, ...)
+cytof_exprsMerge(fcsFiles, comp = FALSE, transformMethod = c("autoLgcl",
+  "cytofAsinh", "logicle", "arcsinh", "none"), scaleTo = NULL,
+  mergeMethod = c("ceil", "all", "fixed", "min"), fixedNum = 10000,
+  sampleSeed = 123, ...)
 }
 \arguments{
 \item{fcsFiles}{A vector of FCS file names.}
 
-\item{comp}{Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.}
-
-\item{markers}{Selected markers for analysis, either marker names/descriptions or marker IDs.}
+\item{comp}{If \verb{TRUE}, does compensation  by compensation matrix contained in FCS. Agrument also accepts a compensation matrix to be applied. Otherwise \verb{FALSE}.}
 
 \item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
@@ -33,7 +31,7 @@ cytof_exprsMerge(fcsFiles, comp = FALSE, markers = NULL,
 \item{...}{Other arguments passed to \code{cytof_exprsExtract}}
 }
 \value{
-A matrix containing the merged expression data, with selected markers, row names added as \code{filename_cellID}, column mamed added as \code{name<desc>}.
+A matrix containing the merged expression data, with selected markers, row names added as \code{filename_cellID}, column names added as \code{name<desc>}.
 }
 \description{
 Apply preprocessing on each FCS file including compensation (for FCM data only) and transformation
@@ -43,9 +41,7 @@ with selected markers, then expression matrix are extracted and merged using one
 \examples{
 d<-system.file('extdata',package='cytofkit')
 fcsFiles <- list.files(d,pattern='.fcs$',full=TRUE)
-parameters <- list.files(d, pattern='.txt$', full=TRUE)
-markers <- as.character(read.table(parameters, sep = "\\t", header = TRUE)[, 1])
-merged <- cytof_exprsMerge(fcsFiles, markers = markers)
+merged <- cytof_exprsMerge(fcsFiles)
 }
 \seealso{
 \code{\link{cytof_exprsExtract}}

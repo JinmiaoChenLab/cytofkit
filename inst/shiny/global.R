@@ -21,6 +21,8 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                        check.names = FALSE,
                        stringsAsFactors = FALSE)
     
+    Markers <- obj$allMarkers
+    
     xlab <- colnames(obj$dimReducedRes[[plotMethod]])[1]
     ylab <- colnames(obj$dimReducedRes[[plotMethod]])[2]
     row.names(data) <- row.names(obj$expressionData)
@@ -189,12 +191,20 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
 
 ## Heat Map
 heatMap <- function(data, clusterMethod = "DensVM", type = "mean", 
-                    dendrogram = "both", colPalette = "bluered", selectSamples,
+                    dendrogram = "both", colPalette = "bluered", selectSamples, selectMarkers = NULL,
                     cex_row_label = 1, cex_col_label = 1, scaleMethod = "none") {
     exprs <- data$expressionData
     samples <- sub("_[0-9]*$", "", row.names(exprs))
+    if(!(is.null(selectMarkers))) {
+      marker_id <- selectMarkers
+    }else{
+      marker_id <- colnames(exprs)
+    }
+    markers <- colnames(exprs)
     mySamples <- samples %in% selectSamples
+    myMarkers <- markers %in% marker_id
     exprs <- exprs[mySamples, , drop = FALSE]
+    exprs <- exprs[, myMarkers, drop = FALSE]
     dataj <- data$clusterRes[[clusterMethod]][mySamples]
     exprs_cluster <- data.frame(exprs, cluster = dataj, check.names = FALSE )
     

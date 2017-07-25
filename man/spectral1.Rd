@@ -10,7 +10,7 @@ spectral1(n)
 \item{n}{Number of colors.}
 }
 \value{
-hex colour values
+Hex colour values
 }
 \description{
 First Function for spectral color palette

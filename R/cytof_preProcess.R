@@ -5,8 +5,7 @@
 #' \code{all}, \code{min}, \code{fixed} or \code{ceil}
 #' 
 #' @param fcsFiles A vector of FCS file names.
-#' @param comp Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
-#' @param markers Selected markers for analysis, either marker names/descriptions or marker IDs.
+#' @param comp If \verb{TRUE}, does compensation  by compensation matrix contained in FCS. Agrument also accepts a compensation matrix to be applied. Otherwise \verb{FALSE}.
 #' @param transformMethod Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.
 #' @param scaleTo Scale the expression to a specified range c(a, b), default is NULL.
 #' @param mergeMethod Merge method for mutiple FCS expression data. cells can be combined using one of the four different methods including \code{ceil}, \code{all}, \code{min}, \code{fixed}. The default option is 
@@ -18,18 +17,15 @@
 #' @param sampleSeed A sampling seed for reproducible expression matrix merging.
 #' @param ... Other arguments passed to \code{cytof_exprsExtract}
 #' 
-#' @return A matrix containing the merged expression data, with selected markers, row names added as \code{filename_cellID}, column mamed added as \code{name<desc>}.
+#' @return A matrix containing the merged expression data, with selected markers, row names added as \code{filename_cellID}, column names added as \code{name<desc>}.
 #' @seealso \code{\link{cytof_exprsExtract}}
 #' @export
 #' @examples
 #' d<-system.file('extdata',package='cytofkit')
 #' fcsFiles <- list.files(d,pattern='.fcs$',full=TRUE)
-#' parameters <- list.files(d, pattern='.txt$', full=TRUE)
-#' markers <- as.character(read.table(parameters, sep = "\t", header = TRUE)[, 1])
-#' merged <- cytof_exprsMerge(fcsFiles, markers = markers)
+#' merged <- cytof_exprsMerge(fcsFiles)
 cytof_exprsMerge <- function(fcsFiles, 
                              comp = FALSE, 
-                             markers = NULL, 
                              transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"), 
                              scaleTo = NULL, 
                              mergeMethod = c("ceil", "all", "fixed", "min"), 
@@ -41,7 +37,6 @@ cytof_exprsMerge <- function(fcsFiles,
     
     exprsL <- mapply(cytof_exprsExtract, fcsFiles, 
                      MoreArgs = list(comp = comp, 
-                                     markers = markers, 
                                      transformMethod = transformMethod, 
                                      scaleTo = scaleTo, ...), 
                      SIMPLIFY = FALSE)
@@ -87,12 +82,11 @@ cytof_exprsMerge <- function(fcsFiles,
 #' \code{logicle} (customizable) and \code{arcsinh} (customizable).
 #' 
 #' @param fcsFile The name of the FCS file.
-#' @param verbose Boolean value detecides if print the massage details of FCS loading.
-#' @param comp Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.
-#' @param markers Selected markers for analysis, either marker names/descriptions or marker IDs.
+#' @param verbose If \verb{TRUE}, print the message details of FCS loading.
+#' @param comp If \verb{TRUE}, does compensation  by compensation matrix contained in FCS. Agrument also accepts a compensation matrix to be applied. Otherwise \verb{FALSE}.
 #' @param transformMethod Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.
 #' @param scaleTo Scale the expression to a specified range c(a, b), default is NULL.
-#' @param q quantile of negative values removed for auto w estimation, default is 0.05, parameter for autoLgcl transformation.
+#' @param q Quantile of negative values removed for auto w estimation, default is 0.05, parameter for autoLgcl transformation.
 #' @param l_w Linearization width in asymptotic decades, parameter for logicle transformation.
 #' @param l_t Top of the scale data value, parameter for logicle transformation.
 #' @param l_m Full width of the transformed display in asymptotic decades, parameter for logicle transformation.
@@ -101,7 +95,7 @@ cytof_exprsMerge <- function(fcsFiles,
 #' @param a_b Positive double that corresponds to a scale factor of the arcsinh transformation, \code{arcsinh} = asinh(a + b * x) + c).
 #' @param a_c Positive double that corresponds to another scale factor of the arcsinh transformation, \code{arcsinh} = asinh(a + b * x) + c).
 #' 
-#' @return A transformend expression data matrix with selected markers, row names added as \code{filename_cellID}, column mamed added as \code{name<desc>}.
+#' @return A transformed expression data matrix, row names added as \code{filename_cellID}, column names added as \code{name<desc>}.
 #' @importFrom flowCore read.FCS compensate estimateLogicle logicleTransform parameters transformList arcsinhTransform biexponentialTransform
 #' @importMethodsFrom flowCore transform
 #' @importClassesFrom flowCore transformList
@@ -109,13 +103,10 @@ cytof_exprsMerge <- function(fcsFiles,
 #' @examples
 #' d <- system.file('extdata',package='cytofkit')
 #' fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-#' parameters <- list.files(d, pattern='.txt$', full=TRUE)
-#' markers <- as.character(read.table(parameters, sep = "\t", header = TRUE)[, 1])
-#' transformed <- cytof_exprsExtract(fcsFile, markers = markers)
+#' transformed <- cytof_exprsExtract(fcsFile)
 cytof_exprsExtract <- function(fcsFile, 
                                verbose = FALSE, 
                                comp = FALSE, 
-                               markers = NULL, 
                                transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"), 
                                scaleTo = NULL, 
                                q = 0.05,
@@ -155,33 +146,11 @@ cytof_exprsExtract <- function(fcsFile,
 
     ## match marker names to get marker ID, use all if NULL 
     pd <- fcs@parameters@data
-    if (!(is.null(markers))) {
-        if(is.numeric(markers)){
-            if(all(markers %in% 1:ncol(fcs@exprs))){
-                marker_id <- markers
-            }else{
-                stop("Marker ID out of range!")
-            }
-        }else if(is.character(markers)){
-            right_marker <- markers %in% pd$desc || markers %in% pd$name
-            if (!(right_marker)) {
-                stop("\n Selected marker(s) is not in the input fcs files \n please check your selected markers! \n")
-            } else {
-                desc_id <- match(markers, pd$desc)
-                name_id <- match(markers, pd$name)
-                mids <- c(desc_id, name_id)
-                marker_id <- unique(mids[!is.na(mids)])
-            }
-        }else{
-            stop("Sorry, input markers cannot be recognized!")
-        }
-    }else{
+
         ## Exclude "Time", "Event" channel
         exclude_channels <- grep("Time|Event", colnames(fcs@exprs), ignore.case = TRUE)
         marker_id <- setdiff(seq_along(colnames(fcs@exprs)), exclude_channels)
-    }
-    
-    ## Identify "FSC-x", "SSC-x" markers
+
     size_channels <- grep("FSC|SSC", colnames(fcs@exprs), ignore.case = TRUE)
     transMarker_id <- setdiff(marker_id, size_channels)
    
@@ -243,7 +212,7 @@ cytof_exprsExtract <- function(fcsFile,
 #' @param fcs FCS file.
 #' @param compMatrix Compensation matrix.
 #' @noRd
-#' @return compensated expression value
+#' @return Compensated expression value
 applyComp <- function(fcs, compMatrix) {
     comp_fcs <- compensate(fcs, compMatrix)
 }
@@ -282,11 +251,11 @@ cytofAsinh <- function(value, cofactor = 5) {
 #' a modified version of "estimateLogicle" from flowCore
 #' 
 #' Used boxplot outlier detection to filter outliers in negative values 
-#' before calculating the r using the fifth percnetile of the negative values.
+#' before calculating the r using the fifth percentile of the negative values.
 #' 
 #' @param x A flowFrame object.
 #' @param channels Channel names to be transformed.
-#' @param m The full width of the transformed display in asymptotic decades. m should be greater than zero.
+#' @param m The full width of the transformed display in asymptotic decades. \code{m} should be greater than zero.
 #' @param q The percentile of negative values used as reference poiont of negative range.
 #' @importFrom methods is
 #' @importFrom flowCore logicleTransform

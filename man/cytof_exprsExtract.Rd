@@ -4,7 +4,7 @@
 \alias{cytof_exprsExtract}
 \title{Extract the expression data from a FCS file with preprocessing}
 \usage{
-cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE, markers = NULL,
+cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE,
   transformMethod = c("autoLgcl", "cytofAsinh", "logicle", "arcsinh", "none"),
   scaleTo = NULL, q = 0.05, l_w = 0.1, l_t = 4000, l_m = 4.5,
   l_a = 0, a_a = 1, a_b = 1, a_c = 0)
@@ -12,17 +12,15 @@ cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE, markers = NULL,
 \arguments{
 \item{fcsFile}{The name of the FCS file.}
 
-\item{verbose}{Boolean value detecides if print the massage details of FCS loading.}
+\item{verbose}{If \verb{TRUE}, print the message details of FCS loading.}
 
-\item{comp}{Either boolean value tells if do compensation (compensation matrix contained in FCS), or a compensation matrix to be applied.}
-
-\item{markers}{Selected markers for analysis, either marker names/descriptions or marker IDs.}
+\item{comp}{If \verb{TRUE}, does compensation  by compensation matrix contained in FCS. Agrument also accepts a compensation matrix to be applied. Otherwise \verb{FALSE}.}
 
 \item{transformMethod}{Data Transformation method, including \code{autoLgcl}, \code{cytofAsinh}, \code{logicle} and \code{arcsinh}, or \code{none} to avoid transformation.}
 
 \item{scaleTo}{Scale the expression to a specified range c(a, b), default is NULL.}
 
-\item{q}{quantile of negative values removed for auto w estimation, default is 0.05, parameter for autoLgcl transformation.}
+\item{q}{Quantile of negative values removed for auto w estimation, default is 0.05, parameter for autoLgcl transformation.}
 
 \item{l_w}{Linearization width in asymptotic decades, parameter for logicle transformation.}
 
@@ -39,7 +37,7 @@ cytof_exprsExtract(fcsFile, verbose = FALSE, comp = FALSE, markers = NULL,
 \item{a_c}{Positive double that corresponds to another scale factor of the arcsinh transformation, \code{arcsinh} = asinh(a + b * x) + c).}
 }
 \value{
-A transformend expression data matrix with selected markers, row names added as \code{filename_cellID}, column mamed added as \code{name<desc>}.
+A transformed expression data matrix, row names added as \code{filename_cellID}, column names added as \code{name<desc>}.
 }
 \description{
 Extract the FCS expresssion data with preprocessing of compensation (for FCM data only)
@@ -49,7 +47,5 @@ and transformation. Transformtion methods includes \code{autoLgcl}, \code{cytofA
 \examples{
 d <- system.file('extdata',package='cytofkit')
 fcsFile <- list.files(d,pattern='.fcs$',full=TRUE)
-parameters <- list.files(d, pattern='.txt$', full=TRUE)
-markers <- as.character(read.table(parameters, sep = "\\t", header = TRUE)[, 1])
-transformed <- cytof_exprsExtract(fcsFile, markers = markers)
+transformed <- cytof_exprsExtract(fcsFile)
 }

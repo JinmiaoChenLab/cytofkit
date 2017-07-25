@@ -66,7 +66,7 @@ Start your analysis as simply as following:
 
 Then submit it, that's all. 
 
-Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of **_.RData_** is for loading the results into the shiny APP. Choose the **_.RData_** file on the shiny APP then submit it, your journey of exploring the reulsts starts.
+Depends on the size of your data, it will take some time to run the analysis. Once done, a window will pop up, showing you the path where the results have been stored, and asking you if open the shiny web APP. If YES, the shiny APP will be deployed locally and opened in your default web browser. Among the saved results, a special R data object with suffix of **_.RData_** is for loading the results into the shiny APP. Choose the **_.RData_** file on the shiny APP then submit it, your journey of exploring the results starts.
 
 
 ## Run with the Core Function 
@@ -83,6 +83,7 @@ res <- cytofkit(fcsFiles = file,
                 projectName = 'cytofkit_test',
                 transformMethod = "cytofAsinh", 
                 mergeMethod = "all",
+                fixedNum = 500,                                    ## set at 500 for faster run
                 dimReductionMethod = "tsne",
                 clusterMethods = c("Rphenograph", "ClusterX"),    ## accept multiple methods
                 visualizationMethods = c("tsne", "pca"),          ## accept multiple methods
@@ -90,8 +91,7 @@ res <- cytofkit(fcsFiles = file,
                 clusterSampleSize = 500,
                 resultDir = getwd(),
                 saveResults = TRUE, 
-                saveObject = TRUE, 
-                saveToFCS = TRUE)
+                saveObject = TRUE)
 ```
 
 You can customize the parameters for your own need, run `?cytofkit` to get information of all the parameters for `cytofkit`. As running with GUI, once the analysis is done, the results will be saved under `resultDir` automatically.
@@ -119,15 +119,14 @@ parameters
 
 ```{r}
 ## Extract the expression matrix with transformation
-data_transformed <- cytof_exprsExtract(fcsFile = file, markers = parameters, 
+data_transformed <- cytof_exprsExtract(fcsFile = file, 
                                        comp = FALSE, 
                                        transformMethod = "cytofAsinh")
-## If analysing flow cytoetry data, you can set comp to TRUE or 
+## If analysing flow cytometry data, you can set comp to TRUE or 
 ## provide a transformation matrix to apply compensation
 
 ## If you have multiple FCS files, expression can be extracted and combined
 combined_data_transformed <- cytof_exprsMerge(fcsFiles = file, comp=FALSE,
-                                              markers = parameters, 
                                               transformMethod = "cytofAsinh",
                                               mergeMethod = "all")
 ## change mergeMethod to apply different combination strategy
@@ -140,8 +139,8 @@ head(data_transformed[ ,1:3])
 
 ```{r, message=FALSE, }
 ## use clustering algorithm to detect cell subsets
-## to speed up our test here, we only use 1000 cells
-data_transformed_1k <- data_transformed[1:1000, ]
+## to speed up our test here, we only use 100 cells
+data_transformed_1k <- data_transformed[1:100, ]
 
 ## run PhenoGraph
 cluster_PhenoGraph <- cytof_cluster(xdata = data_transformed_1k, method = "Rphenograph")
@@ -263,6 +262,11 @@ cytof_addToFCS(data_1k_all, rawFCSdir=dir, analyzedFCSdir="analysed_FCS",
                cluster_cols = c("PhenoGraph", "ClusterX", "FlowSOM"))
 ```
 
+### Get package update news
+
+```{r}
+cytofkitNews()
+```
  
 # Session Information
 

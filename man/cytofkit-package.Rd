@@ -11,22 +11,22 @@ a GUI client are provided for executing the workflow easily.
 }
 \details{
 This package integrates merging methods of multiple FCS files, dimension reduction methods (PCA, t-SNE and ISOMAP) 
-and clustering methods (DensVM, ClusterX, and Rphenograph) for rapid subset detection. Analysis reuslts can be visualized 
+and clustering methods (DensVM, ClusterX, and Rphenograph) for rapid subset detection. Analysis results can be visualized 
 and explored interactively using a specially designed shiny web APP, see \code{\link{cytofkitShinyAPP}}. Moreover, the method isomap is provided to map the cellular progression. 
 This workflow can be easily executed with the main function \code{\link{cytofkit}} or through the GUI client \code{\link{cytofkit_GUI}}.
 
 Pre-processing
 
 Using function \code{\link{cytof_exprsMerge}}, one or multiple FCS files will be loaded via the *read.FCS* 
-function in the *flowCore* package. Then transformation was applied to the expression value 
-of selected markers of each FCS file. Transformation methods include \code{autoLgcl}, \code{cytofAsinh}, 
+function in the *flowCore* package. Then transformation will be applied to the expression value 
+of each FCS file. Transformation methods include \code{autoLgcl}, \code{cytofAsinh}, 
 \code{logicle} and \code{arcsinh}, where \code{cytofAsinh} is the default.Then mutilple FCS files are 
 merged using one of the merging methods \code{all}, \code{min}, \code{fixed} or \code{ceil}.
 
 Dimensionality reduction
 
 Using function \code{\link{cytof_dimReduction}}, t-Distributed Stochastic Neighbor Embedding (\code{tsne}) 
-is suggested for dimensionality reduction although we also provide methods like \code{isomap} and \code{pca}.
+is suggested for dimensionality reduction with selected markers, although we also provide methods like \code{isomap} and \code{pca}.
 
 Cluster
 
@@ -37,13 +37,13 @@ works directed on the high dimensional expression data. Method \code{FlowSOM} is
 
 Post-processing
 
-- Using function \code{\link{cytof_clusterPlot}} to visualize the cluster results in a catter plot, in which dots represent cells, colours 
+- Using function \code{\link{cytof_clusterPlot}} to visualize the cluster results in a scatter plot, in which dots represent cells, colours 
 indicate their assigned clusters and point shapes represent their belonging samples.
 
 - Using function \code{\link{cytof_heatmap}} to generate heat map to visualize the mean expression of every marker in every cluster. 
  This heat maps is useful to interrogate marker expression to identify each cluster's defining markers.
 
-- Using function \code{\link{cytof_progressionPlot}} to visualize the expression patter of selected markers against the estimated 
+- Using function \code{\link{cytof_progressionPlot}} to visualize the expression pattern of selected markers against the estimated 
  cellular progression order.
  
  - Using function \code{\link{cytof_addToFCS}} to add any dimension reduced data, cluster results, progression data into the original FCS files,
@@ -61,7 +61,7 @@ dir <- system.file('extdata',package='cytofkit')
 file <- list.files(dir, pattern='.fcs$', full=TRUE)
 parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 ## remove the hash symbol to run the following command
-#cytofkit(fcsFile = file, markers = parameters)   
+#results <- cytofkit(fcsFile = file, markers = parameters)   
 
 ## Checking the vignettes for more details 
 if(interactive()) browseVignettes(package = 'cytofkit')

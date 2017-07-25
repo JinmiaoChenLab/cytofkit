@@ -26,7 +26,9 @@ After the analysis was done using cytofkit, a special **RData file** will be sav
 
 ![](load2shiny.png)
 
-Click the up-left `Choose File` button to choose **RData file**, then click the `submit` button below to load the data. 
+Click the up-left `Choose File` button to choose **RData file**, then click the `submit` button below to load the data.
+
+For use on servers, the `Server File Select` button can be used to load data directly from server without storing it locally.
 
 As shown in the figure above, there are one **side panel** and one **main panel** for the cytofkit shiny APP. 
 

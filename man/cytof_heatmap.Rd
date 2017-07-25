@@ -11,7 +11,7 @@ cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
   3.5, 1)), keysize = 1.4, margins = c(5, 5))
 }
 \arguments{
-\item{data}{a matrix with rownames and colnames}
+\item{data}{A matrix with rownames and colnames}
 
 \item{baseName}{The name as a prefix in the title of the heatmap.}
 
@@ -19,20 +19,20 @@ cytof_heatmap(data, baseName = "Cluster", scaleMethod = "none",
 
 \item{dendrogram}{Control the dengrogram on row or column, selection includes 'both', 'row', 'column', 'none'.}
 
-\item{colPalette}{Using selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.}
+\item{colPalette}{Use selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.}
 
 \item{cex_row_label}{Text size for row labels.}
 
 \item{cex_col_label}{Text size for column labels.}
 
-\item{key.par}{graphical parameters for the color key.}
+\item{key.par}{Graphical parameters for the color key.}
 
-\item{keysize}{numeric value indicating the size of the key.}
+\item{keysize}{Numeric value indicating the size of the key.}
 
-\item{margins}{numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.}
+\item{margins}{Numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.}
 }
 \value{
-a heatmap object from \code{gplots}
+A heatmap object from \code{gplots}
 }
 \description{
 Heatmap plot of cluster mean value results

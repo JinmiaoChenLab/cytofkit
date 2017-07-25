@@ -10,7 +10,7 @@ spectral2(n)
 \item{n}{Number of colors.}
 }
 \value{
-hex colour values
+Hex colour values
 }
 \description{
 Second Function for spectral color palette

@@ -17,28 +17,28 @@ cytof_clusterPlot(data, xlab, ylab, cluster, sample, title = "cluster",
 
 \item{cluster}{The column name of cluster in input \code{data}.}
 
-\item{sample}{the column name of the sample in input \code{data}.}
+\item{sample}{The column name of the sample in input \code{data}.}
 
-\item{title}{the title of the plot.}
+\item{title}{The title of the plot.}
 
-\item{type}{plot type, 1 indicates combined plot, 2 indicated grid facet plot seperated by samples.}
+\item{type}{Plot type, 1 indicates combined plot, 2 indicated grid facet plot seperated by samples.}
 
-\item{point_size}{the size of the dot.}
+\item{point_size}{Size of the dot.}
 
-\item{addLabel}{Boolean, if add cluster labels.}
+\item{addLabel}{If \verb{TRUE}, add cluster labels.}
 
-\item{labelSize}{the size of cluster labels.}
+\item{labelSize}{Size of cluster labels.}
 
-\item{sampleLabel}{If use point shapes to represent different samples.}
+\item{sampleLabel}{If \verb{TRUE}, use point shapes to represent different samples.}
 
-\item{labelRepel}{If repel the cluste labels to avoid label overlapping.}
+\item{labelRepel}{If \verb{TRUE}, repel the cluste labels to avoid label overlapping.}
 
-\item{fixCoord}{If fix the Cartesian coordinates.}
+\item{fixCoord}{If \verb{TRUE}, fix the Cartesian coordinates.}
 
 \item{clusterColor}{Manually specify the colour of each cluster (mainly for ShinyAPP usage).}
 }
 \value{
-the ggplot object of the scatter cluster plot.
+The ggplot object of the scatter cluster plot.
 }
 \description{
 Dot plot visualization of the cluster results, with color indicating different clusters, 

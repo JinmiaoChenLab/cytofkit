@@ -4,15 +4,20 @@
 \alias{launchShinyAPP_GUI}
 \title{GUI for launching shiny APP}
 \usage{
-launchShinyAPP_GUI(message = "cytofkit", dir = getwd())
+launchShinyAPP_GUI(message = "cytofkit", dir = getwd(), obj = NULL)
 }
 \arguments{
-\item{message}{A message to determine if open the shiny APP}
+\item{message}{Message when asking if user wants to open the shiny APP}
 
-\item{dir}{Result direcroty.}
+\item{dir}{Result directory.}
+
+\item{obj}{The RData piped from cytofkit function to the Shiny App}
+}
+\value{
+Window asking user if they wish to open shinyApp directly
 }
 \description{
-A shiny APP for interactive exploration of the analysis results
+A shiny APP for interactive exploration of analysis results
 }
 \examples{
 # launchShinyAPP_GUI()

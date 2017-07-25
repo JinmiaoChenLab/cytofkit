@@ -14,14 +14,14 @@ cytof_addToFCS(data, rawFCSdir, analyzedFCSdir, transformed_cols = c("tsne_1",
 
 \item{analyzedFCSdir}{The directory to store the new fcs files.}
 
-\item{transformed_cols}{the column name of the dimension transformend data in \code{data}.}
+\item{transformed_cols}{The column name of the dimension transformed data in \code{data}.}
 
-\item{cluster_cols}{the column name of the cluster data in \code{data}.}
+\item{cluster_cols}{The column name of the cluster data in \code{data}.}
 
-\item{inLgclTrans}{Boolean value decides if apply the inverse lgcl transformation to the the cluster data before saving}
+\item{inLgclTrans}{If \verb{TRUE}, apply the inverse lgcl transformation to the the cluster data before saving}
 }
 \value{
-new fcs files stored under \code{analyzedFCSdir}
+New fcs files stored under \code{analyzedFCSdir}
 }
 \description{
 Store the new dimension transformed data and cluster data into the exprs 

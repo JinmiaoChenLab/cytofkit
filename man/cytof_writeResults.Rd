@@ -9,24 +9,24 @@ cytof_writeResults(analysis_results, projectName, saveToRData = TRUE,
   inverseLgclTrans = TRUE)
 }
 \arguments{
-\item{analysis_results}{result data from output of \code{\link{cytofkit}}}
+\item{analysis_results}{Result data from output of \code{\link{cytofkit}}}
 
-\item{projectName}{a prefix that will be added to the names of result files.}
+\item{projectName}{A prefix that will be added to the names of result files.}
 
-\item{saveToRData}{boolean value determines if save the results object into RData file, for loading back to R and to shiny APP.}
+\item{saveToRData}{Boolean value determines if results object is saved into RData file, for loading back to R and to shiny APP.}
 
-\item{saveToFCS}{boolean value determines if save the results back to the FCS files, new FCS files will be generated under folder XXX_analyzedFCS.}
+\item{saveToFCS}{Boolean value determines if results are saved back to FCS files, new FCS files will be generated under folder XXX_analyzedFCS.}
 
-\item{saveToFiles}{boolean value determines if parse the results and automatically save to csv files and pdf figures.}
+\item{saveToFiles}{Boolean value determines if results are parsed and automatically saved to csv files and pdf figures.}
 
-\item{resultDir}{the directory where result files will be generated.}
+\item{resultDir}{The directory where result files will be generated.}
 
-\item{rawFCSdir}{the directory that contains fcs files to be analysed.}
+\item{rawFCSdir}{The directory that contains fcs files to be analysed.}
 
-\item{inverseLgclTrans}{boolean if inverse logicle transform the cluster cor1 and cor2 channels.}
+\item{inverseLgclTrans}{If \verb{TRUE}, inverse logicle transform the cluster cor1 and cor2 channels.}
 }
 \value{
-save all results in the \code{resultDir}
+Save all results in the \code{resultDir}
 }
 \description{
 Save analysis results from cytofkit main function to RData, csv files and PDF files and
