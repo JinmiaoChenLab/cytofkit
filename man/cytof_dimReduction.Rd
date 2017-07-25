@@ -2,16 +2,19 @@
 % Please edit documentation in R/cytof_dimensionReduction.R
 \name{cytof_dimReduction}
 \alias{cytof_dimReduction}
-\title{Dimension reduction for high dimensional data}
+\title{Dimension reduction for high dimension data}
 \usage{
-cytof_dimReduction(data, method = c("tsne", "pca", "isomap", "diffusionmap",
-  "NULL"), distMethod = "euclidean", out_dim = 2, tsneSeed = 42,
-  isomap_k = 5, isomap_ndim = NULL, isomapFragmentOK = TRUE, ...)
+cytof_dimReduction(data, markers = NULL, method = c("tsne", "pca", "isomap",
+  "diffusionmap", "NULL"), distMethod = "euclidean", out_dim = 2,
+  tsneSeed = 42, isomap_k = 5, isomap_ndim = NULL,
+  isomapFragmentOK = TRUE, ...)
 }
 \arguments{
 \item{data}{Input expression data matrix.}
 
-\item{method}{Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca} , \code{diffusionmap} or \code{tsne}.}
+\item{markers}{Selected markers for dimension reduction, either marker names/descriptions or marker IDs.}
+
+\item{method}{Method chosen for dimensition reduction, must be one of \code{isomap}, \code{pca} , \code{diffusionmap} or \code{tsne}.}
 
 \item{distMethod}{Method for distance calcualtion, default is "euclidean", other choices like "manhattan", "cosine", "rankcor"....}
 
@@ -28,14 +31,20 @@ cytof_dimReduction(data, method = c("tsne", "pca", "isomap", "diffusionmap",
 \item{...}{Other parameters passed to the method, check \code{\link{Rtsne}}, \code{\link{DiffusionMap}}, \code{\link{isomap}}.}
 }
 \value{
-a matrix of the dimension reducted data, with colnames method_ID, and rownames same as the input data.
+A matrix of the dimension reduced data, with colnames method_ID, and rownames same as the input data.
 }
 \description{
 Apply dimension reduction on the cytof expression data, 
 with method \code{pca}, \code{tsne}, \code{diffusionmap} or \code{isomap}.
 }
+\note{
+Currently, \code{diffusionmap} will not work with R 3.4.0, due to an issue with the latest CRAN release of its dependency \code{\link{igraph}} 
+If this is the case, consider manually updating \code{\link{igraph}} using;
+\code{install.packages("https://github.com/igraph/rigraph/releases/download/v1.1.0/igraph_1.1.0.zip", repos=NULL, method="libcurl")}
+}
 \examples{
 data(iris)
 in_data <- iris[, 1:4]
-out_data <- cytof_dimReduction(in_data, method = "tsne")
+markers <- colnames(in_data[, 1:4])
+out_data <- cytof_dimReduction(in_data, markers = markers, method = "tsne")
 }

@@ -2,12 +2,15 @@
 % Please edit documentation in R/cytofkit_GUI.R
 \name{fixedLogicleParameters_GUI}
 \alias{fixedLogicleParameters_GUI}
-\title{GUI for gettting parameter for logicle transformaiton}
+\title{GUI for gettting parameter for logicle transformation}
 \usage{
 fixedLogicleParameters_GUI(fixedLgclParas = c(0.5, 5e+05, 4.5, 0))
 }
 \arguments{
 \item{fixedLgclParas}{parameters vector containing w, t, m, a}
+}
+\value{
+Parameters for fixed logicle transformation
 }
 \description{
 Extract the parameter for fixed logicle transformation

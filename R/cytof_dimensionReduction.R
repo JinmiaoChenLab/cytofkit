@@ -1,10 +1,11 @@
-#' Dimension reduction for high dimensional data 
+#' Dimension reduction for high dimension data 
 #' 
 #' Apply dimension reduction on the cytof expression data, 
 #' with method \code{pca}, \code{tsne}, \code{diffusionmap} or \code{isomap}. 
 #' 
 #' @param data Input expression data matrix.
-#' @param method Method chosed for dimensition reduction, must be one of \code{isomap}, \code{pca} , \code{diffusionmap} or \code{tsne}. 
+#' @param markers Selected markers for dimension reduction, either marker names/descriptions or marker IDs.
+#' @param method Method chosen for dimensition reduction, must be one of \code{isomap}, \code{pca} , \code{diffusionmap} or \code{tsne}. 
 #' @param out_dim The dimensionality of the output.
 #' @param tsneSeed Set a seed if you want reproducible t-SNE results.
 #' @param distMethod Method for distance calcualtion, default is "euclidean", other choices like "manhattan", "cosine", "rankcor"....
@@ -12,18 +13,24 @@
 #' @param isomap_ndim Number of axes in metric scaling, parameter for \code{isomap} method.
 #' @param isomapFragmentOK What to do if dissimilarity matrix is fragmented, parameter for \code{isomap} method.
 #' @param ... Other parameters passed to the method, check \code{\link{Rtsne}}, \code{\link{DiffusionMap}}, \code{\link{isomap}}.
-#' @return a matrix of the dimension reducted data, with colnames method_ID, and rownames same as the input data.
+#' @return A matrix of the dimension reduced data, with colnames method_ID, and rownames same as the input data.
 #' 
 #' @importFrom vegan vegdist spantree isomap
 #' @importFrom Rtsne Rtsne
 #' @importFrom destiny DiffusionMap
+#' @importFrom utils compareVersion packageVersion
 #' @import stats
 #' @export
 #' @examples
 #' data(iris)
 #' in_data <- iris[, 1:4]
-#' out_data <- cytof_dimReduction(in_data, method = "tsne")
-cytof_dimReduction <- function(data, 
+#' markers <- colnames(in_data[, 1:4])
+#' out_data <- cytof_dimReduction(in_data, markers = markers, method = "tsne")
+#' @note Currently, \code{diffusionmap} will not work with R 3.4.0, due to an issue with the latest CRAN release of its dependency \code{\link{igraph}} 
+#' If this is the case, consider manually updating \code{\link{igraph}} using;
+#' \code{install.packages("https://github.com/igraph/rigraph/releases/download/v1.1.0/igraph_1.1.0.zip", repos=NULL, method="libcurl")}
+cytof_dimReduction <- function(data,
+                               markers = NULL,
                                method = c("tsne", "pca", "isomap", "diffusionmap", "NULL"), 
                                distMethod = "euclidean", 
                                out_dim = 2,
@@ -36,6 +43,25 @@ cytof_dimReduction <- function(data,
     data <- as.matrix(data)
     rnames <- row.names(data)
     
+    ##markers
+    if (!(is.null(markers))) {
+      if(is.character(markers)){
+        right_marker <- markers %in% colnames(data)
+        if (!(right_marker)) {
+          stop("\n Selected marker(s) is/are not in the input fcs files \n please check your selected marker(s)! \n")
+        } else {
+          marker_id <- markers
+        }
+      }else{
+        stop("Sorry, input markers cannot be recognized!")
+      }
+    }else{
+      ## NULL default to all
+      marker_id <- colnames(data)
+    }
+    
+    marker_filtered_data <- data[, marker_id]
+    
     method <- match.arg(method)
     if(method == "NULL"){
         return(NULL)
@@ -43,23 +69,29 @@ cytof_dimReduction <- function(data,
     
     switch(method,
            tsne={
-               cat("  Runing t-SNE...with seed", tsneSeed)
+               cat("  Running t-SNE...with seed", tsneSeed)
                if(is.numeric(tsneSeed))
                    set.seed(tsneSeed) # Set a seed if you want reproducible results
-               tsne_out <- Rtsne(data, initial_dims = ncol(data), 
+               tsne_out <- Rtsne(marker_filtered_data, initial_dims = ncol(marker_filtered_data), 
                                  dims = 2, 
                                  check_duplicates = FALSE, 
                                  pca = TRUE, ...)
                mapped <- tsne_out$Y
            },
            pca={
-               cat("  Runing PCA...")
-               mapped <- prcomp(data, scale = TRUE)$x
+               cat("  Running PCA...")
+               mapped <- prcomp(marker_filtered_data, scale = TRUE)$x
            },
            diffusionmap={
-               cat("  Runing Diffusion Map...")
+               cat("  Running Diffusion Map...\n")
+               versiontest <- compareVersion(as.character(packageVersion("igraph")), "1.1.0")
+               if(versiontest == 0 || versiontest == 1){
+                 message("igraph up to date!")
+               }else{
+                 stop("igraph not at least version 1.1.0! Stopping...")
+               }
                ord <- tryCatch({
-                   DiffusionMap(data, distance = distMethod, ...)
+                   DiffusionMap(marker_filtered_data, distance = distMethod, ...)
                    }, error=function(cond) {
                    message("Run Diffusion Map failed")
                    message("Here's the error message:")
@@ -70,7 +102,7 @@ cytof_dimReduction <- function(data,
                if(is.null(ord)){
                    mapped <- NULL
                }else{
-                   if(nrow(ord@eigenvectors) != nrow(data) || any(!complete.cases(ord@eigenvectors))){
+                   if(nrow(ord@eigenvectors) != nrow(marker_filtered_data) || any(!complete.cases(ord@eigenvectors))){
                        message("Run Diffusion Map failed!")
                        return(NULL)
                    }
@@ -83,12 +115,12 @@ cytof_dimReduction <- function(data,
                }
            },
            isomap={
-               cat("  Runing ISOMAP...")
+               cat("  Running ISOMAP...")
                if (is.null(isomap_ndim))
-                   isomap_ndim <- ncol(data)
+                   isomap_ndim <- ncol(marker_filtered_data)
                
                ord <- tryCatch({
-                       dis <- vegdist(data, method = distMethod)
+                       dis <- vegdist(marker_filtered_data, method = distMethod)
                        isomap(dis, ndim = isomap_ndim, k = isomap_k, fragmentedOK = isomapFragmentOK, ...)
                        }, error=function(cond) {
                        message("Run isomap failed")
@@ -100,7 +132,7 @@ cytof_dimReduction <- function(data,
                if(is.null(ord)){
                    mapped <- NULL
                }else{
-                   if(nrow(ord$points) != nrow(data) || any(!complete.cases(ord$points))){
+                   if(nrow(ord$points) != nrow(marker_filtered_data) || any(!complete.cases(ord$points))){
                        message("Run ISOMAP failed!")
                        return(NULL)
                    }

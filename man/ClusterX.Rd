@@ -11,35 +11,35 @@ ClusterX(data, dimReduction = NULL, outDim = 2, dc, gaussian = TRUE,
 \arguments{
 \item{data}{A data matrix for clustering.}
 
-\item{dimReduction}{Dimenionality reduciton method.}
+\item{dimReduction}{Dimenionality reduction method.}
 
-\item{outDim}{Number of dimensions will be used for clustering.}
+\item{outDim}{Number of dimensions used for clustering.}
 
 \item{dc}{Distance cutoff value.}
 
-\item{gaussian}{If apply gaussian to esitmate the density.}
+\item{gaussian}{If \code{TRUE}, apply gaussian to estimate the density.}
 
-\item{alpha}{Signance level for peak detection.}
+\item{alpha}{Significance level for peak detection.}
 
-\item{detectHalos}{If detect the halos.}
+\item{detectHalos}{If \verb{TRUE}, detect the halos.}
 
-\item{SVMhalos}{Run SVM on cores to assign halos.}
+\item{SVMhalos}{If \code{TRUE}, Run SVM on cores to assign halos.}
 
-\item{parallel}{If run the algorithm in parallel.}
+\item{parallel}{If \code{TRUE}, run the algorithm in parallel.}
 
 \item{nCore}{Number of cores umployed for parallel compution.}
 }
 \value{
-a list
+A list
 }
 \description{
-This package implement the clustering algorithm described by Alex Rodriguez
+This package implements the clustering algorithm described by Alex Rodriguez
 and Alessandro Laio (2014) with improvements of automatic peak detection and
 parallel implementation
 }
 \details{
 ClusterX works on low dimensional data analysis (Dimensionality less than 5).
-If input data is of high diemnsional, t-SNE is conducted to reduce the dimensionality.
+If input data is high dimensional, t-SNE is conducted to reduce the dimensionality.
 }
 \examples{
 iris_unique <- unique(iris) # Remove duplicates

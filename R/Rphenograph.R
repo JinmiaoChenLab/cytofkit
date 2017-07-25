@@ -4,7 +4,7 @@
 #' 
 #' A simple R implementation of the phenograph [PhenoGraph](http://www.cell.com/cell/abstract/S0092-8674(15)00637-6) algorithm, 
 #' which is a clustering method designed for high-dimensional single-cell data analysis. It works by creating a graph ("network") representing 
-#' phenotypic similarities between cells by calclating the Jaccard coefficient between nearest-neighbor sets, and then identifying communities 
+#' phenotypic similarities between cells by calculating the Jaccard coefficient between nearest-neighbor sets, and then identifying communities 
 #' using the well known [Louvain method](https://sites.google.com/site/findcommunities/) in this graph. 
 #' 
 #' @param data Input data matrix.
@@ -73,7 +73,7 @@ Rphenograph <- function(data, k=30){
     t4 <- system.time(community <- cluster_louvain(g))
     cat("DONE ~",t4[3],"s\n")
     
-    message("Run Rphenograph DONE, totally takes ", sum(c(t1[3],t2[3],t3[3],t4[3])), "s.")
+    message("Run Rphenograph DONE, took a total of ", sum(c(t1[3],t2[3],t3[3],t4[3])), "s.")
     cat("  Return a community class\n  -Modularity value:", modularity(community),"\n")
     cat("  -Number of clusters:", length(unique(membership(community))))
     
