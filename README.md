@@ -11,7 +11,7 @@ This package is designed to facilitate the analysis workflow of mass cytometry d
 
 #### 1. Install R and Rstudio
 
-If you have nerver used R, please intall R and Rstudio following the steps below:
+If you have never used R, please intall R and Rstudio following the steps below:
 
 - Download the proper R version for your operation system from [R download page](http://cran.stat.nus.edu.sg).
 
@@ -59,7 +59,7 @@ devtools::install_github("haoeric/cytofkit_devel")
 
 ### Usage
 
-After successfully intalling the cytofkit package, run the following codes to open the cytofkit GUI:
+After successfully installing the cytofkit package, run the following codes to open the cytofkit GUI:
 
 ``` r
 library("cytofkit")
