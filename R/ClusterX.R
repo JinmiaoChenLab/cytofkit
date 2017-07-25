@@ -1,24 +1,24 @@
 #' Fast clustering by automatic search and find of density peaks
 #'
-#' This package implement the clustering algorithm described by Alex Rodriguez
+#' This package implements the clustering algorithm described by Alex Rodriguez
 #' and Alessandro Laio (2014) with improvements of automatic peak detection and
 #' parallel implementation
 #'
 #' ClusterX works on low dimensional data analysis (Dimensionality less than 5).
-#' If input data is of high diemnsional, t-SNE is conducted to reduce the dimensionality.
+#' If input data is high dimensional, t-SNE is conducted to reduce the dimensionality.
 #'
 #' @param data A data matrix for clustering.
-#' @param dimReduction Dimenionality reduciton method.
-#' @param outDim Number of dimensions will be used for clustering.
+#' @param dimReduction Dimenionality reduction method.
+#' @param outDim Number of dimensions used for clustering.
 #' @param dc Distance cutoff value.
-#' @param gaussian If apply gaussian to esitmate the density.
-#' @param alpha Signance level for peak detection.
-#' @param detectHalos If detect the halos.
-#' @param SVMhalos Run SVM on cores to assign halos.
-#' @param parallel If run the algorithm in parallel.
+#' @param gaussian If \code{TRUE}, apply gaussian to estimate the density.
+#' @param alpha Significance level for peak detection.
+#' @param detectHalos If \verb{TRUE}, detect the halos.
+#' @param SVMhalos If \code{TRUE}, Run SVM on cores to assign halos.
+#' @param parallel If \code{TRUE}, run the algorithm in parallel.
 #' @param nCore Number of cores umployed for parallel compution.
 #'
-#' @return a list
+#' @return A list
 #'
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel makeCluster stopCluster detectCores
@@ -86,7 +86,7 @@ ClusterX <- function(data,
     }
     
     if(detectHalos){
-        cat("    Diffenentiate halos from cores ...")
+        cat("    Differentiate halos from cores ...")
         halo <- haloDetect(data, rho, cluster, peakID, dc)
         cat("DONE!\n")
         if(SVMhalos & sum(halo) > 10 & !is.null(dimReduction)){
@@ -126,8 +126,8 @@ ClusterX <- function(data,
 
 #' Estimate the distance cutoff (density neighbourhood) from down-sampled data
 #'
-#' This function estimate a distance cutoff value from the down-samples data,
-#' wchich meet the criteria that the average neighbor rate (number of points
+#' This function estimates a distance cutoff value from the down-sampled data,
+#' which meet the criteria that the average neighbor rate (number of points
 #' within the distance cutoff value) fall between the provided range.
 #'
 #' @param data Numeric matrix of data or data frame.
@@ -169,18 +169,18 @@ estimateDc <- function(data, sampleSize = 5000, neighborRateLow=0.01, neighborRa
 
 #' Computes the local density of points in a data matrix
 #'
-#' This function calculate the local density for each point in the matrix.
+#' This function calculates the local density for each point in the matrix.
 #' With a rowise implementation of the pairwise distance calculation, makes
-#' the local density estimation faster and memory efficient. A big benifit
-#' is the aviliability for big data. Parallel computing is supported for
-#' fast calculation. The computation can either be done using a simple summation
+#' the local density estimation faster and memory efficient. A big benefit
+#' is the availability for big data. Parallel computing is supported for
+#' fast calculation. Computation can either be done using a simple summation
 #' of the points with the distance cutoff for each observation, or by applying
 #' a gaussian kernel scaled by the distance cutoff (more robust for low-density data)
 #'
 #' @param data Numeric matrix of data or data frame.
 #' @param dc A numeric value specifying the distance cutoff.
-#' @param gaussian Logical value decide if a gaussian kernel be used to estimate the density (defaults to TRUE).
-#' @param ifParallel A boolean decides if run parallelly
+#' @param gaussian Logical value decide if a gaussian kernel be used to estimate the density (defaults to \code{TRUE}).
+#' @param ifParallel If \code{TRUE}, parallel computing is done.
 #' @noRd
 #' 
 #' @return A vector of local density values with index matching the row names of data.
@@ -210,13 +210,13 @@ localDensity <- function(data, dc, gaussian=FALSE, ifParallel = FALSE) {
 #'
 #' This function finds, for each observation, the minimum distance to an
 #' observation of higher local density. With a rowise implementation of
-#' the pairwise distance calculation, makes the local density estimation
-#' fast and memory efficient. A big benifit is the aviliability for big
+#' the pairwise distance calculation, making the local density estimation
+#' fast and memory efficient. A big benefit is the availability for big
 #' data. Parallel computing is supported for fast calculation.
 #'
 #' @param data Numeric matrix of data or data frame.
 #' @param rho A vector of local density values as outputted by \code{localDensity}.
-#' @param ifParallel A boolean decides if run parallelly.
+#' @param ifParallel A boolean to decide if parallel computing is done.
 #' @noRd
 #' 
 #' @return A list of distances to closest observation of higher density and the ID
@@ -254,8 +254,8 @@ minDistToHigher <- function(data, rho, ifParallel = FALSE) {
 
 #' Automatic peak detection
 #'
-#' Automatic detect peaks by searching high denisty point with anomalous large distance to
-#' higher denisty peaks. rho and delta are transformed to one index, and the anomalous peaks
+#' Automatic detect peaks by searching high density point with anomalous large distance to
+#' higher density peaks. rho and delta are transformed to one index, and the anomalous peaks
 #' are detected using generalized ESD method.
 #'
 #' @param rho A vector of the local density, outout of \code{localDensity}
@@ -300,7 +300,7 @@ clusterAssign <- function(peakID, higherID, rho){
     return(clusterLabel)
 }
 
-#' differentiate halo form cores
+#' differentiate halo from cores
 #'
 #' @param data Input data.
 #' @param rho Density values.
@@ -351,7 +351,7 @@ splitFactorGenerator <- function(rowNum, colNum){
 #' Using generialized ESD to detect outliers, iterate and remove point with ares higher than lamda
 #' in a univariate data set assumed to come from a normally distributed population.
 #'
-#' @param data A vectors of boservations.
+#' @param data A vectors of observations.
 #' @param max_anoms Maximal percentile of anomalies.
 #' @param alpha The level of statistical significance with which to accept or reject anomalies.
 #' @param direction Directionality of the anomalies to be detected. Options are: 'pos' | 'neg' | 'both'.

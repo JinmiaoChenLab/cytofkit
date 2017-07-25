@@ -14,26 +14,26 @@ cytof_progressionPlot(data, markers, clusters, orderCol = "isomap_1",
 
 \item{markers}{The column names of the selected markers for visualization.}
 
-\item{clusters}{Selecte clusters for plotting, defauls select all.}
+\item{clusters}{Select clusters for plotting, default selects all.}
 
 \item{orderCol}{The column name of the estimated cell progression order.}
 
 \item{clusterCol}{The column name of the cluster results.}
 
-\item{reverseOrder}{If reverse the value of orderCol.}
+\item{reverseOrder}{If \verb{TRUE}, reverse the value of orderCol.}
 
-\item{addClusterLabel}{If add the cluster label on the plot.}
+\item{addClusterLabel}{If \verb{TRUE}, add the cluster label on the plot.}
 
-\item{clusterLabelSize}{The size of the cluster label.}
+\item{clusterLabelSize}{Size of the cluster label.}
 
-\item{segmentSize}{The size of the cluster label arrow.}
+\item{segmentSize}{Size of the cluster label arrow.}
 
-\item{min_expr}{the threshold of the minimal expression value for markers.}
+\item{min_expr}{The threshold of the minimal expression value for markers.}
 
-\item{trend_formula}{a symbolic description of the model to be fit.}
+\item{trend_formula}{A symbolic description of the model to be fit.}
 }
 \value{
-a ggplot2 object
+A ggplot2 object
 }
 \description{
 Plot the expression trend along the estimated cell progressing order

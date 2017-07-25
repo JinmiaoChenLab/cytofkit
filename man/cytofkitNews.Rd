@@ -6,6 +6,9 @@
 \usage{
 cytofkitNews()
 }
+\value{
+Opens .Rd file of package update news
+}
 \description{
 check the package update news
 }

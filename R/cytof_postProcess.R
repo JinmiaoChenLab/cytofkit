@@ -3,15 +3,15 @@
 #' Save analysis results from cytofkit main function to RData, csv files and PDF files and
 #' add them to a new copy of FCS files.
 #'
-#' @param analysis_results result data from output of \code{\link{cytofkit}}
-#' @param projectName a prefix that will be added to the names of result files.
-#' @param saveToRData boolean value determines if save the results object into RData file, for loading back to R and to shiny APP.
-#' @param saveToFCS boolean value determines if save the results back to the FCS files, new FCS files will be generated under folder XXX_analyzedFCS.
-#' @param saveToFiles boolean value determines if parse the results and automatically save to csv files and pdf figures.
-#' @param resultDir the directory where result files will be generated.
-#' @param rawFCSdir the directory that contains fcs files to be analysed.
-#' @param inverseLgclTrans boolean if inverse logicle transform the cluster cor1 and cor2 channels.
-#' @return save all results in the \code{resultDir}
+#' @param analysis_results Result data from output of \code{\link{cytofkit}}
+#' @param projectName A prefix that will be added to the names of result files.
+#' @param saveToRData Boolean value determines if results object is saved into RData file, for loading back to R and to shiny APP.
+#' @param saveToFCS Boolean value determines if results are saved back to FCS files, new FCS files will be generated under folder XXX_analyzedFCS.
+#' @param saveToFiles Boolean value determines if results are parsed and automatically saved to csv files and pdf figures.
+#' @param resultDir The directory where result files will be generated.
+#' @param rawFCSdir The directory that contains fcs files to be analysed.
+#' @param inverseLgclTrans If \verb{TRUE}, inverse logicle transform the cluster cor1 and cor2 channels.
+#' @return Save all results in the \code{resultDir}
 #' @importFrom ggplot2 ggplot ggsave aes_string facet_wrap geom_point geom_rug theme_bw theme xlab ylab ggtitle coord_fixed guides guide_legend scale_shape_manual scale_colour_manual
 #' @importFrom reshape2 dcast
 #' @importFrom ggplot2 ggplot ggsave aes_string geom_line geom_point xlab ylab ggtitle theme_bw
@@ -82,7 +82,7 @@ cytof_writeResults <- function(analysis_results,
     if(saveToRData){
         objFile <- paste0(projectName, ".RData")
         save(analysis_results, file = objFile)
-        cat("R obejct is saved in ", objFile, "\n")
+        cat("R object is saved in ", objFile, "\n")
         message("  **THIS R OBJECT IS THE INPUT OF SHINY APP!**  ")
     }
     
@@ -207,17 +207,17 @@ cytof_writeResults <- function(analysis_results,
 #' @param xlab The column name of the x axis in input \code{data}.
 #' @param ylab The column name of the y axis in input \code{data}.
 #' @param cluster The column name of cluster in input \code{data}.
-#' @param sample the column name of the sample in input \code{data}.
-#' @param title the title of the plot.
-#' @param type plot type, 1 indicates combined plot, 2 indicated grid facet plot seperated by samples.
-#' @param point_size the size of the dot.
-#' @param addLabel Boolean, if add cluster labels.
-#' @param labelSize the size of cluster labels.
-#' @param sampleLabel If use point shapes to represent different samples.
-#' @param labelRepel If repel the cluste labels to avoid label overlapping.
-#' @param fixCoord If fix the Cartesian coordinates.
+#' @param sample The column name of the sample in input \code{data}.
+#' @param title The title of the plot.
+#' @param type Plot type, 1 indicates combined plot, 2 indicated grid facet plot seperated by samples.
+#' @param point_size Size of the dot.
+#' @param addLabel If \verb{TRUE}, add cluster labels.
+#' @param labelSize Size of cluster labels.
+#' @param sampleLabel If \verb{TRUE}, use point shapes to represent different samples.
+#' @param labelRepel If \verb{TRUE}, repel the cluste labels to avoid label overlapping.
+#' @param fixCoord If \verb{TRUE}, fix the Cartesian coordinates.
 #' @param clusterColor Manually specify the colour of each cluster (mainly for ShinyAPP usage).
-#' @return the ggplot object of the scatter cluster plot.
+#' @return The ggplot object of the scatter cluster plot.
 #' @export
 #' @importFrom ggplot2 element_text element_rect element_blank element_line element_text annotate
 #' @examples
@@ -354,17 +354,17 @@ cytof_clusterPlot <- function(data, xlab, ylab, cluster, sample, title = "cluste
 
 #' Heatmap plot of cluster mean value results
 #' 
-#' @param data a matrix with rownames and colnames
+#' @param data A matrix with rownames and colnames
 #' @param baseName The name as a prefix in the title of the heatmap.
 #' @param scaleMethod Method indicating if the values should be centered and scaled in either the row direction or the column direction, or none. The default is 'none'.
 #' @param dendrogram Control the dengrogram on row or column, selection includes 'both', 'row', 'column', 'none'.
-#' @param colPalette Using selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.
+#' @param colPalette Use selected colour palette, includes 'bluered', 'greenred', 'spectral1' and 'spectral2'.
 #' @param cex_row_label Text size for row labels.
 #' @param cex_col_label Text size for column labels.
-#' @param key.par graphical parameters for the color key. 
-#' @param keysize numeric value indicating the size of the key.
-#' @param margins numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.
-#' @return a heatmap object from \code{gplots}
+#' @param key.par Graphical parameters for the color key. 
+#' @param keysize Numeric value indicating the size of the key.
+#' @param margins Numeric vector of length 2 containing the margins (see par(mar= *)) for column and row names, respectively.
+#' @return A heatmap object from \code{gplots}
 #' 
 #' @importFrom gplots heatmap.2 bluered   
 #' 
@@ -437,7 +437,7 @@ cytof_heatmap <- function(data, baseName = "Cluster", scaleMethod = "none",
 #'
 #' @param n Number of colors.
 #'
-#' @return hex colour values
+#' @return Hex colour values
 #' @export
 #'
 #' @examples
@@ -453,7 +453,7 @@ spectral1 <- function(n){
 #'
 #' @param n Number of colors.
 #'
-#' @return hex colour values
+#' @return Hex colour values
 #' @export
 #'
 #' @examples
@@ -472,8 +472,8 @@ spectral2 <- function(n){
 #' @param ylab The column name of data for y lab.
 #' @param zlab The column name of data for z lab.
 #' @param colorPalette Color Palette. 
-#' @param pointSize The size of the point.
-#' @param removeOutlier If remove the outliers.
+#' @param pointSize Size of the point.
+#' @param removeOutlier If \verb{TRUE}, remove the outliers.
 #' @return A ggplot object.
 #' 
 #' @importFrom ggplot2 scale_colour_gradientn
@@ -548,9 +548,9 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
 #' @param markers The names of markers used for calcualtion.
 #' @param cluster The column name contatining cluster labels.
 #' @param sample The samples used for calculation.
-#' @param statMethod Statistics contatining mean, median or percentage.
+#' @param statMethod Statistics containing mean, median or percentage.
 #' 
-#' @return A matrix of the satatistics results
+#' @return A matrix of the statistics results
 #'
 #' @importFrom stats aggregate
 #' @importFrom reshape2 dcast
@@ -616,17 +616,17 @@ cytof_clusterStat <- function(data, markers, cluster = "cluster", sample,
 #' 
 #' @param data The data frame for progression plot.
 #' @param markers The column names of the selected markers for visualization.
-#' @param clusters Selecte clusters for plotting, defauls select all.
+#' @param clusters Select clusters for plotting, default selects all.
 #' @param orderCol The column name of the estimated cell progression order.
 #' @param clusterCol The column name of the cluster results.
-#' @param reverseOrder If reverse the value of orderCol.
-#' @param addClusterLabel If add the cluster label on the plot.
-#' @param clusterLabelSize The size of the cluster label.
-#' @param segmentSize The size of the cluster label arrow.
-#' @param min_expr the threshold of the minimal expression value for markers.
-#' @param trend_formula a symbolic description of the model to be fit.
+#' @param reverseOrder If \verb{TRUE}, reverse the value of orderCol.
+#' @param addClusterLabel If \verb{TRUE}, add the cluster label on the plot.
+#' @param clusterLabelSize Size of the cluster label.
+#' @param segmentSize Size of the cluster label arrow.
+#' @param min_expr The threshold of the minimal expression value for markers.
+#' @param trend_formula A symbolic description of the model to be fit.
 #' 
-#' @return a ggplot2 object
+#' @return A ggplot2 object
 #' @importFrom VGAM vgam sm.ns
 #' @importFrom ggplot2 arrow unit
 #' @importFrom reshape2 melt
@@ -755,13 +755,13 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @param data The new data matrix to be added in.
 #' @param rawFCSdir The directory containing the original fcs files.
 #' @param analyzedFCSdir The directory to store the new fcs files.
-#' @param transformed_cols the column name of the dimension transformend data in \code{data}.
-#' @param cluster_cols the column name of the cluster data in \code{data}.
-#' @param inLgclTrans Boolean value decides if apply the inverse lgcl transformation to the the cluster data before saving
+#' @param transformed_cols The column name of the dimension transformed data in \code{data}.
+#' @param cluster_cols The column name of the cluster data in \code{data}.
+#' @param inLgclTrans If \verb{TRUE}, apply the inverse lgcl transformation to the the cluster data before saving
 #' 
 #' @export
 #' 
-#' @return new fcs files stored under \code{analyzedFCSdir}
+#' @return New fcs files stored under \code{analyzedFCSdir}
 #' @importMethodsFrom flowCore keyword
 #' @importFrom Biobase  exprs exprs<- description description<- pData pData<- 
 cytof_addToFCS <- function(data, 
@@ -836,7 +836,7 @@ cytof_addToFCS <- function(data,
     	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
     	if(!file.exists(fn)){
     	    ## stop the writing if cannot find the file
-    	    message(paste("Can not find raw FCS file:", fn))
+    	    message(paste("Cannot find raw FCS file:", fn))
     	    return(NULL)
     	}
         cat("Save to file:", fn, "\n")

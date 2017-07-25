@@ -1,6 +1,35 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.8.2 (2017-07-24)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item cytofkitShinyAPP function now takes RData as argument to skip reuploading RData
+      \item While choosing selected markers for dimension reduction and clustering, all markers can be visualised in the shiny app
+      \item Added a "reset" button to ShinyApp to clear the session and start over
+      \item Added Server file select button to allow browsing server files
+    }
+  }
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Combined both cytofkitShinyAPP functions into one
+      \item ShinyApp uses actionButton for download instead of a downloadHandler
+      \item ShinyApp displays what .RData is loaded into its reactive data
+      \item ShinyApp lists markers in alphabetical order
+      \item Marker selection done at dimensionality reduction stage rather than at raw data transformation, to allow all expression data to be visualised at later stages
+      \item Updated maintainer email address
+    }
+  }
+}
+
+\section{Changes in version 1.8.1 (2017-04-26)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item fixed documentation warning for function cytofkitShinyAPP2
+      \item updated my maintainer email address
+    }
+  }
+}
 
 \section{Changes in version 1.6.6 (2017-04-11)}{
   \subsection{NEW FEATURES}{

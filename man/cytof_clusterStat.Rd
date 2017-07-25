@@ -16,10 +16,10 @@ cytof_clusterStat(data, markers, cluster = "cluster", sample,
 
 \item{sample}{The samples used for calculation.}
 
-\item{statMethod}{Statistics contatining mean, median or percentage.}
+\item{statMethod}{Statistics containing mean, median or percentage.}
 }
 \value{
-A matrix of the satatistics results
+A matrix of the statistics results
 }
 \description{
 Calculate the mean or median expression level of each marker for each cluster, or percentage

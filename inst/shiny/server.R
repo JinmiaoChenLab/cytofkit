@@ -1,5 +1,8 @@
 ## max data size
-options(shiny.maxRequestSize=1024^10) 
+#currrently unused
+
+options(shiny.maxRequestSize=1024^10)
+options(shiny.launch.browser = T)
 
 shinyServer(function(input, output, session) {
     
@@ -79,6 +82,11 @@ shinyServer(function(input, output, session) {
             v$data$sampleInfo <- v$sampleInfo
         }
     })
+    
+    observeEvent(input$reset, {
+      session$reload()
+      print("Reset done")
+    })
 
     output$sampleSelect <- renderUI({
         if(is.null(v$data) || is.null(v$sampleInfo)){
@@ -115,6 +123,12 @@ shinyServer(function(input, output, session) {
                              sub("_[0-9]*$", "", colnames(v$data$progressionRes$progressionData)[1])))
     })
     
+    output$summaryText5 <- renderText({
+      if(is.null(v$data))
+        return(NULL)
+      paste0("-- ", paste(v$data$dimRedMarkers, collapse =  " | "))
+    })
+    
     ## Save and parse cytofkit RData object
     observeEvent(input$saveButton, {
         if (!is.null(v$data)){
@@ -149,6 +163,15 @@ shinyServer(function(input, output, session) {
         }
     })
     
+    observeEvent(input$OpenDir, {
+      pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+      if(dir.exists(pdfDir)){
+        opendir(pdfDir)
+      }else{
+        stop("PDF not created yet!")
+      }
+    })
+    
     ##------------------------------Cluster Panel------------------------------
     
     ##-----cluster plot-----
@@ -175,6 +198,7 @@ shinyServer(function(input, output, session) {
             return(NULL)
         }else{
             markerNames <- colnames(v$data$expressionData)
+            markerNames <- markerNames[order(markerNames)]
             checkboxGroupInput('c_markerSelect', strong('Select Markers:'),
                                markerNames, selected = markerNames, inline = TRUE)
         }   
@@ -247,6 +271,29 @@ shinyServer(function(input, output, session) {
     output$C_ScatterPlot <- renderPlot({
         C_ScatterPlotInput()
     }, height = 900, width = 950)
+    
+    observeEvent(input$PDFClusterPlot, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Clusterplot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Clusterplot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Clusterplot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          C_ScatterPlotInput()
+          dev.off()
+        })
+      }
+    })
     
     output$C_download_cluster_plot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_cluster_plot", '.pdf', sep='') },
@@ -409,7 +456,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$C_runFlowSOM, {
         if(!is.null(v$data) && !is.null(input$c_markerSelect)){
             obj <- v$data
-            withProgress(message=paste0('Runing FlowSOM using k=', input$C_FlowSOM_k), value=0, {
+            withProgress(message=paste0('Running FlowSOM using k=', input$C_FlowSOM_k), value=0, {
                 FlowSOM_cluster <- cytof_cluster(xdata = obj$expressionData[ ,input$c_markerSelect],
                                                  method = "FlowSOM",
                                                  FlowSOM_k = input$C_FlowSOM_k)
@@ -440,16 +487,30 @@ shinyServer(function(input, output, session) {
         }   
     })
     
+    output$M_heatmapmarkerSelect <- renderUI({
+      if(is.null(v$data)){
+        return(NULL)
+      }else{
+        sorted_markerNames <- colnames(v$data$expressionData)
+        markerNames <- sorted_markerNames[order(sorted_markerNames)]
+        initNum <- ifelse(length(markerNames) >=4, 4, 1)
+        selectizeInput('m_heatmapmarkerSelect', 'Select Markers:', 
+                       choices = markerNames, selected = markerNames[1:initNum], 
+                       multiple = TRUE, width = "100%")
+      }   
+    })
     
     M_heatmapPlotInput <- reactive({
         if(is.null(v$data) || is.null(input$m_plotCluster))
             return(NULL)
+        m_heatmapmarkerSelect <- isolate(input$m_heatmapmarkerSelect)
         heatMap(data = v$data, 
                 clusterMethod = input$m_plotCluster, 
                 type = input$M_plotMethod, 
                 dendrogram = input$M_heatmap_dendrogram,
                 colPalette = input$M_heatmap_colorPalette,
                 selectSamples = input$samples,
+                selectMarkers = input$m_heatmapmarkerSelect,
                 cex_row_label= input$M_rowLabelSize, 
                 cex_col_label= input$M_colLabelSize, 
                 scaleMethod = input$M_scaleMethod)
@@ -462,6 +523,25 @@ shinyServer(function(input, output, session) {
     output$M_heatmapPlot <- renderPlot({
         M_heatmapPlotInput()
     }, height = 900, width = 950)
+    
+    observeEvent(input$PDFHeatmap, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Marker Heatmap PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Marker_Heatmap_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Marker_Heatmap_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          file.copy("cytofkit_shinyAPP_marker_heatmap_plot.pdf", filename1)
+        })
+      }
+    })
     
     output$M_download_heatmapPlot = downloadHandler(
         filename = "cytofkit_shinyAPP_marker_heatmap_plot.pdf",
@@ -485,7 +565,9 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data)){
             return(NULL)
         }else{
-            markers <- c(colnames(v$data$expressionData), "All Markers", "All Markers(scaled)")
+            sorted_markers <- colnames(v$data$expressionData)
+            sorted_markers <- sorted_markers[order(sorted_markers)]
+            markers <- c(sorted_markers, "All Markers", "All Markers(scaled)")
             selectInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
                         selected = markers[1], width = "100%")
         }   
@@ -520,6 +602,29 @@ shinyServer(function(input, output, session) {
         M_markerExpressionPlotInput()
     }, height = 900, width = 950)
     
+    observeEvent(input$PDFExpPlot, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Marker Expression Plot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Marker_Expression_Plot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Marker_Expression_Plot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          M_markerExpressionPlotInput()
+          dev.off()
+        })
+      }
+    })
+    
     output$M_download_expression_plot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_marker_expression_plot", '.pdf', sep='') },
         content = function(file) {
@@ -545,7 +650,8 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data)){
             return(NULL)
         }else{
-            markerNames <- colnames(v$data$expressionData)
+            sorted_markerNames <- colnames(v$data$expressionData)
+            markerNames <- sorted_markerNames[order(sorted_markerNames)]
             initNum <- ifelse(length(markerNames) >=4, 4, 1)
             selectizeInput('m_markerSelect', 'Select Markers:', 
                            choices = markerNames, selected = markerNames[1:initNum], 
@@ -611,6 +717,29 @@ shinyServer(function(input, output, session) {
         }, height = 900, width = 950)
     })
     
+    observeEvent(input$PDFHistogram, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Stack Density Plot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Stack_Density_Plot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Stack_Density_Plot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          M_stackDensityPlotInput()
+          dev.off()
+        })
+      }
+    })
+    
     output$M_download_stackDensityPlot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_marker_stackDensity_plot", '.pdf', sep='') },
         content = function(file) {
@@ -630,7 +759,8 @@ shinyServer(function(input, output, session) {
             if(is.null(v$data)){
                 return(NULL)
             }
-            markerNames <- colnames(v$data$expressionData)
+            sorted_markerNames <- colnames(v$data$expressionData)
+            markerNames <- sorted_markerNames[order(sorted_markerNames)]
             
             if (i <= length(markerNames)){
                 markeri <- markerNames[i]
@@ -694,6 +824,24 @@ shinyServer(function(input, output, session) {
         S_heatmapPlotInput()
     }, height = 900, width = 950)
     
+    observeEvent(input$PDFSamHeat, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Sample Heatmap PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Sample_Heatmap_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Sample_Heatmap_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          file.copy("cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf", filename1)
+        })
+      }
+    })
     
     output$S_download_heatmapPlot = downloadHandler(
         filename = "cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf",
@@ -757,6 +905,29 @@ shinyServer(function(input, output, session) {
     output$S_rateChangePlot <- renderPlot({
         S_rateChangePlotInput()
     }, height = 500, width = 950)
+    
+    observeEvent(input$PDFrateChange, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Rate Change Plot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Rate_Change_Plot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Rate_Change_Plot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          S_rateChangePlotInput()
+          dev.off()
+        })
+      }
+    })
     
     output$S_download_rateChangePlot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_cells_lineChart_plot", '.pdf', sep='') },
@@ -975,6 +1146,29 @@ shinyServer(function(input, output, session) {
         P_scatterPlotInput()
     }, height = 900, width = 950)
     
+    observeEvent(input$PDFScatter, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Progression Scatterplot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Scatterplot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Scatterplot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          P_scatterPlotInput()
+          dev.off()
+        })
+      }
+    })
+    
     output$P_download_scatterPlot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_progression_scatter_plot", '.pdf', sep='') },
         content = function(file) {
@@ -1000,7 +1194,8 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data) || is.null(v$data$progressionRes)){
             return(NULL)
         }else{
-            markerNames <- colnames(v$data$progressionRes$sampleData)
+            sorted_markerNames <- colnames(v$data$progressionRes$sampleData)  
+            markerNames <- sorted_markerNames[order(sorted_markerNames)]
             initNum <- ifelse(length(markerNames) >=4, 4, 1)
             selectizeInput('p_markerSelect', 'Select Markers:', 
                         choices = markerNames, selected = markerNames[1:initNum], 
@@ -1073,6 +1268,29 @@ shinyServer(function(input, output, session) {
         }, height = 900, width = 950)  
     })
     
+    observeEvent(input$PDFmarkerPlot, {
+      if(!is.null(v$data)){
+        withProgress(message="Downloading Marker Plot PDF files...", value=0, {
+          print(getwd())
+          dir.create(paste0("cytofkit_PDF_Plots_", Sys.Date()))
+          pdfDir <- paste0(getwd(), .Platform$file.sep, "cytofkit_PDF_Plots_", Sys.Date())
+          filename1 <- paste0(pdfDir, .Platform$file.sep, "cytofkit_shinyAPP_Marker_Plot_", Sys.Date(), ".pdf")
+          i = 0
+          while(file.exists(filename1)){
+            filename1 <- paste0(pdfDir, .Platform$file.sep,
+                                "cytofkit_shinyAPP_Marker_Plot_",
+                                Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
+            i = i + 1;
+          }
+          pdf(filename1, 
+              width=as.numeric(input$H_tab1_w), 
+              height=as.numeric(input$H_tab1_h))
+          P_markerPlotInput()
+          dev.off()
+        })
+      }
+    })
+    
     output$P_download_markerPlot = downloadHandler(
         filename = function() { paste("cytofkit_shinyAPP_progression_marker_plot", '.pdf', sep='') },
         content = function(file) {
@@ -1125,7 +1343,7 @@ shinyServer(function(input, output, session) {
             clusterCheck <- obj$clusterRes[[input$p_clusterMethod]] %in% usedClusters
             mdata <- obj$expressionData[clusterCheck, ]
             mcluster <- obj$clusterRes[[input$p_clusterMethod]][clusterCheck]
-            withProgress(message="Runing Diffusionmap", value=0, {
+            withProgress(message="Running Diffusionmap", value=0, {
                 diffmapRes <- cytof_progression(data = mdata, 
                                                 cluster = mcluster, 
                                                 method = "diffusionmap", 

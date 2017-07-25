@@ -18,9 +18,9 @@ cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
 
 \item{colorPalette}{Color Palette.}
 
-\item{pointSize}{The size of the point.}
+\item{pointSize}{Size of the point.}
 
-\item{removeOutlier}{If remove the outliers.}
+\item{removeOutlier}{If \verb{TRUE}, remove the outliers.}
 }
 \value{
 A ggplot object.

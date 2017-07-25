@@ -11,6 +11,9 @@ getParameters_GUI(fcsFile, rawFCSdir)
 
 \item{rawFCSdir}{The path of the FCS file}
 }
+\value{
+List of markers for ddimension reduction and clustering
+}
 \description{
 Extract the markers from the fcsfiles
 }
