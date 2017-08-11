@@ -38,7 +38,7 @@ For Mac OS X 10.8 or later, you need to install XQuartz to support the GUI:
 The offical and stable version, please refer to 
 
 - [Bioconductor](https://www.bioconductor.org/packages/cytofkit/)
-- [github](https://github.com/JinmiaoChenLab/cytofkit)
+- [GitHub](https://github.com/JinmiaoChenLab/cytofkit)
 
 Install the stable version from Bioconductor, use:
 
@@ -54,7 +54,7 @@ Install this development version, use:
 if(!require(devtools)){
   install.packages("devtools") # If not already installed
 }
-devtools::install_github("haoeric/cytofkit_devel")
+devtools::install_github("JinmiaoChenLab/cytofkit")
 ```
 
 ### Usage
@@ -77,4 +77,3 @@ cytofkitShinyAPP()
 - [cytofkit: Analysis Pipeline](https://www.bioconductor.org/packages/release/bioc/vignettes/cytofkit/inst/doc/cytofkit_workflow.html)    
 - [cytofkit: Quick Start](https://www.bioconductor.org/packages/release/bioc/vignettes/cytofkit/inst/doc/cytofkit_example.html)   
 - [cytofkit: ShinyAPP Tutorial](https://www.bioconductor.org/packages/release/bioc/vignettes/cytofkit/inst/doc/cytofkit_shinyAPP.html)    
-- [shiny APP](https://chenhao.shinyapps.io/cytofkitShinyAPP/) link:  https://chenhao.shinyapps.io/cytofkitShinyAPP/
