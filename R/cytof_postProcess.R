@@ -174,6 +174,13 @@ cytof_writeResults <- function(analysis_results,
         }
     }
     
+    #create sampleinfo here instead of at shiny app
+    
+    samples <- NULL
+    for(i in seq_along(analysis_results$sampleNames)){
+      samples <- c(samples, analysis_results$sampleNames[[i]][1])
+    }
+    
     ## save analysis results to FCS files
     if(saveToFCS == TRUE){
         tcols <- do.call(cbind, dimReducedData)
@@ -757,6 +764,7 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @param analyzedFCSdir The directory to store the new fcs files.
 #' @param transformed_cols The column name of the dimension transformed data in \code{data}.
 #' @param cluster_cols The column name of the cluster data in \code{data}.
+#' @param specifySampleNames Used only if sample names differ from those in raw fcs.
 #' @param inLgclTrans If \verb{TRUE}, apply the inverse lgcl transformation to the the cluster data before saving
 #' 
 #' @export
@@ -768,7 +776,8 @@ cytof_addToFCS <- function(data,
                            rawFCSdir, 
                            analyzedFCSdir, 
                            transformed_cols = c("tsne_1", "tsne_2"), 
-                           cluster_cols = c("cluster"), 
+                           cluster_cols = c("cluster"),
+                           specifySampleNames = NULL,
                            inLgclTrans = TRUE) {
     
     lgcl <- logicleTransform(w = 0.1, t = 4000, m = 4.5, a = 0)
@@ -792,6 +801,11 @@ cytof_addToFCS <- function(data,
         ## output both ilgcl and linear transformaton of tSNE for visualization on flowJo
         R_N_transformed <- cbind(R_N_transformed, R_N_transformed_l)
         row.names(R_N_transformed) <- row.names(data)
+    }
+    
+    ## use original sample names
+    if (!is.null(specifySampleNames)) {
+      originalSample <- specifySampleNames
     }
     
     ## transform cluster_cols
@@ -831,8 +845,10 @@ cytof_addToFCS <- function(data,
     }
     addColNames <- colnames(to_add)
     sample <- unique(sub("_[0-9]*$", "", row.names(to_add)))
+    # add argument for old sample names use match()
     
     for (i in 1:length(sample)) {
+      # refer to old sample name
     	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
     	if(!file.exists(fn)){
     	    ## stop the writing if cannot find the file
@@ -845,6 +861,12 @@ cytof_addToFCS <- function(data,
         to_add_i <- as.data.frame(to_add[grep(pattern, row.names(to_add), fixed = TRUE), ])
         m <- regexpr("_[0-9]*$", row.names(to_add_i))
         cellNo_i <- as.integer(substring(regmatches(row.names(to_add_i), m), 2))
+        ##error log
+        log <- cat("FCS file: ", sample[i], "\n",
+                   "cellNos:", "\n",
+                   cellNo_i)
+        write(log, file = paste0(analyzedFCSdir, "/errLog.txt"))
+        # subscript out of bounds
         sub_exprs <- fcs@exprs[cellNo_i, ]
         params <- parameters(fcs)
         pd <- pData(params)
@@ -891,6 +913,7 @@ cytof_addToFCS <- function(data,
             keyval[[paste("P", channel_number, "BS", sep = "")]] <- 0
             keyval[[paste("P", channel_number, "MS", sep = "")]] <- 0
             keyval[[paste("P", channel_number, "DISPLAY", sep = "")]] <- "LIN"  # data display
+            #add keyval for clusterID and annotation
         }
         
         pData(params) <- pd
