@@ -68,7 +68,7 @@ if(interactive()) browseVignettes(package = 'cytofkit')
 
 }
 \references{
-\url{http://signbioinfo.github.io/cytofkit/}
+\url{https://github.com/JinmiaoChenLab/cytofkit}
 }
 \seealso{
 \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}

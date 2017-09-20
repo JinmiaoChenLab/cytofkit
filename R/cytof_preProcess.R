@@ -289,7 +289,7 @@ autoLgcl <- function(x, channels, m = 4.5, q = 0.05) {
             } else {
                 w <- (m - log10(t/abs(r)))/2
                 if(is.nan(w) || w>2) {
-                    warning(paste0("autoLgcl failed for channel: ", p, "; come to use logicle transformation!"))
+                    warning(paste0("autoLgcl failed for channel: ", p, "; using default logicle transformation!"))
                     w <- 0.1
                     t <- 4000 
                     m <- 4.5 

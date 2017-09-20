@@ -62,7 +62,7 @@
 #' if(interactive()) browseVignettes(package = 'cytofkit')
 #' 
 #' @seealso \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}
-#' @references \url{http://signbioinfo.github.io/cytofkit/}
+#' @references \url{https://github.com/JinmiaoChenLab/cytofkit}
 #' @docType package
 #' @name cytofkit-package
 #' 
@@ -114,7 +114,7 @@ NULL
 #' 
 #' @return a list containing \code{expressionData}, \code{dimReductionMethod}, \code{visualizationMethods}, \code{dimReducedRes}, \code{clusterRes}, \code{progressionRes}, \code{projectName}, \code{rawFCSdir} and \code{resultDir}. If choose 'saveResults = TRUE', results will be saved into files under \code{resultDir}.
 #' @author Hao Chen, Jinmiao Chen
-#' @references \url{http://signbioinfo.github.io/cytofkit/}
+#' @references \url{https://github.com/JinmiaoChenLab/cytofkit}
 #' @seealso \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}, \code{\link{cytofkitShinyAPP}}
 #' @useDynLib cytofkit
 #' @export
@@ -237,14 +237,14 @@ cytofkit <- function(fcsFiles = getwd(),
     message("Run clustering...")
     cluster_res <- lapply(clusterMethods, cytof_cluster, 
                           ydata = allDimReducedList[[dimReductionMethod]], 
-                          xdata = exprs_data,
+                          xdata = exprs_data[, markers],
                           FlowSOM_k = FlowSOM_k)
     names(cluster_res) <- clusterMethods
     
     
     ## progression analysis results, a list  
-    ## NOTE, currently only the first cluster method resutls 
-    ## are used for preogression visualization(by default: cluster_res[[1]])
+    ## NOTE, currently only the first cluster method results 
+    ## are used for progression visualization(by default: cluster_res[[1]])
     message("Progression analysis...")   
     progression_res <- cytof_progression(data = exprs_data, 
                                          cluster = cluster_res[[1]], 
@@ -258,6 +258,14 @@ cytofkit <- function(fcsFiles = getwd(),
     message("Listing markers used for dimension reduction...")
     markerlist <- markers
     
+    ## original fcs sample names
+    message("Stashing sample names...")
+    names <- unique(sub(".fcs$", "", fcsFiles))
+    samples <- as.list(NULL)
+    for(i in seq_along(names)){
+      samples[[i]] <- names[i]
+    }
+    
     ## wrap the results
     message("Wrapping results...")
     analysis_results <- list(expressionData = exprs_data,
@@ -269,7 +277,8 @@ cytofkit <- function(fcsFiles = getwd(),
                              projectName = projectName,
                              rawFCSdir = rawFCSdir,
                              resultDir = resultDir,
-                             dimRedMarkers = markers)
+                             dimRedMarkers = markers,
+                             sampleNames = samples)
      
     
     ## save the results
