@@ -22,7 +22,7 @@ cytofkit_GUI <- function() {
     fcsFiles <- ""
     cur_dir <- getwd()
     mergeMethods <- c("all", "min", "ceil", "fixed")
-    transformMethods <- c("autoLgcl", "cytofAsinh", "fixedLogicle", "none")
+    transformMethods <- c("autoLgcl", "cytofAsinh", "logicle", "none")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
     clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
     progressionMethods <- c("diffusionmap", "isomap", "NULL")
@@ -72,7 +72,7 @@ cytofkit_GUI <- function() {
     
     reset_rawFCS_dir <- function() {
         rawFCS_dir <- ""
-        rawFCS_dir <- tclvalue(tkchooseDirectory(title = "Choose your rawFCS dircetory ..."))
+        rawFCS_dir <- tclvalue(tkchooseDirectory(title = "Choose your rawFCS direcetory ..."))
         if (rawFCS_dir != "") {
             tclvalue(rawFCSdir) <- rawFCS_dir
             tclvalue(resDir) <- rawFCS_dir
@@ -81,7 +81,7 @@ cytofkit_GUI <- function() {
     
     reset_res_dir <- function() {
         res_dir <- ""
-        res_dir <- tclvalue(tkchooseDirectory(title = "Choose your result dircetory ..."))
+        res_dir <- tclvalue(tkchooseDirectory(title = "Choose your result directory ..."))
         if (res_dir != "") {
             tclvalue(resDir) <- res_dir
         }
@@ -158,7 +158,7 @@ cytofkit_GUI <- function() {
     
     
     transformMethod_help <- function() {
-        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\"(Customized Asinh transformation for CyTOF data), \"autoLgcl\"(automatic logicle transformation for CyTOF data), \"fixedLogicle\"(customize your own parameters for logicle transformation) and \"none\"(if your data is already transformed).", 
+        tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\"(Customized Asinh transformation for CyTOF data), \"autoLgcl\"(automatic logicle transformation for CyTOF data), \"logicle\"(customize your own parameters for logicle transformation) and \"none\"(if your data is already transformed).", 
             icon = "info", type = "ok")
     }
     
@@ -312,7 +312,7 @@ cytofkit_GUI <- function() {
         variable = transformMethod, value = transformMethods[1]), side = "left")
     tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[2],
         variable = transformMethod, value = transformMethods[2]), side = "left")
-    tkpack(tkradiobutton(transformMethod_rbuts, text = transformMethods[3],
+    tkpack(tkradiobutton(transformMethod_rbuts, text = "Fixedlogicle",
         command = function(){ 
             fixedLgclParas <- fixedLogicleParameters_GUI(fixedLgclParas) 
             tclvalue(l_w) <- fixedLgclParas[1] 

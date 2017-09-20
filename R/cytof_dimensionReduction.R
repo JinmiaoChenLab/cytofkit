@@ -47,9 +47,9 @@ cytof_dimReduction <- function(data,
     if (!(is.null(markers))) {
       if(is.character(markers)){
         right_marker <- markers %in% colnames(data)
-        if (!(right_marker)) {
+        if(!all(right_marker)){
           stop("\n Selected marker(s) is/are not in the input fcs files \n please check your selected marker(s)! \n")
-        } else {
+        }else{
           marker_id <- markers
         }
       }else{

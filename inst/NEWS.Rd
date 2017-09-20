@@ -1,6 +1,29 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.9.2 (2017-09-11)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Added save data options for shiny app. Now you can select any combination of .fcs, .csv, and .rdata outputs
+      \item cytofkitShinyAPP() uses code from cytofkit_shinyAPP.R for visualisation on local machines, while ui.R and server.R can be used separately to host the app on servers.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Fixed some issues with viewing and downloading the marker heatmap in the shiny app
+      \item Fixed an inconsistency where expression data used for clustering was not selective for markers used for dimension reduction
+    }
+  }
+}
+
+\section{Changes in version 1.8.3 (2017-09-06)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item cytofkitShinyAPP file size cap consistently set to 100mb
+    }
+  }
+}
+
 \section{Changes in version 1.8.2 (2017-07-24)}{
   \subsection{NEW FEATURES}{
     \itemize{

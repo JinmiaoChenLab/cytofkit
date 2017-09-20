@@ -4,6 +4,7 @@
 #'
 #'
 #' @param RData Either the RData object file or data object, if missing, RData file need to be loaded on the ShinyAPP
+#' @param onServer Logical value, if \verb{TRUE}, sets shinyApp host to 0.0.0.0 for other clients to access, otherwise defaults to 127.0.0.1 (local host)
 #' 
 #' @return Opens shinyApp session for data visualisation
 #' @import shiny
@@ -17,7 +18,7 @@
 #' Rdata <- list.files(d, pattern = '.RData$', full.names = TRUE)
 #' #only for interactive sessions, remove hash to run
 #' #cytofkitShinyAPP(Rdata)
-cytofkitShinyAPP <- function(RData = NULL) {
+cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
     
     source(system.file('shiny', "global.R", package = 'cytofkit'))
   
@@ -59,8 +60,14 @@ cytofkitShinyAPP <- function(RData = NULL) {
         analysis_results$sampleInfo <- sampleInformation
     }
     
+    if(isTRUE(onServer)){
+      host <- "0.0.0.0"
+    }else{
+      host <- "127.0.0.1"
+    }
+    
     #shiny::runApp(system.file('shiny', package = 'cytofkit'))
-    options(launch.browser = TRUE)
+    options(shiny.launch.browser = TRUE, shiny.port = 4455, shiny.host = host, shiny.maxRequestSize=1024^10)
     shinyApp(
         ui = fluidPage(
           titlePanel("Interactive Exploration of cytofkit Analysis Results"),
@@ -95,19 +102,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                       checkboxInput(inputId = "C_labelRepel", label = "Repel Cluster Labels", value = FALSE),
                                       checkboxInput(inputId = "C_facetPlot", label = "Separate Plot by Samples", value = FALSE)
                                     ),
-                                    wellPanel(
-                                      actionButton("PDFClusterPlot", "Download Cluster Plot in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="C_tab1_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="C_tab1_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFClusterPlot", "Download Cluster Plot in PDF", icon = icon("download"))
+                                    ),
                    conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab1' ",
                                     h4("Plot Control:"),
                                     wellPanel(
@@ -118,48 +114,17 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                                   choices = c("bluered", "greenred", "spectral1", "spectral2"), 
                                                   selected = "bluered", width = "100%")
                                     ),
-                                    wellPanel(
-                                      actionButton("PDFHeatmap", "Download Marker Heatmap in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="M_tab3_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="M_tab3_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFHeatmap", "Download Marker Heatmap in PDF", icon = icon("download"))
+                                    ),
                    conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab2' ",
                                     h4("Plot Control:"),
                                     wellPanel(
-                                      actionButton("PDFExpPlot", "Download Exp Plot in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="M_tab1_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="M_tab1_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
+                                      actionButton("PDFExpPlot", "Download Exp Plot in PDF", icon = icon("download"))
                                     )),
                    conditionalPanel(" input.main_panel == 'M_panel' && input.M_markerTabs == 'M_tab3' ",
                                     h4("Plot Control:"),
                                     wellPanel(
-                                      actionButton("PDFHistogram", "Download Histogram in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="M_tab2_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="M_tab2_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
+                                      actionButton("PDFHistogram", "Download Histogram in PDF", icon = icon("download"))
                                     )),
                    conditionalPanel(" input.main_panel == 'S_panel' && input.S_sampleTabs == 'S_tab1' ",
                                     h4("Plot Control:"),
@@ -171,34 +136,12 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                                   choices = c("bluered", "greenred", "spectral1", "spectral2"), 
                                                   selected = "bluered", width = "100%")
                                     ),
-                                    wellPanel(
-                                      actionButton("PDFSamHeat", "Download Sample Heatmap in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="S_tab1_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="S_tab1_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFSamHeat", "Download Sample Heatmap in PDF", icon = icon("download"))
+                                    ),
                    conditionalPanel(" input.main_panel == 'S_panel' && input.S_sampleTabs == 'S_tab2' ",
                                     h4("Plot Control:"),
-                                    wellPanel(
-                                      actionButton("PDFrateChange", "Download Rate Change Plot in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="S_tab2_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="S_tab2_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFrateChange", "Download Rate Change Plot in PDF", icon = icon("download"))
+                                    ),
                    conditionalPanel(" input.main_panel == 'P_panel' && input.P_progressionTabs == 'P_tab1' ",
                                     h4("Plot Control:"),
                                     wellPanel(
@@ -206,37 +149,25 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                       checkboxInput(inputId = "P_labelRepel", label = "Repel Cluster Labels", value = FALSE),
                                       checkboxInput(inputId = "P_facetPlot", label = "Separate Plot by Samples", value = FALSE)
                                     ),
-                                    wellPanel(
-                                      actionButton("PDFScatter", "Download Scatterplot in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="P_tab1_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="P_tab1_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFScatter", "Download Scatterplot in PDF", icon = icon("download"))
+                                    ),
                    conditionalPanel(" input.main_panel == 'P_panel' && input.P_progressionTabs == 'P_tab2' ",
                                     h4("Plot Control:"),
                                     wellPanel(
                                       checkboxInput(inputId = "P_addLabel2", label = "Add Cluster Labels", value = TRUE)
                                     ),
-                                    wellPanel(
-                                      actionButton("PDFmarkerPlot", "Download Marker Plot in PDF", icon = icon("download")),
-                                      hr(),
-                                      fluidRow(
-                                        column(6,
-                                               sliderInput(inputId="P_tab2_w", label = "PDF width(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ),
-                                        column(6, 
-                                               sliderInput(inputId="P_tab2_h", label = "PDF height(in):", 
-                                                           min=3, max=20, value=8, width=100, ticks=FALSE)
-                                        ))
-                                    )),
+                                    actionButton("PDFmarkerPlot", "Download Marker Plot in PDF", icon = icon("download"))
+                                    ),
+                   br(),
+                   fluidRow(
+                     column(6,
+                            sliderInput(inputId="tab_w", label = "PDF width(in):", 
+                                        min=3, max=20, value=8, width=100, ticks=FALSE)
+                     ),
+                     column(6, 
+                            sliderInput(inputId="tab_h", label = "PDF height(in):", 
+                                        min=3, max=20, value=8, width=100, ticks=FALSE)
+                     )),
                    
                    actionButton("OpenDir", "Open download folder", icon = icon("folder")),
                    
@@ -260,6 +191,19 @@ cytofkitShinyAPP <- function(RData = NULL) {
                    ),
                    
                    hr(),
+                   h4("Save results:"),
+                   h5("Outputs to save"),
+                   fluidRow(
+                     column(4,
+                            checkboxInput(inputId = "saveFCS", label = "FCS", value = TRUE)
+                     ),
+                     column(4,
+                            checkboxInput(inputId = "saveRData", label = "RData", value = TRUE)
+                     ),
+                     column(4,
+                            checkboxInput(inputId = "saveCsv", label = "csv", value = FALSE)
+                     )
+                   ),
                    actionButton("saveButton", "Save Data", icon = icon("download")),
                    
                    hr(),
@@ -701,7 +645,7 @@ cytofkitShinyAPP <- function(RData = NULL) {
             if(is.null(v$data)){
               paste0("No .RData loaded yet")
             }else{
-              paste0("Loaded: ", v$data$resultDir, v$data$projectName, ".RData")
+              paste0("Loaded: ", v$data$resultDir, "/", v$data$projectName, ".RData")
             }
           })
           
@@ -760,7 +704,7 @@ cytofkitShinyAPP <- function(RData = NULL) {
                 if(is.null(v$data$resultDir) || !dir.exists(v$data$resultDir)){
                   v$data$resultDir <- path.expand("~")  ## default save to home if not specified
                 }
-                saveToFCS <- TRUE
+                saveToFCS <- input$saveFCS
                 if(is.null(v$data$rawFCSdir)){
                   saveToFCS <- FALSE
                   warning("Path for original FCS files is not provided, 
@@ -777,9 +721,9 @@ cytofkitShinyAPP <- function(RData = NULL) {
                 v$data$sampleInfo <- v$sampleInfo
                 analysis_results <<- v$data
                 cytof_writeResults(analysis_results,
-                                   saveToRData = TRUE,
+                                   saveToRData = input$saveRData,
                                    saveToFCS = saveToFCS,
-                                   saveToFiles = FALSE)
+                                   saveToFiles = input$saveCsv)
                 incProgress(1/2)
                 ## open the results directory
                 opendir(v$data$resultDir)
@@ -919,8 +863,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 C_ScatterPlotInput()
                 dev.off()
               })
@@ -1031,6 +975,7 @@ cytofkitShinyAPP <- function(RData = NULL) {
                 return(NULL)
               }
               
+              # create new item in RData object
               clusters <- sort(unique(v$data$clusterRes[[input$c_labelCluster]]))
               if (i <= length(clusters)){
                 x <- clusters[i]
@@ -1137,6 +1082,9 @@ cytofkitShinyAPP <- function(RData = NULL) {
                     cex_row_label= input$M_rowLabelSize, 
                     cex_col_label= input$M_colLabelSize, 
                     scaleMethod = input$M_scaleMethod)
+            dev.copy2pdf(file = "cytofkit_shinyAPP_marker_heatmap.pdf",
+                         width=as.integer(input$tab_w), 
+                         height=as.integer(input$tab_h))
           })
           
           output$M_heatmapPlot <- renderPlot({
@@ -1157,11 +1105,14 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                       Sys.Date(), "_", sprintf("%03d", i + 1), ".pdf");
                   i = i + 1;
                 }
-                file.copy("cytofkit_shinyAPP_marker_heatmap_plot.pdf", filename1)
+                file.copy("cytofkit_shinyAPP_marker_heatmap.pdf", filename1)
               })
             }
           })
           
+          session$onSessionEnded(function(){
+            file.remove("cytofkit_shinyAPP_marker_heatmap.pdf")
+          })
           
           ##-----level plot-----
           output$M_PlotMethod <- renderUI({
@@ -1229,8 +1180,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 M_markerExpressionPlotInput()
                 dev.off()
               })
@@ -1335,8 +1286,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 M_stackDensityPlotInput()
                 dev.off()
               })
@@ -1410,8 +1361,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                     scaleMethod = input$S_scaleMethod)
             
             dev.copy2pdf(file = "cytofkit_shinyAPP_cells_heatmap_plot_plot.pdf",
-                         width=as.numeric(input$S_tab1_w), 
-                         height=as.numeric(input$S_tab1_h))
+                         width=as.integer(input$tab_w), 
+                         height=as.integer(input$tab_h))
           })
           
           output$S_heatmapPlot <- renderPlot({
@@ -1508,8 +1459,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 S_rateChangePlotInput()
                 dev.off()
               })
@@ -1577,6 +1528,7 @@ cytofkitShinyAPP <- function(RData = NULL) {
               sampleGroupNames <- NULL
               for(i in 1:length(uniqueSampleNames)){
                 sampleGroupNames <- c(sampleGroupNames, input[[paste0("Sample", i)]])
+                v$data$sampleNames[[i]] <- c(v$data$sampleNames[[i]], input[[paste0("Sample", i)]])
               }
               
               groupNameLevels <- strsplit(input$sampleGroupLevels, ";", fixed = TRUE)[[1]]
@@ -1597,7 +1549,7 @@ cytofkitShinyAPP <- function(RData = NULL) {
                                                            gregexpr("_[0-9]*$", v$sampleInfo$cellID, perl=TRUE)))
               
               ## update reactive object v$sampleInfo
-              ## newCellID = "sampleGroup" + "_cellID" + "globalID" to avoid dumplicates
+              ## newCellID = "sampleGroup" + "_cellID" + "globalID" to avoid duplicates
               v$sampleInfo$newCellID <- paste0(as.character(v$sampleInfo$cellSample), 
                                                "_",
                                                1:length(cellID_number))
@@ -1739,8 +1691,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 P_scatterPlotInput()
                 dev.off()
               })
@@ -1852,8 +1804,8 @@ cytofkitShinyAPP <- function(RData = NULL) {
                   i = i + 1;
                 }
                 pdf(filename1, 
-                    width=as.numeric(input$H_tab1_w), 
-                    height=as.numeric(input$H_tab1_h))
+                    width=as.integer(input$tab_w), 
+                    height=as.integer(input$tab_h))
                 P_markerPlotInput()
                 dev.off()
               })

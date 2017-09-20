@@ -85,7 +85,7 @@ parameters <- list.files(dir, pattern='.txt$', full=TRUE)
 #cytofkit(fcsFile = file, markers = parameters) 
 }
 \references{
-\url{http://signbioinfo.github.io/cytofkit/}
+\url{https://github.com/JinmiaoChenLab/cytofkit}
 }
 \seealso{
 \code{\link{cytofkit}}, \code{\link{cytofkit_GUI}}, \code{\link{cytofkitShinyAPP}}
