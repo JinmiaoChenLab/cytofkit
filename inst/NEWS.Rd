@@ -1,10 +1,23 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.9.3 (2017-09-27)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Added arguments to cytofkit() and cytof_cluster() to allow user to set a seed, for reproducible results.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Users can now save .fcs from shiny output after renaming samples.
+    }
+  }
+}
+
 \section{Changes in version 1.9.2 (2017-09-11)}{
   \subsection{MODIFICATIONS}{
     \itemize{
-      \item Added save data options for shiny app. Now you can select any combination of .fcs, .csv, and .rdata outputs
+      \item Added save data options for shiny app. Now you can select any combination of .fcs, .csv, and .rdata outputs.
       \item cytofkitShinyAPP() uses code from cytofkit_shinyAPP.R for visualisation on local machines, while ui.R and server.R can be used separately to host the app on servers.
     }
   }

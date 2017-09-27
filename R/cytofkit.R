@@ -105,6 +105,7 @@ NULL
 #' @param visualizationMethods The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selections are accepted.
 #' @param progressionMethod Use the first ordination score of \code{isomap} to estimated the progression order of cells, choose \code{NULL} to ignore.
 #' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
+#' @param seed Integer to set a seed for reproducible results.
 #' @param clusterSampleSize The uniform size of each cluster.
 #' @param resultDir The directory where result files will be generated.
 #' @param saveResults Save the results, and the post-processing results including scatter plot, heatmap, and statistical results.
@@ -136,6 +137,7 @@ cytofkit <- function(fcsFiles = getwd(),
                      visualizationMethods = c("tsne", "pca", "isomap", "NULL"), 
                      progressionMethod = c("NULL", "diffusionmap", "isomap"), 
                      FlowSOM_k = 40,
+                     seed = NULL,
                      clusterSampleSize = 500,
                      resultDir = getwd(), 
                      saveResults = TRUE, 
@@ -216,7 +218,7 @@ cytofkit <- function(fcsFiles = getwd(),
     cat("* Subset progression analysis method: ")
     cat(progressionMethod, "\n\n")
     
-    
+    set.seed(seed)
     ## get transformed, combined exprs data
     message("Extract expression data...")
     exprs_data <- cytof_exprsMerge(fcsFiles, comp = ifCompensation, verbose = FALSE, 
@@ -235,10 +237,12 @@ cytofkit <- function(fcsFiles = getwd(),
     
     ## cluster results, a list
     message("Run clustering...")
+    set.seed(seed)
     cluster_res <- lapply(clusterMethods, cytof_cluster, 
                           ydata = allDimReducedList[[dimReductionMethod]], 
                           xdata = exprs_data[, markers],
-                          FlowSOM_k = FlowSOM_k)
+                          FlowSOM_k = FlowSOM_k,
+                          flowSeed = seed)
     names(cluster_res) <- clusterMethods
     
     

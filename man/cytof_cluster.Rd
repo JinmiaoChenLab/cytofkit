@@ -5,7 +5,7 @@
 \title{Subset detection by clustering}
 \usage{
 cytof_cluster(ydata = NULL, xdata = NULL, method = c("Rphenograph",
-  "ClusterX", "DensVM", "FlowSOM", "NULL"), FlowSOM_k = 40)
+  "ClusterX", "DensVM", "FlowSOM", "NULL"), FlowSOM_k = 40, flowSeed = NULL)
 }
 \arguments{
 \item{ydata}{A matrix of the dimension reduced data.}
@@ -15,6 +15,8 @@ cytof_cluster(ydata = NULL, xdata = NULL, method = c("Rphenograph",
 \item{method}{Cluster method including \code{DensVM}, \code{densityClustX}, \code{Rphenograph} and \code{FlowSOM}.}
 
 \item{FlowSOM_k}{Number of clusters for meta clustering in FlowSOM.}
+
+\item{flowSeed}{Integer to set a seed for FlowSOM for reproducible results.}
 }
 \value{
 a vector of the clusters assigned for each row of the ydata

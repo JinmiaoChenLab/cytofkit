@@ -9,6 +9,7 @@
 #' @param xdata A matrix of the expression data.
 #' @param method Cluster method including \code{DensVM}, \code{densityClustX}, \code{Rphenograph} and \code{FlowSOM}.
 #' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
+#' @param flowSeed Integer to set a seed for FlowSOM for reproducible results.
 #' 
 #' @return a vector of the clusters assigned for each row of the ydata
 #' @export
@@ -23,7 +24,8 @@
 cytof_cluster <- function(ydata = NULL, 
                           xdata = NULL, 
                           method = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
-                          FlowSOM_k = 40){
+                          FlowSOM_k = 40,
+                          flowSeed = NULL){
     
     method = match.arg(method)
     if(method == "NULL"){
@@ -44,7 +46,8 @@ cytof_cluster <- function(ydata = NULL,
            },
            FlowSOM = {
                cat("  Running FlowSOM...")
-               clusters <- FlowSOM_integrate2cytofkit(xdata, FlowSOM_k)
+               set.seed(flowSeed)
+               clusters <- FlowSOM_integrate2cytofkit(xdata, FlowSOM_k, flowSeed = flowSeed)
            })
     
     if( length(clusters) != ifelse(is.null(ydata), nrow(xdata), nrow(ydata)) ){
@@ -66,18 +69,19 @@ cytof_cluster <- function(ydata = NULL,
 #' 
 #' @param xdata Input data matrix.
 #' @param k Number of clusters.
+#' @param flowSeed Seed for reproducibility to pass to metaClustering_consensus.
 #' @param ... Other parameters passed to SOM.
 #' 
 #' @noRd
 #' @importFrom FlowSOM SOM metaClustering_consensus
-FlowSOM_integrate2cytofkit <- function(xdata, k, ...){
+FlowSOM_integrate2cytofkit <- function(xdata, k, flowSeed = NULL, ...){
     cat("    Building SOM...\n")
     xdata <- as.matrix(xdata)
     
     ord <- tryCatch({
         map <- SOM(xdata, silent = TRUE, ...)
         cat("    Meta clustering to", k, "clusters...\n")
-        metaClusters <- suppressMessages(metaClustering_consensus(map$codes, k = k))
+        metaClusters <- suppressMessages(metaClustering_consensus(map$codes, k = k, seed = flowSeed))
         cluster <- metaClusters[map$mapping[,1]]
     }, error=function(cond) {
         message("Run FlowSOM failed")
