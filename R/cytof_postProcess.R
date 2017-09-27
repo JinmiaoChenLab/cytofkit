@@ -190,7 +190,8 @@ cytof_writeResults <- function(analysis_results,
         trans_col_names <- colnames(tcols)
         cluster_col_names <- colnames(ctols)
         cytof_addToFCS(dataToAdd, 
-                       rawFCSdir = rawFCSdir, 
+                       rawFCSdir = rawFCSdir,
+                       origSampNames = samples,
                        analyzedFCSdir = paste(projectName, "analyzedFCS", sep = "_"), 
                        transformed_cols = trans_col_names, 
                        cluster_cols = cluster_col_names,
@@ -761,6 +762,7 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' 
 #' @param data The new data matrix to be added in.
 #' @param rawFCSdir The directory containing the original fcs files.
+#' @param origSampNames Vector of original names of samples, if samples were renamed.
 #' @param analyzedFCSdir The directory to store the new fcs files.
 #' @param transformed_cols The column name of the dimension transformed data in \code{data}.
 #' @param cluster_cols The column name of the cluster data in \code{data}.
@@ -773,7 +775,8 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @importMethodsFrom flowCore keyword
 #' @importFrom Biobase  exprs exprs<- description description<- pData pData<- 
 cytof_addToFCS <- function(data, 
-                           rawFCSdir, 
+                           rawFCSdir,
+                           origSampNames = NULL,
                            analyzedFCSdir, 
                            transformed_cols = c("tsne_1", "tsne_2"), 
                            cluster_cols = c("cluster"),
@@ -849,7 +852,11 @@ cytof_addToFCS <- function(data,
     
     for (i in 1:length(sample)) {
       # refer to old sample name
-    	fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
+      if(!is.null(origSampNames)){
+        fn <- paste0(rawFCSdir, .Platform$file.sep, origSampNames[i], ".fcs")
+      }else{
+        fn <- paste0(rawFCSdir, .Platform$file.sep, sample[i], ".fcs")
+      }
     	if(!file.exists(fn)){
     	    ## stop the writing if cannot find the file
     	    message(paste("Cannot find raw FCS file:", fn))

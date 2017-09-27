@@ -12,8 +12,8 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
   visualizationMethods = c("tsne", "pca", "isomap", "NULL"),
   progressionMethod = c("NULL", "diffusionmap", "isomap"), FlowSOM_k = 40,
-  clusterSampleSize = 500, resultDir = getwd(), saveResults = TRUE,
-  saveObject = TRUE, openShinyAPP = FALSE, ...)
+  seed = NULL, clusterSampleSize = 500, resultDir = getwd(),
+  saveResults = TRUE, saveObject = TRUE, openShinyAPP = FALSE, ...)
 }
 \arguments{
 \item{fcsFiles}{It can be either the path where your FCS files are stored or a vector of FCS file names.}
@@ -46,6 +46,8 @@ fixedNum) from each fcs file and combined for analysis.}
 \item{progressionMethod}{Use the first ordination score of \code{isomap} to estimated the progression order of cells, choose \code{NULL} to ignore.}
 
 \item{FlowSOM_k}{Number of clusters for meta clustering in FlowSOM.}
+
+\item{seed}{Integer to set a seed for reproducible results.}
 
 \item{clusterSampleSize}{The uniform size of each cluster.}
 
