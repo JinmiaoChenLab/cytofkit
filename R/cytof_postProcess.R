@@ -107,7 +107,11 @@ cytof_writeResults <- function(analysis_results,
                 dataj <- clusterData[[j]]
                 if(!is.null(dataj)){
                     write.csv(dataj, paste(projectName, methodj, "clusters.csv", sep="_"))
-                    
+                    ## expression values by cluster
+                    for(i in unique(dataj)){
+                      ci.Table <- cytof_clusterMtrx(analysis_results, methodj, i)
+                      write.csv(ci.Table, paste(projectName, methodj, "Cluster", i, "expression_values.csv", sep = "_"))
+                    }
                     exprs_cluster_sample <- data.frame(exprs, cluster = dataj, check.names = FALSE)
                     ## cluster mean 
                     cluster_mean <- cytof_clusterStat(data= exprs_cluster_sample, cluster = "cluster", statMethod = "mean")
@@ -132,7 +136,10 @@ cytof_writeResults <- function(analysis_results,
                     }
                 }
             }
-        }  
+        }
+        
+        ## expression values by cluster
+        if(!is.null(clusterData) && length(clusterData) > 0)
         
         ## visualizationData x clusterData plot
         visualizationData <- analysis_results$dimReducedRes[analysis_results$visualizationMethods]
@@ -195,6 +202,7 @@ cytof_writeResults <- function(analysis_results,
                        analyzedFCSdir = paste(projectName, "analyzedFCS", sep = "_"), 
                        transformed_cols = trans_col_names, 
                        cluster_cols = cluster_col_names,
+                       clusterIDs = ctols,
                        inLgclTrans = inverseLgclTrans)
     }
     setwd(curwd)
@@ -547,7 +555,7 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
 }
 
 
-#' Statistics of the cluster relusts
+#' Statistics of the cluster results
 #' 
 #' Calculate the mean or median expression level of each marker for each cluster, or percentage
 #' of cell numbers of each cluster for each sample.
@@ -615,6 +623,44 @@ cytof_clusterStat <- function(data, markers, cluster = "cluster", sample,
     statData$cluster <- NULL  ## remove cluster column
     
     return(as.matrix(statData))
+}
+
+#' Expression values by cluster
+#' 
+#' Generate a matrix of expression values for cells in a cluster
+#' 
+#' @param analysis_results analysis_results output of cytofkit to extract expression values from.
+#' @param clusterMethod The cluster method of interest. If none is selected, the first one will be used.
+#' @param cluster The cluster of interest.
+#' 
+#' @return A data table with marker expression values of cells in a given cluster
+#' 
+#' @export
+#' 
+#' @examples  
+#' dir <- system.file('extdata',package='cytofkit')
+#' file <- list.files(dir ,pattern='.RData$', full=TRUE)
+#' load(file)
+#' cluster2_table <- cytof_clusterMtrx(analysis_results, "Rphenograph", 2)
+cytof_clusterMtrx <- function(analysis_results, clusterMethod = NULL, cluster){
+  exprs <- analysis_results$expressionData
+  clusterRes <- analysis_results$clusterRes
+  clustMeths <- names(analysis_results$clusterRes)
+  if(is.null(clustMeths)){
+    stop("No clustering data, please check your analysis results!")
+  }
+  if(is.null(clusterMethod)){
+    clusterMethod <- clustMeths[1]
+  }
+  if(!clusterMethod %in% clustMeths){
+    stop("Selected clusterMethod not used in chosen analysis results, please check again")
+  }
+  if(!cluster %in% unique(analysis_results$clusterRes[[clusterMethod]])){
+    stop("Selected cluster not found!")
+  }
+  cluster_cells <- names(which(clusterRes[[clusterMethod]] == cluster))
+  cluster_table <- exprs[cluster_cells,]
+  return(cluster_table)
 }
     
     
@@ -766,6 +812,7 @@ cytof_progressionPlot <- function(data, markers, clusters,
 #' @param analyzedFCSdir The directory to store the new fcs files.
 #' @param transformed_cols The column name of the dimension transformed data in \code{data}.
 #' @param cluster_cols The column name of the cluster data in \code{data}.
+#' @param clusterIDs Table of cell cluster IDs for each clustering method
 #' @param specifySampleNames Used only if sample names differ from those in raw fcs.
 #' @param inLgclTrans If \verb{TRUE}, apply the inverse lgcl transformation to the the cluster data before saving
 #' 
@@ -780,6 +827,7 @@ cytof_addToFCS <- function(data,
                            analyzedFCSdir, 
                            transformed_cols = c("tsne_1", "tsne_2"), 
                            cluster_cols = c("cluster"),
+                           clusterIDs = NULL,
                            specifySampleNames = NULL,
                            inLgclTrans = TRUE) {
     
@@ -846,6 +894,10 @@ cytof_addToFCS <- function(data,
     } else if (!is.null(cluster_cols)) {
         to_add <- R_N_clust_cor
     }
+    if(!is.null(clusterIDs)){
+      colnames(clusterIDs) <- paste0(colnames(ctols), "_clusterIDs")
+      to_add <- cbind(to_add, clusterIDs)
+    }
     addColNames <- colnames(to_add)
     sample <- unique(sub("_[0-9]*$", "", row.names(to_add)))
     # add argument for old sample names use match()
@@ -868,11 +920,6 @@ cytof_addToFCS <- function(data,
         to_add_i <- as.data.frame(to_add[grep(pattern, row.names(to_add), fixed = TRUE), ])
         m <- regexpr("_[0-9]*$", row.names(to_add_i))
         cellNo_i <- as.integer(substring(regmatches(row.names(to_add_i), m), 2))
-        ##error log
-        log <- cat("FCS file: ", sample[i], "\n",
-                   "cellNos:", "\n",
-                   cellNo_i)
-        write(log, file = paste0(analyzedFCSdir, "/errLog.txt"))
         # subscript out of bounds
         sub_exprs <- fcs@exprs[cellNo_i, ]
         params <- parameters(fcs)

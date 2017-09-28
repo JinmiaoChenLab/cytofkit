@@ -2,7 +2,7 @@
 % Please edit documentation in R/cytof_postProcess.R
 \name{cytof_clusterStat}
 \alias{cytof_clusterStat}
-\title{Statistics of the cluster relusts}
+\title{Statistics of the cluster results}
 \usage{
 cytof_clusterStat(data, markers, cluster = "cluster", sample,
   statMethod = c("mean", "median", "percentage", "NULL"))

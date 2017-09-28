@@ -6,7 +6,7 @@
 \usage{
 cytof_addToFCS(data, rawFCSdir, origSampNames = NULL, analyzedFCSdir,
   transformed_cols = c("tsne_1", "tsne_2"), cluster_cols = c("cluster"),
-  specifySampleNames = NULL, inLgclTrans = TRUE)
+  clusterIDs = NULL, specifySampleNames = NULL, inLgclTrans = TRUE)
 }
 \arguments{
 \item{data}{The new data matrix to be added in.}
@@ -20,6 +20,8 @@ cytof_addToFCS(data, rawFCSdir, origSampNames = NULL, analyzedFCSdir,
 \item{transformed_cols}{The column name of the dimension transformed data in \code{data}.}
 
 \item{cluster_cols}{The column name of the cluster data in \code{data}.}
+
+\item{clusterIDs}{Table of cell cluster IDs for each clustering method}
 
 \item{specifySampleNames}{Used only if sample names differ from those in raw fcs.}
 
