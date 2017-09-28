@@ -264,7 +264,7 @@ cytofkit <- function(fcsFiles = getwd(),
     
     ## original fcs sample names
     message("Stashing sample names...")
-    names <- unique(sub(".fcs$", "", fcsFiles))
+    names <- sub("^.+/", "", unique(sub(".fcs$", "", fcsFiles)))
     samples <- as.list(NULL)
     for(i in seq_along(names)){
       samples[[i]] <- names[i]

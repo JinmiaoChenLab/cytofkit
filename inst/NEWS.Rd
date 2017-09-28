@@ -1,6 +1,21 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.9.4 (2017-09-27)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Added function, cytof_clustermtrx(), to obtain marker expression values for cells in a given cluster.
+      \item Included cytof_clustermtrx() into main cytofkit function.
+      \item Cluster ID integers saved to fcs files as additional channels.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Quick fix on FCS saving.
+    }
+  }
+}
+
 \section{Changes in version 1.9.3 (2017-09-27)}{
   \subsection{MODIFICATIONS}{
     \itemize{
