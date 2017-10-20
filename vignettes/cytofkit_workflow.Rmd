@@ -96,7 +96,7 @@ The cluster results can be visualized with dimension transformed data from *t-SN
 ?cytof_writeResults
 ```
 
-Among the saved results, an R data object will be saved with suffix of *.RData*, this is specially for loading to the shiny web APP for interactive visualization and exploration of the analysis results. The shiny APP can be launched with command `cytofkitShinyAPP()` or through this link https://chenhao.shinyapps.io/cytofkitShinyAPP/.
+Among the saved results, an R data object will be saved with suffix of *.RData*, this is specially for loading to the shiny web APP for interactive visualization and exploration of the analysis results. The shiny APP can be launched with command `cytofkitShinyAPP()` or through this link https://cytofkit.shinyapps.io/shiny/.
              
 # References
 

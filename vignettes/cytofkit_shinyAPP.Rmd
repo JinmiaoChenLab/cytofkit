@@ -18,7 +18,7 @@ output:
     cytofkitShinyAPP()
     ```
 
-- cytofkit Shiny APP is also hosted by shinyapps.io, and can be used through the public link: [cytofkitShinyAPP](https://chenhao.shinyapps.io/cytofkitShinyAPP/) 
+- cytofkit Shiny APP is also hosted by shinyapps.io, and can be used through the public link: [cytofkitShinyAPP](https://cytofkit.shinyapps.io/shiny/) 
 
 # Loading .RData to Shiny APP     
 
@@ -26,7 +26,7 @@ After the analysis was done using cytofkit, a special **RData file** will be sav
 
 ![](load2shiny.png)
 
-Click the up-left `Choose File` button to choose **RData file**, then click the `submit` button below to load the data.
+Click the top-left `Choose File` button to choose **RData file**, then click the `submit` button below to load the data.
 
 For use on servers, the `Server File Select` button can be used to load data directly from server without storing it locally.
 
@@ -37,11 +37,11 @@ As shown in the figure above, there are one **side panel** and one **main panel*
 
 # Cluster Panel   
 
-Inside the cluster panel, there are three tab panels, they are **Cluster Plot**, **Annotate Clusters** and **Run FlowSOM**. 
+Inside the cluster panel, there are three tab panels, **Cluster Plot**, **Annotate Clusters** and **Run FlowSOM**. 
 
 ![](cluster_panel.png)
 
-1. **Cluster Plot**: visualize the clusters on the scatter plot of dimensionality reduced data. Use `Plot Data` to choose the dimensionality reduced data, and `Plot Option` to choose clustering results. Point size and label size can be adjust to fit your need.
+1. **Cluster Plot**: visualize the clusters on the scatter plot of dimensionality reduced data. Use `Plot Data` to choose the dimensionality reduced data, and `Plot Option` to choose clustering results. Point size and label size can be adjusted to fit your needs.
 
 2. **Annotate Clusters**: clusters can be annotated with cell population names. Once submitted, an annotated clustering option will be added to `Plot Option`.
 
@@ -61,7 +61,7 @@ Marker Panel facilitates the annotation of clusters, it contains three tab panel
 
 # Sample Panel
 
-Sample Panel allows checking the change of subset abundance among samples, as well as regroup the samples, it includes two tab panels: **Cell Counts** and **Group Samples**.
+Sample Panel allows checking the change of subset abundance among samples, as well as regrouping samples, it includes two tab panels: **Cell Counts** and **Group Samples**.
 
 ![](sample_panel.png)
 
