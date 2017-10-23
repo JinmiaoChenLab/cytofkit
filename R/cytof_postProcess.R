@@ -487,7 +487,8 @@ spectral2 <- function(n){
 #' @param xlab The column name of data for x lab.
 #' @param ylab The column name of data for y lab.
 #' @param zlab The column name of data for z lab.
-#' @param colorPalette Color Palette. 
+#' @param colorPalette Color Palette.
+#' @param limits Range for z lab, defaults to existing min and max. 
 #' @param pointSize Size of the point.
 #' @param removeOutlier If \verb{TRUE}, remove the outliers.
 #' @return A ggplot object.
@@ -503,7 +504,8 @@ spectral2 <- function(n){
 #' data <- data.frame(dim1 = x, dim2 = y, marker = c)
 #' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 cytof_colorPlot <- function(data, xlab, ylab, zlab, 
-                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"), 
+                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
+                            limits = NA,
                             pointSize=1, 
                             removeOutlier = TRUE){
     
@@ -545,7 +547,7 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
     exp <- "Expression"
     colnames(data) <- c(xlab, ylab, exp)
     gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = exp)) + 
-        scale_colour_gradientn(name = zlab, colours = myPalette(zlength)) +
+        scale_colour_gradientn(limits = limits, name = zlab, colours = myPalette(zlength)) +
         geom_point(size = pointSize) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
@@ -895,7 +897,7 @@ cytof_addToFCS <- function(data,
         to_add <- R_N_clust_cor
     }
     if(!is.null(clusterIDs)){
-      colnames(clusterIDs) <- paste0(colnames(ctols), "_clusterIDs")
+      colnames(clusterIDs) <- paste0(colnames(clusterIDs), "_clusterIDs")
       to_add <- cbind(to_add, clusterIDs)
     }
     addColNames <- colnames(to_add)

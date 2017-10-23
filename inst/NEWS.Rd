@@ -1,6 +1,19 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.9.5 (2017-10-23)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Standardise plot scales across samples in shiny App
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Fixed an issue with Phenograph failing if sampling with replacement was done. Now cytofkit tests if any FCS files have less events than specified in fixedNum argument.
+    }
+  }
+}
+
 \section{Changes in version 1.9.4 (2017-09-27)}{
   \subsection{MODIFICATIONS}{
     \itemize{

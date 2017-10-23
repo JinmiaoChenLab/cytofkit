@@ -5,7 +5,8 @@
 \title{Plot the data with color-coded marker values}
 \usage{
 cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
-  "spectral1", "spectral2", "heat"), pointSize = 1, removeOutlier = TRUE)
+  "spectral1", "spectral2", "heat"), limits = NA, pointSize = 1,
+  removeOutlier = TRUE)
 }
 \arguments{
 \item{data}{A dataframe containing the xlab, ylab and zlab.}
@@ -17,6 +18,8 @@ cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
 \item{zlab}{The column name of data for z lab.}
 
 \item{colorPalette}{Color Palette.}
+
+\item{limits}{Range for z lab, defaults to existing min and max.}
 
 \item{pointSize}{Size of the point.}
 

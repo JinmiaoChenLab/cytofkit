@@ -1,4 +1,4 @@
-## loading pacakge
+## loading package
 require(cytofkit)
 require(ggplot2)
 require(reshape2)
@@ -65,6 +65,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                               ylab = ylab, 
                               markers = colnames(obj$expressionData), 
                               colorPalette = colorPalette,
+                              limits = range(obj$expressionData),
                               pointSize = pointSize, 
                               removeOutlier = TRUE)
         
@@ -75,6 +76,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                    markers = colnames(obj$expressionData), 
                                    scaleMarker = TRUE,
                                    colorPalette = colorPalette,
+                                   limits = range(obj$expressionData),
                                    pointSize = pointSize, 
                                    removeOutlier = TRUE)
         
@@ -110,6 +112,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                               ylab = ylab, 
                               zlab = plotFunction, 
                               colorPalette = colorPalette,
+                              limits = range(obj$expressionData[,plotFunction]),
                               pointSize = pointSize, 
                               removeOutlier = TRUE)
     }
@@ -117,9 +120,10 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
     return(gp)
 }
 
-## Facet wrap plot of marker exporession
+## Facet wrap plot of marker expression
 cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
-                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"), 
+                            colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
+                            limits = NA,
                             pointSize=1, 
                             removeOutlier = TRUE){
     
@@ -180,7 +184,7 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
     grid_row_num <- round(sqrt(length(markers)))
     gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = ev)) + 
         facet_wrap(~markers, nrow = grid_row_num, scales = "fixed") +
-        scale_colour_gradientn(name = ev, colours = myPalette(zlength)) +
+        scale_colour_gradientn(limits = limits, name = ev, colours = myPalette(zlength)) +
         geom_point(size = pointSize) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
