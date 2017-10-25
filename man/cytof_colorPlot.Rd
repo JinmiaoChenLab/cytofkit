@@ -5,7 +5,7 @@
 \title{Plot the data with color-coded marker values}
 \usage{
 cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
-  "spectral1", "spectral2", "heat"), limits = NA, pointSize = 1,
+  "spectral1", "spectral2", "heat"), limits = range(data), pointSize = 1,
   removeOutlier = TRUE)
 }
 \arguments{

@@ -71,7 +71,7 @@ Depends on the size of your data, it will take some time to run the analysis. On
 
 ## Run with the Core Function 
 
-**Cytofkit** provides a core function `cytofkit()` to drive the analysis pipeline of mass cytometry data. Users only need to define several key parameters to make their analysis automatically. One simple example of running cytofkit using the core function is like this:
+**Cytofkit** provides a core function `cytofkit()` to drive the analysis pipeline of mass cytometry data. Users only need to define several key parameters to start their analysis automatically. One simple example of running cytofkit using the core function is like this:
 
 ```{r, eval=FALSE}
 set.seed(100)
@@ -82,7 +82,7 @@ res <- cytofkit(fcsFiles = file,
                 markers = parameters, 
                 projectName = 'cytofkit_test',
                 transformMethod = "cytofAsinh", 
-                mergeMethod = "all",
+                mergeMethod = "ceil",
                 fixedNum = 500,                                    ## set at 500 for faster run
                 dimReductionMethod = "tsne",
                 clusterMethods = c("Rphenograph", "ClusterX"),    ## accept multiple methods
@@ -220,8 +220,8 @@ cytof_clusterPlot(data=p_d, xlab="isomap_1", ylab="isomap_2",
 ## marker expression profile
 markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
 
-cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1])
-cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2])
+cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1], limits = range(p_d[,1:52]))
+cytof_colorPlot(data=p_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2], limits = range(p_d[,1:52]))
 
 cytof_progressionPlot(data=p_d, markers=markers, orderCol="isomap_1", clusterCol = "cluster")
 ```
@@ -246,8 +246,8 @@ cytof_clusterPlot(data=c_d, xlab="isomap_1", ylab="isomap_2",
 ## marker expression profile
 markers <- c("(Sm150)Di<GranzymeB>", "(Yb173)Di<Perforin>")
 
-cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1])
-cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2])
+cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[1], limits = range(c_d[,1:52]))
+cytof_colorPlot(data=c_d, xlab="isomap_1", ylab="isomap_2", zlab = markers[2], limits = range(c_d[,1:52]))
 
 cytof_progressionPlot(data=c_d, markers, orderCol="isomap_1", clusterCol = "cluster")
 ```
@@ -260,6 +260,12 @@ cytof_progressionPlot(data=c_d, markers, orderCol="isomap_1", clusterCol = "clus
 cytof_addToFCS(data_1k_all, rawFCSdir=dir, analyzedFCSdir="analysed_FCS", 
                transformed_cols = c("tsne_1", "tsne_2"), 
                cluster_cols = c("PhenoGraph", "ClusterX", "FlowSOM"))
+```
+
+In addition, expression values for cells in a specified cluster can be extracted using `cytof_clusterMtrx()`
+```{r}
+## See documentation, this function uses the output of main cytofkit cuntion as its input
+?cytof_clusterMtrx
 ```
 
 ### Get package update news
