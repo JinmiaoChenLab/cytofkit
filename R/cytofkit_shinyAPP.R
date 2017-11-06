@@ -173,7 +173,8 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                    
                    hr(),
                    h4("Sample Filter:"),
-                   wellPanel(uiOutput("sampleSelect")),
+                   wellPanel(uiOutput("selectAll"),
+                             uiOutput("sampleSelect")),
                    
                    hr(),
                    h4("Data Summary:"),
@@ -655,6 +656,14 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
             print("Reset done")
           })
           
+          output$selectAll <- renderUI({
+              if(is.null(v$data) || is.null(v$sampleInfo)){
+                  return(NULL)
+              }else{
+                  checkboxInput('selectDeselectAll', label = "Select/Deselect All", value = TRUE)
+              }   
+          })
+          
           output$sampleSelect <- renderUI({
             if(is.null(v$data) || is.null(v$sampleInfo)){
               return(NULL)
@@ -663,6 +672,30 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
               checkboxGroupInput('samples', NULL, 
                                  sampleNames, selected = sampleNames)
             }   
+          })
+          
+          observeEvent(input$selectDeselectAll, {
+              allSamp <- input$selectDeselectAll
+              sampleNames <- unique(as.character(v$sampleInfo$cellSample))
+              if(allSamp == TRUE){
+                  updateCheckboxGroupInput(session, 'samples', selected = sampleNames)
+              }else{
+                  updateCheckboxGroupInput(session, 'samples', selected = character(0))
+              }
+          })
+          
+          observe({
+              if(!is.null(v$data) && !is.null(v$sampleInfo) && !is.null(input$samples)){
+                  x <- input$samples
+                  sampleNames <- unique(as.character(v$sampleInfo$cellSample))
+                  if(length(x) == 0){
+                      x <- character(0)
+                      updateCheckboxInput(session, 'selectDeselectAll', value = FALSE)
+                  }
+                  if(length(x) == length(sampleNames)){
+                      updateCheckboxInput(session, 'selectDeselectAll', value = TRUE)
+                  }
+              }
           })
           
           output$summaryText1 <- renderText({

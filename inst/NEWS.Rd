@@ -1,6 +1,27 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.9.5 (2017-11-06)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Added a select/deselect all checkbox to the sample selection panel for ease of selection.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item 
+    }
+  }
+}
+
+\section{Changes in version 1.10.0 (2017-11-01)}{
+  \subsection{BIOCONDUCTOR 3.6 RELEASE}{
+    \itemize{
+      \item Contains all modifications and fixes from 1.8.2 to 1.9.5
+    }
+  }
+}
+
 \section{Changes in version 1.9.5 (2017-10-23)}{
   \subsection{MODIFICATIONS}{
     \itemize{

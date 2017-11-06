@@ -1,0 +1,10 @@
+.Rbuildignore
+.Rproj.user
+.Rproj
+.Rhistory
+.RData
+inst/shiny/rsconnect
+src-i386
+src-x64
+**/*.dll
+**/*.o
