@@ -11,9 +11,10 @@ cytofkit(fcsFiles = getwd(), markers = "parameter.txt",
   dimReductionMethod = c("tsne", "pca", "isomap"),
   clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
   visualizationMethods = c("tsne", "pca", "isomap", "NULL"),
-  progressionMethod = c("NULL", "diffusionmap", "isomap"), FlowSOM_k = 40,
-  seed = NULL, clusterSampleSize = 500, resultDir = getwd(),
-  saveResults = TRUE, saveObject = TRUE, openShinyAPP = FALSE, ...)
+  progressionMethod = c("NULL", "diffusionmap", "isomap"),
+  Rphenograph_k = 30, FlowSOM_k = 40, seed = NULL,
+  clusterSampleSize = 500, resultDir = getwd(), saveResults = TRUE,
+  saveObject = TRUE, openShinyAPP = FALSE, ...)
 }
 \arguments{
 \item{fcsFiles}{It can be either the path where your FCS files are stored or a vector of FCS file names.}
@@ -44,6 +45,8 @@ fixedNum) from each fcs file and combined for analysis.}
 \item{visualizationMethods}{The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selections are accepted.}
 
 \item{progressionMethod}{Use the first ordination score of \code{isomap} to estimated the progression order of cells, choose \code{NULL} to ignore.}
+
+\item{Rphenograph_k}{Integer number of nearest neighbours to pass to Rphenograph.}
 
 \item{FlowSOM_k}{Number of clusters for meta clustering in FlowSOM.}
 

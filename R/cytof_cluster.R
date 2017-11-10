@@ -8,6 +8,7 @@
 #' @param ydata A matrix of the dimension reduced data.
 #' @param xdata A matrix of the expression data.
 #' @param method Cluster method including \code{DensVM}, \code{densityClustX}, \code{Rphenograph} and \code{FlowSOM}.
+#' @param Rphenograph_k Integer number of nearest neighbours to pass to Rphenograph.
 #' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
 #' @param flowSeed Integer to set a seed for FlowSOM for reproducible results.
 #' 
@@ -24,6 +25,7 @@
 cytof_cluster <- function(ydata = NULL, 
                           xdata = NULL, 
                           method = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"),
+                          Rphenograph_k = 30,
                           FlowSOM_k = 40,
                           flowSeed = NULL){
     
@@ -34,7 +36,7 @@ cytof_cluster <- function(ydata = NULL,
     switch(method, 
            Rphenograph = {
                cat("  Running PhenoGraph...")
-               clusters <- as.numeric(membership(Rphenograph(xdata, k=30)))
+               clusters <- as.numeric(membership(Rphenograph(xdata, k=Rphenograph_k)))
            },
            ClusterX = {
                cat("  Running ClusterX...")

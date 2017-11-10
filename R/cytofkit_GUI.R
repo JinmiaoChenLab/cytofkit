@@ -24,7 +24,7 @@ cytofkit_GUI <- function() {
     mergeMethods <- c("all", "min", "ceil", "fixed")
     transformMethods <- c("autoLgcl", "cytofAsinh", "logicle", "none")
     vizMethods <- c("pca", "isomap", "tsne", "NULL")
-    clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "NULL")
+    clusterMethods <- c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL")
     progressionMethods <- c("diffusionmap", "isomap", "NULL")
     fixedLgclParas = c(l_w = 0.5, l_t = 500000, l_m = 4.5, l_a = 0)
     
@@ -37,6 +37,8 @@ cytofkit_GUI <- function() {
     markers <- tclVar("")
     transformMethod <- tclVar("autoLgcl")
     progressionMethod <- tclVar("NULL")
+    Rphenograph_k <- tclVar("30")
+    FlowSOM_k <- tclVar("40")
     
     # logicle parameters
     l_w <- tclVar(fixedLgclParas[1])
@@ -156,6 +158,15 @@ cytofkit_GUI <- function() {
             icon = "info", type = "ok")
     }
     
+    rPk_help <- function() {
+        tkmessageBox(title = "Rphenograph K", message = "Number of nearest neighbours to pass to Rphenograph.", 
+                     icon = "info", type = "ok")
+    }
+    
+    fSk_help <- function() {
+        tkmessageBox(title = "FlowSOM K", message = "Number of clusters for meta clustering in FlowSOM.", 
+                     icon = "info", type = "ok")
+    }
     
     transformMethod_help <- function() {
         tkmessageBox(title = "transformationMethod", message = "Data Transformation method, including \"cytofAsinh\"(Customized Asinh transformation for CyTOF data), \"autoLgcl\"(automatic logicle transformation for CyTOF data), \"logicle\"(customize your own parameters for logicle transformation) and \"none\"(if your data is already transformed).", 
@@ -163,7 +174,7 @@ cytofkit_GUI <- function() {
     }
     
     cluster_help <- function() {
-        tkmessageBox(title = "clusterMethods", message = "The method(s) for clustering, including \"DensVM\", \"ClusterX\", \"Rphenograph\". \n\nIf \"NULL\" was selected, no clustering will be performed.", 
+        tkmessageBox(title = "clusterMethods", message = "The method(s) for clustering, including \"DensVM\", \"ClusterX\", \"Rphenograph\", and \"FlowSOM\". \n\nIf \"NULL\" was selected, no clustering will be performed.", 
             icon = "info", type = "ok")
     }
     
@@ -199,6 +210,8 @@ cytofkit_GUI <- function() {
         tclvalue(vizSelect[2]) <- "0"
         tclvalue(vizSelect[3]) <- "1"
         tclvalue(progressionMethod) <- "NULL"
+        tclvalue(Rphenograph_k) <- "30"
+        tclvalue(FlowSOM_k) <- "40"
     }
     
     submit <- function() {
@@ -338,6 +351,24 @@ cytofkit_GUI <- function() {
         i <- i + 1
     }
     
+    ## cluster param (Rphenograph_k and FlowSOM_k)
+    rphenoK_label <- tklabel(tt, text = "Rphenograph_k:")
+    rphenoK_hBut <- tkbutton(tt, image = image2, command = rPk_help)
+    cluster_Param <- tkframe(tt)
+    tkpack(tklabel(cluster_Param, text = " "), side = "left")
+    tkpack(tkentry(cluster_Param, textvariable = Rphenograph_k, width = 4), side = "left")
+    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
+    tkpack(tkbutton(cluster_Param, image = image2, command = fSk_help), side = "right")
+    tkpack(tkentry(cluster_Param, textvariable = FlowSOM_k, width = 4), side = "right")
+    tkpack(tklabel(cluster_Param, text = "FlowSOM_k:"), side = "right")
+    #rphenoK_entry <- tkentry(tt, textvariable = Rphenograph_k, width = 4)
+    #fSOMk_label <- tklabel(tt, text = "FlowSOM_k:")
+    #fSOMk_hBut <- tkbutton(tt, image = image2, command = fSk_help)
+    #fSOMk_entry <- tkentry(tt, textvariable = FlowSOM_k, width = 4)
+    
     ## visualizationMethods
     visualizationMethods_label <- tklabel(tt, text = "Visualization Method(s) :")
     visualizationMethods_hBut <- tkbutton(tt, image = image2,
@@ -417,6 +448,12 @@ cytofkit_GUI <- function() {
     tkgrid.configure(clusterMethods_cbuts, sticky = "w")
     tkgrid.configure(cluster_hBut, sticky = "e")
     
+    tkgrid(rphenoK_label, rphenoK_hBut, cluster_Param, padx = cell_width)
+    tkgrid.configure(rphenoK_label, rphenoK_hBut, sticky = "e")
+    tkgrid.configure(cluster_Param, sticky = "w")
+    #tkgrid.configure(fSOMk_label, fSOMk_entry, sticky = "w")
+    #tkgrid.configure(fSOMk_hBut, sticky = "w")
+    
     tkgrid(visualizationMethods_label, visualizationMethods_hBut, 
         visualizationMethods_cbuts, padx = cell_width)
     tkgrid.configure(visualizationMethods_label, sticky = "e")
@@ -474,6 +511,8 @@ cytofkit_GUI <- function() {
         inputs[["clusterMethods"]] <- clusterMethods[clusterCheck]
         inputs[["visualizationMethods"]] <- vizMethods[vizCheck]
         inputs[["progressionMethod"]] <- tclvalue(progressionMethod)
+        inputs[["Rphenograph_k"]] <- tclvalue(Rphenograph_k)
+        inputs[["FlowSOM_k"]] <- tclvalue(FlowSOM_k)
         inputs[["projectName"]] <- tclvalue(projectName)
         inputs[["resultDir"]] <- tclvalue(resDir)
         
@@ -494,6 +533,8 @@ cytofkit_GUI <- function() {
                  clusterMethods = inputs[["clusterMethods"]],
                  visualizationMethods = inputs[["visualizationMethods"]],
                  progressionMethod = inputs[["progressionMethod"]],
+                 Rphenograph_k = inputs[["Rphenograph_k"]],
+                 FlowSOM_k = inputs[["FlowSOM_k"]],
                  clusterSampleSize = 500,
                  resultDir = inputs[["resultDir"]],
                  saveResults = TRUE,

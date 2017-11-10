@@ -1,15 +1,16 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
-\section{Changes in version 1.9.5 (2017-11-06)}{
+\section{Changes in version 1.11.1 (2017-11-06)}{
   \subsection{MODIFICATIONS}{
     \itemize{
       \item Added a select/deselect all checkbox to the sample selection panel for ease of selection.
+      \item Added FlowSOM option and options to specify k for FlowSOM and Rphenograph in cytofkit_GUI.
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item 
+      \item Switched the treetype used for nn2 from bd to kd, as bd was causing problems in Phenograph clustering.
     }
   }
 }

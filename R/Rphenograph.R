@@ -99,6 +99,6 @@ Rphenograph <- function(data, k=30){
 #' 
 #' @importFrom RANN nn2
 find_neighbors <- function(data, k){
-    nearest <- nn2(data, data, k, treetype = "bd", searchtype = "standard")
+    nearest <- nn2(data, data, k, treetype = "kd", searchtype = "standard")
     return(nearest[[1]])
 }

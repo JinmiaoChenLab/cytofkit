@@ -104,6 +104,7 @@ NULL
 #' @param clusterMethods The clustering method(s) used for subpopulation detection, including \code{DensVM}, \code{ClusterX}, \code{Rphenograph} and \code{FlowSOM}. Multiple selections are accepted.
 #' @param visualizationMethods The method(s) used for visualize the cluster data, including \code{tsne}, \code{pca} and \code{isomap}. Multiple selections are accepted.
 #' @param progressionMethod Use the first ordination score of \code{isomap} to estimated the progression order of cells, choose \code{NULL} to ignore.
+#' @param Rphenograph_k Integer number of nearest neighbours to pass to Rphenograph.
 #' @param FlowSOM_k Number of clusters for meta clustering in FlowSOM.
 #' @param seed Integer to set a seed for reproducible results.
 #' @param clusterSampleSize The uniform size of each cluster.
@@ -135,7 +136,8 @@ cytofkit <- function(fcsFiles = getwd(),
                      dimReductionMethod = c("tsne", "pca", "isomap"), 
                      clusterMethods = c("Rphenograph", "ClusterX", "DensVM", "FlowSOM", "NULL"), 
                      visualizationMethods = c("tsne", "pca", "isomap", "NULL"), 
-                     progressionMethod = c("NULL", "diffusionmap", "isomap"), 
+                     progressionMethod = c("NULL", "diffusionmap", "isomap"),
+                     Rphenograph_k = 30,
                      FlowSOM_k = 40,
                      seed = NULL,
                      clusterSampleSize = 500,
@@ -241,6 +243,7 @@ cytofkit <- function(fcsFiles = getwd(),
     cluster_res <- lapply(clusterMethods, cytof_cluster, 
                           ydata = allDimReducedList[[dimReductionMethod]], 
                           xdata = exprs_data[, markers],
+                          Rphenograph_k = Rphenograph_k,
                           FlowSOM_k = FlowSOM_k,
                           flowSeed = seed)
     names(cluster_res) <- clusterMethods
