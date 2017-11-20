@@ -6,6 +6,8 @@
     \itemize{
       \item Added a select/deselect all checkbox to the sample selection panel for ease of selection.
       \item Added FlowSOM option and options to specify k for FlowSOM and Rphenograph in cytofkit_GUI.
+      \item Added a popup dialog to cytofkit_GUI that warns if more than 10,000 cells are being run with DensVM or
+      isomap
     }
   }
   \subsection{BUG FIXES}{

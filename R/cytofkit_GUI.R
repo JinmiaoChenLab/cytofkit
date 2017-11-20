@@ -72,6 +72,13 @@ cytofkit_GUI <- function() {
     ##  button functions ##
     ##-------------------##
     
+    highCell_warning <- function() {
+        #potentially_slow_methods <- c("all", "DensVM", "isomap")
+        #if(any(potentially_slow_methods) %in% para){}
+        tkmessageBox(title = "Warning",
+                     message = "Please note that using the options DensVM or isomap with more than 10,000 cells will be very slow!")
+    }
+    
     reset_rawFCS_dir <- function() {
         rawFCS_dir <- ""
         rawFCS_dir <- tclvalue(tkchooseDirectory(title = "Choose your rawFCS direcetory ..."))
@@ -122,6 +129,11 @@ cytofkit_GUI <- function() {
     
     reset_num2null <- function() {
         tclvalue(fixedNum) <- "NULL"
+    }
+    
+    method_all_warning <- function(){
+        reset_num2null()
+        highCell_warning()
     }
     
     reset_num2any <- function() {
@@ -296,7 +308,7 @@ cytofkit_GUI <- function() {
     merge_method_rbuts <- tkframe(tt)
     tkpack(tklabel(merge_method_rbuts, text = ""), side = "left")
     tkpack(tkradiobutton(merge_method_rbuts, text = mergeMethods[1], 
-        variable = mergeMethod, value = mergeMethods[1], command = reset_num2null), 
+        variable = mergeMethod, value = mergeMethods[1], command = method_all_warning), 
         side = "left")
     tkpack(tkradiobutton(merge_method_rbuts, text = mergeMethods[2], 
         variable = mergeMethod, value = mergeMethods[2], command = reset_num2null), 
@@ -343,13 +355,16 @@ cytofkit_GUI <- function() {
     
     clusterMethods_cbuts <- tkframe(tt)
     tkpack(tklabel(clusterMethods_cbuts, text = ""), side = "left")
-    i <- 1
-    while (i <= length(clusterMethods)) {
-        t <- tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[i], 
-                           variable = eval(clusterSelect[i]))
-        tkpack(t, side = "left")
-        i <- i + 1
-    }
+    tkpack(tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[1], 
+                         variable = eval(clusterSelect[1])), side = "left")
+    tkpack(tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[2], 
+                         variable = eval(clusterSelect[2])), side = "left")
+    tkpack(tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[3], 
+                         variable = eval(clusterSelect[3]), command = highCell_warning), side = "left")
+    tkpack(tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[4], 
+                         variable = eval(clusterSelect[4])), side = "left")
+    tkpack(tkcheckbutton(clusterMethods_cbuts, text = clusterMethods[5], 
+                         variable = eval(clusterSelect[5])), side = "left")
     
     ## cluster param (Rphenograph_k and FlowSOM_k)
     rphenoK_label <- tklabel(tt, text = "Rphenograph_k:")
@@ -364,10 +379,6 @@ cytofkit_GUI <- function() {
     tkpack(tkbutton(cluster_Param, image = image2, command = fSk_help), side = "right")
     tkpack(tkentry(cluster_Param, textvariable = FlowSOM_k, width = 4), side = "right")
     tkpack(tklabel(cluster_Param, text = "FlowSOM_k:"), side = "right")
-    #rphenoK_entry <- tkentry(tt, textvariable = Rphenograph_k, width = 4)
-    #fSOMk_label <- tklabel(tt, text = "FlowSOM_k:")
-    #fSOMk_hBut <- tkbutton(tt, image = image2, command = fSk_help)
-    #fSOMk_entry <- tkentry(tt, textvariable = FlowSOM_k, width = 4)
     
     ## visualizationMethods
     visualizationMethods_label <- tklabel(tt, text = "Visualization Method(s) :")
@@ -375,13 +386,14 @@ cytofkit_GUI <- function() {
         command = visualizationMethods_help)
     visualizationMethods_cbuts <- tkframe(tt)
     tkpack(tklabel(visualizationMethods_cbuts, text = ""), side = "left")
-    i <- 1
-    while (i <= length(vizMethods)) {
-        t <- tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[i], 
-            variable = eval(vizSelect[i]))
-        tkpack(t, side = "left")
-        i <- i + 1
-    }
+    tkpack(tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[1],
+                         variable = eval(vizSelect[1])), side = "left")
+    tkpack(tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[2],
+                         variable = eval(vizSelect[2]), command = highCell_warning), side = "left")
+    tkpack(tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[3],
+                         variable = eval(vizSelect[3])), side = "left")
+    tkpack(tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[4],
+                         variable = eval(vizSelect[4])), side = "left")
     
     ## progressionMethod
     progressionMethod_label <- tklabel(tt, text = "Cellular Progression :")
@@ -392,7 +404,8 @@ cytofkit_GUI <- function() {
     tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[1], 
                          variable = progressionMethod, value = progressionMethods[1]), side = "left")
     tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[2], 
-                         variable = progressionMethod, value = progressionMethods[2]), side = "left")
+                         variable = progressionMethod, value = progressionMethods[2], command = highCell_warning),
+           side = "left")
     tkpack(tkradiobutton(progressionMethod_rbuts, text = progressionMethods[3], 
                          variable = progressionMethod, value = progressionMethods[3]), side = "left")
     
@@ -451,8 +464,6 @@ cytofkit_GUI <- function() {
     tkgrid(rphenoK_label, rphenoK_hBut, cluster_Param, padx = cell_width)
     tkgrid.configure(rphenoK_label, rphenoK_hBut, sticky = "e")
     tkgrid.configure(cluster_Param, sticky = "w")
-    #tkgrid.configure(fSOMk_label, fSOMk_entry, sticky = "w")
-    #tkgrid.configure(fSOMk_hBut, sticky = "w")
     
     tkgrid(visualizationMethods_label, visualizationMethods_hBut, 
         visualizationMethods_cbuts, padx = cell_width)
@@ -474,6 +485,7 @@ cytofkit_GUI <- function() {
     tkgrid.configure(quit_button, sticky = "w")
     
     tkwait.window(tt)
+    
     
     ##-------------------##
     ## Return parameters ##
@@ -533,8 +545,8 @@ cytofkit_GUI <- function() {
                  clusterMethods = inputs[["clusterMethods"]],
                  visualizationMethods = inputs[["visualizationMethods"]],
                  progressionMethod = inputs[["progressionMethod"]],
-                 Rphenograph_k = inputs[["Rphenograph_k"]],
-                 FlowSOM_k = inputs[["FlowSOM_k"]],
+                 Rphenograph_k = as.numeric(inputs[["Rphenograph_k"]]),
+                 FlowSOM_k = as.numeric(inputs[["FlowSOM_k"]]),
                  clusterSampleSize = 500,
                  resultDir = inputs[["resultDir"]],
                  saveResults = TRUE,
