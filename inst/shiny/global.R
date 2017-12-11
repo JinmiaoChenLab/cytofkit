@@ -13,7 +13,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                       addLabel=TRUE, labelSize=1, sampleLabel = TRUE,
                       FlowSOM_k = 40, selectCluster=NULL, selectSamples, 
                       facetPlot = FALSE, colorPalette = "bluered", labelRepel = FALSE, 
-                      removeOutlier = TRUE, clusterColor){
+                      removeOutlier = TRUE, clusterColor, globalScale = TRUE){
     
     data <- data.frame(obj$expressionData, 
                        obj$dimReducedRes[[plotMethod]], 
@@ -65,7 +65,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                               ylab = ylab, 
                               markers = colnames(obj$expressionData), 
                               colorPalette = colorPalette,
-                              limits = range(obj$expressionData),
+                              limits = NULL,
                               pointSize = pointSize, 
                               removeOutlier = TRUE)
         
@@ -76,7 +76,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                    markers = colnames(obj$expressionData), 
                                    scaleMarker = TRUE,
                                    colorPalette = colorPalette,
-                                   limits = range(obj$expressionData),
+                                   limits = NULL,
                                    pointSize = pointSize, 
                                    removeOutlier = TRUE)
         
@@ -107,14 +107,29 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                 fixCoord = FALSE,
                                 clusterColor = clusterColor)
     }else{
-        gp <- cytof_colorPlot(data = data, 
-                              xlab = xlab, 
-                              ylab = ylab, 
-                              zlab = plotFunction, 
-                              colorPalette = colorPalette,
-                              limits = range(obj$expressionData[,plotFunction]),
-                              pointSize = pointSize, 
-                              removeOutlier = TRUE)
+        limits <- NULL
+        if(globalScale){
+          limits <- range(obj$expressionData[,plotFunction])
+        }
+        if(length(plotFunction > 1)){
+          gp <- cytof_wrap_colorPlot(data = data, 
+                                     xlab = xlab, 
+                                     ylab = ylab, 
+                                     markers = plotFunction, 
+                                     colorPalette = colorPalette,
+                                     limits = limits,
+                                     pointSize = pointSize, 
+                                     removeOutlier = TRUE)
+        }else{
+          gp <- cytof_colorPlot(data = data, 
+                                xlab = xlab, 
+                                ylab = ylab, 
+                                zlab = plotFunction, 
+                                colorPalette = colorPalette,
+                                limits = limits,
+                                pointSize = pointSize, 
+                                removeOutlier = TRUE)
+        }
     }
     
     return(gp)

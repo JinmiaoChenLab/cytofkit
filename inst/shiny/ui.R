@@ -253,21 +253,22 @@ shinyUI(fluidPage(
                                            tabPanel(title="Expression Level Plot", value="M_tab2",
                                                     br(),
                                                     fluidRow(
-                                                        column(3,
-                                                               uiOutput("M_PlotMethod")
-                                                        ),
-                                                        column(3, 
-                                                               uiOutput("M_PlotMarker")
-                                                        ),
-                                                        column(3,
-                                                               numericInput("M_PointSize", "Point Size:", value = 1)
-                                                        ),
-                                                        column(3,
-                                                               selectInput('M_colorPalette', label = "Color Palette:", 
-                                                                           choices = c("bluered", "spectral1", "spectral2", "heat"), 
-                                                                           selected = "bluered", width = "100%")
-                                                        )
+                                                      column(3,
+                                                             uiOutput("M_PlotMethod")
+                                                      ),
+                                                      column(3,
+                                                             numericInput("M_PointSize", "Point Size:", value = 1)
+                                                      ),
+                                                      column(3,
+                                                             selectInput('M_colorPalette', label = "Color Palette:", 
+                                                                         choices = c("bluered", "spectral1", "spectral2", "heat"), 
+                                                                         selected = "bluered", width = "100%")
+                                                      ),
+                                                      column(3,
+                                                             checkboxInput("M_ScaleOptions", "Global Scaling Range?", value = FALSE)
+                                                      )
                                                     ),
+                                                    uiOutput("M_PlotMarker"),
                                                     hr(),
                                                     plotOutput("M_markerExpressionPlot", width = "100%")), 
                                            tabPanel(title="Expression Histogram", value="M_tab3", 

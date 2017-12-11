@@ -653,8 +653,8 @@ shinyServer(function(input, output, session) {
           sorted_markers <- colnames(v$data$expressionData)
           sorted_markers <- sorted_markers[order(sorted_markers)]
           markers <- c(sorted_markers, "All Markers", "All Markers(scaled)")
-          selectInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
-                      selected = markers[1], width = "100%")
+          selectizeInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
+                         selected = markers[1], multiple = TRUE, width = "100%")
       }   
   })
   
@@ -663,19 +663,20 @@ shinyServer(function(input, output, session) {
           return(NULL)
       }else{
           withProgress(message="Generating Marker Expression Plot", value=0, {
-              gp <- scatterPlot(obj = v$data,
-                                plotMethod = input$m_PlotMethod,
-                                plotFunction = input$m_PlotMarker,
-                                pointSize = input$M_PointSize,
-                                addLabel = FALSE,
-                                labelSize = input$S_LabelSize,
-                                sampleLabel = FALSE,
-                                FlowSOM_k = input$C_FlowSOM_k, 
-                                selectSamples = input$samples, 
-                                facetPlot = FALSE,
-                                colorPalette = input$M_colorPalette,
-                                labelRepel = FALSE,
-                                removeOutlier = TRUE)
+            gp <- scatterPlot(obj = v$data,
+                              plotMethod = input$m_PlotMethod,
+                              plotFunction = input$m_PlotMarker,
+                              pointSize = input$M_PointSize,
+                              addLabel = FALSE,
+                              labelSize = input$S_LabelSize,
+                              sampleLabel = FALSE,
+                              FlowSOM_k = input$C_FlowSOM_k, 
+                              selectSamples = input$samples, 
+                              facetPlot = FALSE,
+                              colorPalette = input$M_colorPalette,
+                              labelRepel = FALSE,
+                              removeOutlier = TRUE,
+                              globalScale = input$M_ScaleOptions)
               incProgress(1/2)
               plot(gp)
               incProgress(1/2)

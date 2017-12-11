@@ -322,9 +322,6 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                         column(3,
                                                                uiOutput("M_PlotMethod")
                                                         ),
-                                                        column(3, 
-                                                               uiOutput("M_PlotMarker")
-                                                        ),
                                                         column(3,
                                                                numericInput("M_PointSize", "Point Size:", value = 1)
                                                         ),
@@ -332,8 +329,12 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                                selectInput('M_colorPalette', label = "Color Palette:", 
                                                                            choices = c("bluered", "spectral1", "spectral2", "heat"), 
                                                                            selected = "bluered", width = "100%")
+                                                        ),
+                                                        column(3,
+                                                               checkboxInput("M_ScaleOptions", "Global Scaling Range?", value = FALSE)
                                                         )
                                                       ),
+                                                      uiOutput("M_PlotMarker"),
                                                       hr(),
                                                       plotOutput("M_markerExpressionPlot", width = "100%")), 
                                              tabPanel(title="Expression Histogram", value="M_tab3", 
@@ -1164,8 +1165,8 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
               sorted_markers <- colnames(v$data$expressionData)
               sorted_markers <- sorted_markers[order(sorted_markers)]
               markers <- c(sorted_markers, "All Markers", "All Markers(scaled)")
-              selectInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
-                          selected = markers[1], width = "100%")
+              selectizeInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
+                          selected = markers[1], multiple = TRUE, width = "100%")
             }   
           })
           
@@ -1186,7 +1187,8 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                   facetPlot = FALSE,
                                   colorPalette = input$M_colorPalette,
                                   labelRepel = FALSE,
-                                  removeOutlier = TRUE)
+                                  removeOutlier = TRUE,
+                                  globalScale = input$M_ScaleOptions)
                 incProgress(1/2)
                 plot(gp)
                 incProgress(1/2)
