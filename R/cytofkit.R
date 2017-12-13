@@ -150,7 +150,7 @@ cytofkit <- function(fcsFiles = getwd(),
     }else if (length(fcsFiles) == 1 && file.info(fcsFiles)$isdir) {
         fcsFiles <- list.files(path = fcsFiles, pattern = ".fcs$", 
             full.names = TRUE)
-        rawFCSdir <- fcsFiles
+        rawFCSdir <- dirname(fcsFiles)
     }else{
         if(dirname(fcsFiles[1]) == "."){
             rawFCSdir <- getwd()
