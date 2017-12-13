@@ -109,7 +109,8 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
     }else{
         limits <- NULL
         if(globalScale){
-          limits <- range(obj$expressionData[,plotFunction])
+          exprData <- obj$expressionData[,plotFunction]
+          limits <- c(min(exprData), quantile(exprData, .98))
         }
         if(length(plotFunction > 1)){
           gp <- cytof_wrap_colorPlot(data = data, 
