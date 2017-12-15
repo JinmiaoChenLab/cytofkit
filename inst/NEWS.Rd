@@ -1,6 +1,23 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.11.2 (2017-12-15)}{
+  \subsection{MODIFICATIONS TO EXPRESSION LEVEL SCATTERPLOT}{
+    \itemize{
+      \item Marker selection changed to selectize style, choices "All Markers" and "All Markers (scaled)" removed.
+      \item Added checkbox option to scale the legend and dot colours locally/globally
+      \item Added checkbox option to scale and center expression values
+      \item Added actionButton to select all markers (will update selectize choices to select all)
+      \item Added actionButton to update plot after changing marker selection (otherwise will update with each marker added/removed)
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Changed limits of scatterplot scale from min-max to min-98th percentile to account for rare extreme outliers.
+    }
+  }
+}
+
 \section{Changes in version 1.11.1 (2017-11-06)}{
   \subsection{MODIFICATIONS}{
     \itemize{

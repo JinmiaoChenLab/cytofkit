@@ -652,20 +652,42 @@ shinyServer(function(input, output, session) {
       }else{
           sorted_markers <- colnames(v$data$expressionData)
           sorted_markers <- sorted_markers[order(sorted_markers)]
-          markers <- c(sorted_markers, "All Markers", "All Markers(scaled)")
-          selectizeInput('m_PlotMarker', 'Plot Marker:', choices = markers, 
-                         selected = markers[1], multiple = TRUE, width = "100%")
+          #markers <- c(sorted_markers, "All Markers", "All Markers(scaled)")
+          selectizeInput('m_PlotMarker', 'Plot Marker:', choices = sorted_markers, 
+                         selected = sorted_markers[1], multiple = TRUE, width = "100%")
       }   
   })
   
+  observeEvent(input$M_ScaleOptions, {
+    if(input$M_ScaleOptions){
+      updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Global")
+    }else if(!input$M_ScaleOptions){
+      updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Local")
+    }
+  })
+  
+  observeEvent(input$M_scaledData, {
+    if(input$M_scaledData){
+      updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: Yes")
+    }else if(!input$M_scaledData){
+      updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: No")
+    }
+  })
+  
+  observeEvent(input$M_chooseAllMarker, {
+    raw_markers <- colnames(v$data$expressionData)
+    markers <- raw_markers[order(raw_markers)]
+    updateSelectizeInput(session, "m_PlotMarker", selected = markers)
+  })
+  
   M_markerExpressionPlotInput <- function(){
-      if(is.null(v$data) || is.null(input$m_PlotMethod) || is.null(input$m_PlotMarker)){
+      if(is.null(v$data) || is.null(input$m_PlotMethod) || is.null(isolate(input$m_PlotMarker))){
           return(NULL)
       }else{
           withProgress(message="Generating Marker Expression Plot", value=0, {
             gp <- scatterPlot(obj = v$data,
                               plotMethod = input$m_PlotMethod,
-                              plotFunction = input$m_PlotMarker,
+                              plotFunction = isolate(input$m_PlotMarker),
                               pointSize = input$M_PointSize,
                               addLabel = FALSE,
                               labelSize = input$S_LabelSize,
@@ -676,7 +698,8 @@ shinyServer(function(input, output, session) {
                               colorPalette = input$M_colorPalette,
                               labelRepel = FALSE,
                               removeOutlier = TRUE,
-                              globalScale = input$M_ScaleOptions)
+                              globalScale = input$M_ScaleOptions,
+                              centerScale = input$M_scaledData)
               incProgress(1/2)
               plot(gp)
               incProgress(1/2)
@@ -687,6 +710,20 @@ shinyServer(function(input, output, session) {
   output$M_markerExpressionPlot <- renderPlot({
       M_markerExpressionPlotInput()
   }, height = 900, width = 950)
+  
+  observeEvent({
+    input$M_updateExPlot
+    input$m_PlotMethod
+    input$M_PointSize
+    input$S_LabelSize
+    input$M_colorPalette
+    input$M_ScaleOptions
+    input$M_scaledData
+    }, {
+    output$M_markerExpressionPlot <- renderPlot({
+      M_markerExpressionPlotInput()
+    }, height = 900, width = 950)
+  })
   
   observeEvent(input$PDFExpPlot, {
       if(!is.null(v$data)){

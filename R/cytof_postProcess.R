@@ -505,7 +505,7 @@ spectral2 <- function(n){
 #' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 cytof_colorPlot <- function(data, xlab, ylab, zlab, 
                             colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
-                            limits = range(data),
+                            limits = c(min(exprData), quantile(exprData, .98)),
                             pointSize=1, 
                             removeOutlier = TRUE){
     

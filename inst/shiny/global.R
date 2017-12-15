@@ -13,7 +13,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                       addLabel=TRUE, labelSize=1, sampleLabel = TRUE,
                       FlowSOM_k = 40, selectCluster=NULL, selectSamples, 
                       facetPlot = FALSE, colorPalette = "bluered", labelRepel = FALSE, 
-                      removeOutlier = TRUE, clusterColor, globalScale = TRUE){
+                      removeOutlier = TRUE, clusterColor, globalScale = TRUE, centerScale = FALSE){
     
     data <- data.frame(obj$expressionData, 
                        obj$dimReducedRes[[plotMethod]], 
@@ -119,6 +119,7 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                      markers = plotFunction, 
                                      colorPalette = colorPalette,
                                      limits = limits,
+                                     scaleMarker = centerScale,
                                      pointSize = pointSize, 
                                      removeOutlier = TRUE)
         }else{

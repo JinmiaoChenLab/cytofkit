@@ -265,10 +265,19 @@ shinyUI(fluidPage(
                                                                          selected = "bluered", width = "100%")
                                                       ),
                                                       column(3,
-                                                             checkboxInput("M_ScaleOptions", "Global Scaling Range?", value = FALSE)
+                                                             checkboxInput("M_ScaleOptions", "Global Scaling Range?", value = FALSE),
+                                                             checkboxInput("M_scaledData", "Data centered and scaled: No", value = FALSE)
                                                       )
                                                     ),
-                                                    uiOutput("M_PlotMarker"),
+                                                    fluidRow(
+                                                      column(10,
+                                                             uiOutput("M_PlotMarker")
+                                                      ),
+                                                      column(2,
+                                                             actionButton("M_chooseAllMarker", "All Markers"),
+                                                             actionButton("M_updateExPlot", "Update Plot")
+                                                      )
+                                                    ),
                                                     hr(),
                                                     plotOutput("M_markerExpressionPlot", width = "100%")), 
                                            tabPanel(title="Expression Histogram", value="M_tab3", 
