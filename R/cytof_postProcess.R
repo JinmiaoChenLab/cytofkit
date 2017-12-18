@@ -488,7 +488,7 @@ spectral2 <- function(n){
 #' @param ylab The column name of data for y lab.
 #' @param zlab The column name of data for z lab.
 #' @param colorPalette Color Palette.
-#' @param limits Range for z lab, defaults to existing min and max. 
+#' @param limits Range for z lab, defaults to existing min, and max set at 98th percentile value. 
 #' @param pointSize Size of the point.
 #' @param removeOutlier If \verb{TRUE}, remove the outliers.
 #' @return A ggplot object.
@@ -505,7 +505,7 @@ spectral2 <- function(n){
 #' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 cytof_colorPlot <- function(data, xlab, ylab, zlab, 
                             colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
-                            limits = c(min(exprData), quantile(exprData, .98)),
+                            limits = c(min(data[,zlab]), quantile(data[,zlab], .98)),
                             pointSize=1, 
                             removeOutlier = TRUE){
     
@@ -521,6 +521,7 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
     data <- as.data.frame(data)
     title <- paste(zlab, "Expression Level Plot")
     data <- data[,c(xlab, ylab, zlab)]
+    limits <- limits
     
     if(removeOutlier)
         data[,zlab] <- remove_outliers(data[,zlab])
