@@ -142,7 +142,7 @@ shinyUI(fluidPage(
                actionButton("saveButton", "Save Data", icon = icon("download")),
                
                hr(),
-               h4(tags$a(href="mailto:chen_hao@immunol.a-star.edu.sg,Chen_Jinmiao@immunol.a-star.edu.sg?subject=[cytofkit-question]", 
+               h4(tags$a(href="mailto:jinmiao@gmail.com,a0124008@u.nus.edu?subject=[cytofkit-question]", 
                          "Contact Us")),
                imageOutput("logo", height = "60px")
         ),
@@ -247,7 +247,15 @@ shinyUI(fluidPage(
                                                                numericInput("M_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
                                                         )
                                                     ),
-                                                    uiOutput("M_heatmapmarkerSelect"),
+                                                    fluidRow(
+                                                      column(10,
+                                                             uiOutput("M_heatmapmarkerSelect")
+                                                      ),
+                                                      column(2,
+                                                             actionButton("M_heatmapSelectAll", "All Markers"),
+                                                             actionButton("M_updateHeatmap", "Update Plot")
+                                                      )
+                                                    ),
                                                     hr(),
                                                     plotOutput("M_heatmapPlot", width = "100%")),
                                            tabPanel(title="Expression Level Plot", value="M_tab2",
@@ -303,7 +311,14 @@ shinyUI(fluidPage(
                                                                             value = 2, step = 1, min=1, max=10)
                                                         )
                                                     ),
-                                                    uiOutput("M_markerSelect"),
+                                                    fluidRow(
+                                                      column(10,
+                                                             uiOutput("M_markerSelect")
+                                                      ),
+                                                      column(2,
+                                                             actionButton("M_histSelectAll", "All Markers")
+                                                      )
+                                                    ),
                                                     hr(),
                                                     actionButton("M_updateDensityPlot", "Update Plot", icon = icon("hand-pointer-o")),
                                                     plotOutput("M_stackDensityPlot", width = "100%")),

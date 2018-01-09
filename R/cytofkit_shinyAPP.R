@@ -208,7 +208,7 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                    actionButton("saveButton", "Save Data", icon = icon("download")),
                    
                    hr(),
-                   h4(tags$a(href="mailto:chen_hao@immunol.a-star.edu.sg,Chen_Jinmiao@immunol.a-star.edu.sg?subject=[cytofkit-question]", 
+                   h4(tags$a(href="mailto:jinmiao@gmail.com,a0124008@u.nus.edu?subject=[cytofkit-question]", 
                              "Contact Us")),
                    imageOutput("logo", height = "60px")
             ),
@@ -313,7 +313,15 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                                numericInput("M_colLabelSize", "Col Label Size:", value = 1, step = 0.5)
                                                         )
                                                       ),
-                                                      uiOutput("M_heatmapmarkerSelect"),
+                                                      fluidRow(
+                                                        column(10,
+                                                               uiOutput("M_heatmapmarkerSelect")
+                                                        ),
+                                                        column(2,
+                                                               actionButton("M_heatmapSelectAll", "All Markers"),
+                                                               actionButton("M_updateHeatmap", "Update Plot")
+                                                        )
+                                                      ),
                                                       hr(),
                                                       plotOutput("M_heatmapPlot", width = "100%")),
                                              tabPanel(title="Expression Level Plot", value="M_tab2",
@@ -369,7 +377,14 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                                             value = 2, step = 1, min=1, max=10)
                                                         )
                                                       ),
-                                                      uiOutput("M_markerSelect"),
+                                                      fluidRow(
+                                                        column(10,
+                                                               uiOutput("M_markerSelect")
+                                                        ),
+                                                        column(2,
+                                                               actionButton("M_histSelectAll", "All Markers")
+                                                        )
+                                                      ),
                                                       hr(),
                                                       actionButton("M_updateDensityPlot", "Update Plot", icon = icon("hand-pointer-o")),
                                                       plotOutput("M_stackDensityPlot", width = "100%")),
@@ -1112,8 +1127,14 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
             }   
           })
           
+          observeEvent(input$M_heatmapSelectAll, {
+            raw_markers <- colnames(v$data$expressionData)
+            markers <- raw_markers[order(raw_markers)]
+            updateSelectizeInput(session, "m_heatmapmarkerSelect", selected = markers)
+          })
+          
           M_heatmapPlotInput <- reactive({
-            if(is.null(v$data) || is.null(input$m_plotCluster))
+            if(is.null(v$data) || is.null(input$m_plotCluster) || is.null(input$m_heatmapmarkerSelect))
               return(NULL)
             heatMap(data = v$data, 
                     clusterMethod = input$m_plotCluster, 
@@ -1292,6 +1313,12 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                              choices = markerNames, selected = markerNames[1:initNum], 
                              multiple = TRUE, width = "100%")
             }   
+          })
+          
+          observeEvent(input$M_histSelectAll, {
+            raw_markers <- colnames(v$data$expressionData)
+            markers <- raw_markers[order(raw_markers)]
+            updateSelectizeInput(session, "m_markerSelect", selected = markers)
           })
           
           M_stackDensityPlotInput <- function(){

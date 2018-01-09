@@ -591,8 +591,14 @@ shinyServer(function(input, output, session) {
       }   
   })
   
+  observeEvent(input$M_heatmapSelectAll, {
+    raw_markers <- colnames(v$data$expressionData)
+    markers <- raw_markers[order(raw_markers)]
+    updateSelectizeInput(session, "m_heatmapmarkerSelect", selected = markers)
+  })
+  
   M_heatmapPlotInput <- reactive({
-      if(is.null(v$data) || is.null(input$m_plotCluster))
+      if(is.null(v$data) || is.null(input$m_plotCluster) || is.null(input$m_heatmapmarkerSelect))
           return(NULL)
       heatMap(data = v$data, 
               clusterMethod = input$m_plotCluster, 
@@ -610,7 +616,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$M_heatmapPlot <- renderPlot({
-      M_heatmapPlotInput()
+    M_heatmapPlotInput()
   }, height = 900, width = 950)
   
   observeEvent(input$PDFHeatmap, {
@@ -771,6 +777,12 @@ shinyServer(function(input, output, session) {
                          choices = markerNames, selected = markerNames[1:initNum], 
                          multiple = TRUE, width = "100%")
       }   
+  })
+  
+  observeEvent(input$M_histSelectAll, {
+    raw_markers <- colnames(v$data$expressionData)
+    markers <- raw_markers[order(raw_markers)]
+    updateSelectizeInput(session, "m_markerSelect", selected = markers)
   })
   
   M_stackDensityPlotInput <- function(){
