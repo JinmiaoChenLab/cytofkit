@@ -1,6 +1,24 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.11.3 (2018-01-19)}{
+  \subsection{MODIFICATIONS}{
+    \itemize{
+      \item Added select all buttons to other marker related plots
+      \item Changed scaling and centering options to drop-down menus
+      \item Updated maintainer emails
+      \item Added transparency option to expression level plot points so points dont obscure each other too much. Point size can be adjusted to improve visibility as well
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Fixed handling of global scaling so that expression values don't fall outside the limits for the colour palette in the shiny color plots
+      \item Improved the outlier removal code in color plots to be more robust for various marker expression patterns
+      \item Shifted a line that compares fixedNum argument against the number of events so that it doesn't break when the 'min' mergeMethod sets fixedNum to NULL
+    }
+  }
+}
+
 \section{Changes in version 1.11.2 (2017-12-15)}{
   \subsection{MODIFICATIONS TO EXPRESSION LEVEL SCATTERPLOT}{
     \itemize{

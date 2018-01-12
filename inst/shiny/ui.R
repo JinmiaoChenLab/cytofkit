@@ -265,7 +265,8 @@ shinyUI(fluidPage(
                                                              uiOutput("M_PlotMethod")
                                                       ),
                                                       column(3,
-                                                             numericInput("M_PointSize", "Point Size:", value = 1)
+                                                             numericInput("M_PointSize", "Point Size:", value = 1),
+                                                             sliderInput("M_Alpha", "Transparency:", value = 1, min = 0, max = 1, step = 0.1)
                                                       ),
                                                       column(3,
                                                              selectInput('M_colorPalette', label = "Color Palette:", 
@@ -273,8 +274,12 @@ shinyUI(fluidPage(
                                                                          selected = "bluered", width = "100%")
                                                       ),
                                                       column(3,
-                                                             checkboxInput("M_ScaleOptions", "Global Scaling Range?", value = FALSE),
-                                                             checkboxInput("M_scaledData", "Data centered and scaled: No", value = FALSE)
+                                                             selectInput('M_ScaleOptions', label = "Scaling Range:", 
+                                                                         choices = c("Local", "Global"), 
+                                                                         selected = "Local", width = "100%"),
+                                                             selectInput('M_scaledData', label = "Centering:", 
+                                                                         choices = c("Un-centered", "Centered"), 
+                                                                         selected = "Un-centered", width = "100%")
                                                       )
                                                     ),
                                                     fluidRow(

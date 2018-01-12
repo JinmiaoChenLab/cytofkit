@@ -9,7 +9,7 @@ require(gplots)
 
 
 ## Main function for scatter plot
-scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1, 
+scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1, alpha = 1,
                       addLabel=TRUE, labelSize=1, sampleLabel = TRUE,
                       FlowSOM_k = 40, selectCluster=NULL, selectSamples, 
                       facetPlot = FALSE, colorPalette = "bluered", labelRepel = FALSE, 
@@ -109,8 +109,13 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
     }else{
         limits <- NULL
         if(globalScale){
-          exprData <- obj$expressionData[,plotFunction]
-          limits <- c(min(exprData), quantile(exprData, .98))
+          exprData <- obj$expressionData
+          markers <- colnames(exprData)
+          glimits <- quantile(exprData, probs=c(.02, .98), na.rm = TRUE)
+          local.bounds <- as.data.frame(lapply(markers, function(x) quantile(exprData[,x], probs=c(.02, .98), na.rm = TRUE)), col.names = markers)
+          gmax <- ifelse(max(local.bounds[2,]) < glimits[2], glimits[2], max(local.bounds[2,]))
+          gmin <- ifelse(min(local.bounds[1,]) > glimits[1],min(local.bounds[1,]), glimits[1])
+          limits <- c(gmin, gmax)
         }
         if(length(plotFunction > 1)){
           gp <- cytof_wrap_colorPlot(data = data, 
@@ -120,7 +125,8 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                      colorPalette = colorPalette,
                                      limits = limits,
                                      scaleMarker = centerScale,
-                                     pointSize = pointSize, 
+                                     pointSize = pointSize,
+                                     alpha = alpha,
                                      removeOutlier = TRUE)
         }else{
           gp <- cytof_colorPlot(data = data, 
@@ -129,7 +135,8 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
                                 zlab = plotFunction, 
                                 colorPalette = colorPalette,
                                 limits = limits,
-                                pointSize = pointSize, 
+                                pointSize = pointSize,
+                                alpha = alpha,
                                 removeOutlier = TRUE)
         }
     }
@@ -141,16 +148,15 @@ scatterPlot <- function(obj, plotMethod, plotFunction, pointSize=1,
 cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
                             colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
                             limits = NA,
-                            pointSize=1, 
+                            pointSize=1,
+                            alpha = 1,
                             removeOutlier = TRUE){
     
     remove_outliers <- function(x, na.rm = TRUE, ...) {
-        qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
-        H <- 1.5 * IQR(x, na.rm = na.rm)
-        y <- x
-        y[x < (qnt[1] - H)] <- qnt[1] - H
-        y[x > (qnt[2] + H)] <- qnt[2] + H
-        y
+        qnt <- quantile(x, probs=c(.02, .98), na.rm = na.rm, ...)
+        x[x <= qnt[1]] <- qnt[1]
+        x[x >= qnt[2]] <- qnt[2]
+        x
     }
     
     data <- as.data.frame(data)
@@ -201,8 +207,8 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
     grid_row_num <- round(sqrt(length(markers)))
     gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = ev)) + 
         facet_wrap(~markers, nrow = grid_row_num, scales = "fixed") +
-        scale_colour_gradientn(limits = limits, name = ev, colours = myPalette(zlength)) +
-        geom_point(size = pointSize) + theme_bw() + coord_fixed() +
+        scale_colour_gradientn(limits = limits, name = ev, colours = myPalette(zlength * 2)) +
+        geom_point(size = pointSize, alpha = alpha) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
         theme(axis.text=element_text(size=8), axis.title=element_text(size=12,face="bold"))

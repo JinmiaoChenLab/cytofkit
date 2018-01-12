@@ -5,8 +5,9 @@
 \title{Plot the data with color-coded marker values}
 \usage{
 cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
-  "spectral1", "spectral2", "heat"), limits = c(min(data[, zlab]),
-  quantile(data[, zlab], 0.98)), pointSize = 1, removeOutlier = TRUE)
+  "spectral1", "spectral2", "heat"), limits = c(quantile(data[, zlab], 0.02),
+  quantile(data[, zlab], 0.98)), pointSize = 0.5, alpha = 1,
+  removeOutlier = TRUE)
 }
 \arguments{
 \item{data}{A dataframe containing the xlab, ylab and zlab.}
@@ -22,6 +23,8 @@ cytof_colorPlot(data, xlab, ylab, zlab, colorPalette = c("bluered",
 \item{limits}{Range for z lab, defaults to existing min, and max set at 98th percentile value.}
 
 \item{pointSize}{Size of the point.}
+
+\item{alpha}{Transparency of point. 1 is opaque, 0 is completely transparent.}
 
 \item{removeOutlier}{If \verb{TRUE}, remove the outliers.}
 }

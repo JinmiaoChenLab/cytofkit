@@ -490,6 +490,7 @@ spectral2 <- function(n){
 #' @param colorPalette Color Palette.
 #' @param limits Range for z lab, defaults to existing min, and max set at 98th percentile value. 
 #' @param pointSize Size of the point.
+#' @param alpha Transparency of point. 1 is opaque, 0 is completely transparent.
 #' @param removeOutlier If \verb{TRUE}, remove the outliers.
 #' @return A ggplot object.
 #' 
@@ -505,16 +506,16 @@ spectral2 <- function(n){
 #' cytof_colorPlot(data = data, xlab = "dim1", ylab = "dim2", zlab = "marker")
 cytof_colorPlot <- function(data, xlab, ylab, zlab, 
                             colorPalette = c("bluered", "spectral1", "spectral2", "heat"),
-                            limits = c(min(data[,zlab]), quantile(data[,zlab], .98)),
-                            pointSize=1, 
+                            limits = c(quantile(data[,zlab], .02), quantile(data[,zlab], .98)),
+                            pointSize=0.5,
+                            alpha = 1,
                             removeOutlier = TRUE){
     
     remove_outliers <- function(x, na.rm = TRUE, ...) {
-        qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
-        H <- 1.5 * IQR(x, na.rm = na.rm)
+        qnt <- quantile(x, probs=c(.02, .98), na.rm = na.rm, ...)
         y <- x
-        y[x < (qnt[1] - H)] <- qnt[1] - H
-        y[x > (qnt[2] + H)] <- qnt[2] + H
+        y[x < qnt[1]] <- qnt[1]
+        y[x > qnt[2]] <- qnt[2]
         y
     }
     
@@ -548,8 +549,8 @@ cytof_colorPlot <- function(data, xlab, ylab, zlab,
     exp <- "Expression"
     colnames(data) <- c(xlab, ylab, exp)
     gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = exp)) + 
-        scale_colour_gradientn(limits = limits, name = zlab, colours = myPalette(zlength)) +
-        geom_point(size = pointSize) + theme_bw() + coord_fixed() +
+        scale_colour_gradientn(limits = limits, name = zlab, colours = myPalette(zlength * 2)) +
+        geom_point(size = pointSize, alpha = alpha) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
         theme(axis.text=element_text(size=8), axis.title=element_text(size=12,face="bold"))

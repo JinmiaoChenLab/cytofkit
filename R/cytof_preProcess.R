@@ -44,15 +44,14 @@ cytof_exprsMerge <- function(fcsFiles,
     if(is.numeric(sampleSeed))
         set.seed(sampleSeed)
     ## test if number of events in any fcs less than fixedNum
-    eventCountTest <- suppressWarnings(any(lapply(exprsL, function(x) if (nrow(x) < fixedNum) {1} else {0})))
-    ## solution 1: change mergeMethod from fixed to ceil
-    #if(mergeMethod == "fixed" && eventCountTest == TRUE){
-    #  mergeMethod <- "ceil"
-    #}
-    ## solution 2: use lowest number of fcs events as fixedNum
-    if(mergeMethod == "fixed" && eventCountTest == TRUE){
-      warning("One or more FCS files have less events than specified fixedNum; using lowest as fixedNum")
-      fixedNum <- min(rapply(exprsL, nrow))
+    if(mergeMethod == "fixed"){
+      if(!is.null(fixedNum)){
+        eventCountTest <- suppressWarnings(any(lapply(exprsL, function(x) if (nrow(x) < fixedNum) {1} else {0})))
+        if(eventCountTest == TRUE){
+          warning("One or more FCS files have less events than specified fixedNum; using lowest as fixedNum")
+          fixedNum <- min(rapply(exprsL, nrow))
+        }
+      }
     }
     switch(mergeMethod,
            ceil = {

@@ -664,22 +664,6 @@ shinyServer(function(input, output, session) {
       }   
   })
   
-  observeEvent(input$M_ScaleOptions, {
-    if(input$M_ScaleOptions){
-      updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Global")
-    }else if(!input$M_ScaleOptions){
-      updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Local")
-    }
-  })
-  
-  observeEvent(input$M_scaledData, {
-    if(input$M_scaledData){
-      updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: Yes")
-    }else if(!input$M_scaledData){
-      updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: No")
-    }
-  })
-  
   observeEvent(input$M_chooseAllMarker, {
     raw_markers <- colnames(v$data$expressionData)
     markers <- raw_markers[order(raw_markers)]
@@ -695,6 +679,7 @@ shinyServer(function(input, output, session) {
                               plotMethod = input$m_PlotMethod,
                               plotFunction = isolate(input$m_PlotMarker),
                               pointSize = input$M_PointSize,
+                              alpha = input$M_Alpha,
                               addLabel = FALSE,
                               labelSize = input$S_LabelSize,
                               sampleLabel = FALSE,
@@ -704,8 +689,8 @@ shinyServer(function(input, output, session) {
                               colorPalette = input$M_colorPalette,
                               labelRepel = FALSE,
                               removeOutlier = TRUE,
-                              globalScale = input$M_ScaleOptions,
-                              centerScale = input$M_scaledData)
+                              globalScale = ifelse(input$M_ScaleOptions == "Global", TRUE, FALSE),
+                              centerScale = ifelse(input$M_scaledData == "Centered", TRUE, FALSE))
               incProgress(1/2)
               plot(gp)
               incProgress(1/2)

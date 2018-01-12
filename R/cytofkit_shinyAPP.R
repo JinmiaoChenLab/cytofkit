@@ -331,7 +331,8 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                                uiOutput("M_PlotMethod")
                                                         ),
                                                         column(3,
-                                                               numericInput("M_PointSize", "Point Size:", value = 1)
+                                                               numericInput("M_PointSize", "Point Size:", value = 1),
+                                                               sliderInput("M_Alpha", "Transparency:", value = 1, min = 0, max = 1, step = 0.1)
                                                         ),
                                                         column(3,
                                                                selectInput('M_colorPalette', label = "Color Palette:", 
@@ -339,8 +340,12 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                                                            selected = "bluered", width = "100%")
                                                         ),
                                                         column(3,
-                                                               checkboxInput("M_ScaleOptions", "Legend scale: Local", value = FALSE),
-                                                               checkboxInput("M_scaledData", "Data centered and scaled: No", value = FALSE)
+                                                               selectInput('M_ScaleOptions', label = "Scaling Range:", 
+                                                                           choices = c("Local", "Global"), 
+                                                                           selected = "Local", width = "100%"),
+                                                               selectInput('M_scaledData', label = "Centering:", 
+                                                                           choices = c("Un-centered", "Centered"), 
+                                                                           selected = "Un-centered", width = "100%")
                                                         )
                                                       ),
                                                       fluidRow(
@@ -1200,22 +1205,6 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
             }   
           })
           
-          observeEvent(input$M_ScaleOptions, {
-            if(input$M_ScaleOptions){
-              updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Global")
-            }else if(!input$M_ScaleOptions){
-              updateCheckboxInput(session, "M_ScaleOptions", label = "Legend scale: Local")
-            }
-          })
-          
-          observeEvent(input$M_scaledData, {
-            if(input$M_scaledData){
-              updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: Yes")
-            }else if(!input$M_scaledData){
-              updateCheckboxInput(session, "M_scaledData", label = "Data centered and scaled: No")
-            }
-          })
-          
           observeEvent(input$M_chooseAllMarker, {
             raw_markers <- colnames(v$data$expressionData)
             markers <- raw_markers[order(raw_markers)]
@@ -1231,6 +1220,7 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                   plotMethod = input$m_PlotMethod,
                                   plotFunction = isolate(input$m_PlotMarker),
                                   pointSize = input$M_PointSize,
+                                  alpha = input$M_Alpha,
                                   addLabel = FALSE,
                                   labelSize = input$S_LabelSize,
                                   sampleLabel = FALSE,
@@ -1240,8 +1230,8 @@ cytofkitShinyAPP <- function(RData = NULL, onServer = FALSE) {
                                   colorPalette = input$M_colorPalette,
                                   labelRepel = FALSE,
                                   removeOutlier = TRUE,
-                                  globalScale = input$M_ScaleOptions,
-                                  centerScale = input$M_scaledData)
+                                  globalScale = ifelse(input$M_ScaleOptions == "Global", TRUE, FALSE),
+                                  centerScale = ifelse(input$M_scaledData == "Centered", TRUE, FALSE))
                 incProgress(1/2)
                 plot(gp)
                 incProgress(1/2)
