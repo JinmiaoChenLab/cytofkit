@@ -38,6 +38,8 @@ cytofkit_GUI <- function() {
     transformMethod <- tclVar("autoLgcl")
     progressionMethod <- tclVar("NULL")
     Rphenograph_k <- tclVar("30")
+    tsne_perp <- tclVar("30")
+    tsne_maxIter <- tclVar("1000")
     FlowSOM_k <- tclVar("40")
     
     # logicle parameters
@@ -224,6 +226,8 @@ cytofkit_GUI <- function() {
         tclvalue(progressionMethod) <- "NULL"
         tclvalue(Rphenograph_k) <- "30"
         tclvalue(FlowSOM_k) <- "40"
+        tclvalue(tsne_perp) <- "30"
+        tclvalue(tsne_maxIter) <- "1000"
     }
     
     submit <- function() {
@@ -372,10 +376,12 @@ cytofkit_GUI <- function() {
     cluster_Param <- tkframe(tt)
     tkpack(tklabel(cluster_Param, text = " "), side = "left")
     tkpack(tkentry(cluster_Param, textvariable = Rphenograph_k, width = 4), side = "left")
+    tkpack(tklabel(cluster_Param, text = " "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "tsne Perplexity"), side = "left")
+    tkpack(tkentry(cluster_Param, textvariable = tsne_perp, width = 4), side = "left")
     tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
-    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
-    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
-    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "tsne Max Iterations"), side = "left")
+    tkpack(tkentry(cluster_Param, textvariable = tsne_maxIter, width = 4), side = "left")
     tkpack(tkbutton(cluster_Param, image = image2, command = fSk_help), side = "right")
     tkpack(tkentry(cluster_Param, textvariable = FlowSOM_k, width = 4), side = "right")
     tkpack(tklabel(cluster_Param, text = "FlowSOM_k:"), side = "right")
@@ -524,6 +530,8 @@ cytofkit_GUI <- function() {
         inputs[["visualizationMethods"]] <- vizMethods[vizCheck]
         inputs[["progressionMethod"]] <- tclvalue(progressionMethod)
         inputs[["Rphenograph_k"]] <- tclvalue(Rphenograph_k)
+        inputs[["tsne_perp"]] <- tclvalue(tsne_perp)
+        inputs[["tsne_maxIter"]] <- tclvalue(tsne_maxIter)
         inputs[["FlowSOM_k"]] <- tclvalue(FlowSOM_k)
         inputs[["projectName"]] <- tclvalue(projectName)
         inputs[["resultDir"]] <- tclvalue(resDir)
