@@ -41,6 +41,7 @@ cytofkit_GUI <- function() {
     tsne_perp <- tclVar("30")
     tsne_maxIter <- tclVar("1000")
     FlowSOM_k <- tclVar("40")
+    seed <- tclVar("42")
     
     # logicle parameters
     l_w <- tclVar(fixedLgclParas[1])
@@ -228,6 +229,7 @@ cytofkit_GUI <- function() {
         tclvalue(FlowSOM_k) <- "40"
         tclvalue(tsne_perp) <- "30"
         tclvalue(tsne_maxIter) <- "1000"
+        tclvalue(seed) <- "42"
     }
     
     submit <- function() {
@@ -376,10 +378,9 @@ cytofkit_GUI <- function() {
     cluster_Param <- tkframe(tt)
     tkpack(tklabel(cluster_Param, text = " "), side = "left")
     tkpack(tkentry(cluster_Param, textvariable = Rphenograph_k, width = 4), side = "left")
-    tkpack(tklabel(cluster_Param, text = " "), side = "left")
+    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
     tkpack(tklabel(cluster_Param, text = "tsne Perplexity"), side = "left")
     tkpack(tkentry(cluster_Param, textvariable = tsne_perp, width = 4), side = "left")
-    tkpack(tklabel(cluster_Param, text = "                 "), side = "left")
     tkpack(tklabel(cluster_Param, text = "tsne Max Iterations"), side = "left")
     tkpack(tkentry(cluster_Param, textvariable = tsne_maxIter, width = 4), side = "left")
     tkpack(tkbutton(cluster_Param, image = image2, command = fSk_help), side = "right")
@@ -400,6 +401,9 @@ cytofkit_GUI <- function() {
                          variable = eval(vizSelect[3])), side = "left")
     tkpack(tkcheckbutton(visualizationMethods_cbuts, text = vizMethods[4],
                          variable = eval(vizSelect[4])), side = "left")
+    tkpack(tklabel(visualizationMethods_cbuts, text = "                 "), side = "left")
+    tkpack(tklabel(visualizationMethods_cbuts, text = "Seed"), side = "left")
+    tkpack(tkentry(visualizationMethods_cbuts, textvariable = seed, width = 4), side = "left")
     
     ## progressionMethod
     progressionMethod_label <- tklabel(tt, text = "Cellular Progression :")
@@ -533,6 +537,7 @@ cytofkit_GUI <- function() {
         inputs[["tsne_perp"]] <- tclvalue(tsne_perp)
         inputs[["tsne_maxIter"]] <- tclvalue(tsne_maxIter)
         inputs[["FlowSOM_k"]] <- tclvalue(FlowSOM_k)
+        inputs[["seed"]] <- tclvalue(seed)
         inputs[["projectName"]] <- tclvalue(projectName)
         inputs[["resultDir"]] <- tclvalue(resDir)
         
@@ -555,6 +560,7 @@ cytofkit_GUI <- function() {
                  progressionMethod = inputs[["progressionMethod"]],
                  Rphenograph_k = as.numeric(inputs[["Rphenograph_k"]]),
                  FlowSOM_k = as.numeric(inputs[["FlowSOM_k"]]),
+                 seed = as.numeric(inputs[["seed"]]),
                  clusterSampleSize = 500,
                  resultDir = inputs[["resultDir"]],
                  saveResults = TRUE,
