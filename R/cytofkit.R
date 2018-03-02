@@ -233,7 +233,7 @@ cytofkit <- function(fcsFiles = getwd(),
     message("Dimension reduction...")
     alldimReductionMethods <- unique(c(visualizationMethods, dimReductionMethod))
     allDimReducedList <- lapply(alldimReductionMethods, 
-                                cytof_dimReduction, data = exprs_data, markers = markers)
+                                cytof_dimReduction, data = exprs_data, markers = markers, tsneSeed = seed)
     names(allDimReducedList) <- alldimReductionMethods
     
     
